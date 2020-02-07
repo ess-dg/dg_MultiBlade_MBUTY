@@ -8,6 +8,7 @@ Mail: francesco.piscitelli@ess.eu
 
 A file 13827-C-ESSmask-20181116-120805_00000.h5 is in this folder as an example.
 
+###############################################################################
 
 This code needs the following imports:
 
@@ -34,9 +35,13 @@ When #ON/OFF is indicated you cans elect 0 for OFF and 1 for ON.
 
 List of variables a user can edit: 
 
+###############################################################################
+
 If ON you rsync the data from pathsource (on remote computer) to desitnationpath, if you already have the data this must be OFF
 
 	sync = 0   #ON/OFF if you want to rsync the data 
+
+###############################################################################
 
 Folders and open file options.
 
@@ -72,9 +77,9 @@ If you know that a file has to last 60 sec, you pre-enter this info to check tha
 
 	SingleFileDuration       = 60   #s to check if h5 file has all the resets that are foreseen 
 
-The varriable POPH will be saved in a new h5 file containing the clustered data 
+###############################################################################
 
-###
+The variable POPH will be saved in a new h5 file containing the clustered data 
 
 	saveReducedData = 0 #ON/OFF 
 
@@ -91,13 +96,13 @@ In h5 file all data is under a main folder
 	compressionHDFT  = 'gzip'  
 	compressionHDFL  = 9     # gzip compression level 0 - 9 of your h5 file 
 
-###
+###############################################################################
 
 indicate the order the digitisers has to be read, reflecting the order of the cassette of the Multi-Blade, you can also load only one digitiser
 
 	digitID = [34,33,31,142,143,137] or # digitID = [137]
 
-###
+###############################################################################
 
 Keep all this settings as they are, they only depend on the specific detector and electronics you are using, switchOddEven and flipOrderCh are because in MB18 the channels are physically swapped and this function renders them as a standard config, wire 1 at front, strip 1 at top. 
 overflowcorr and zerosuppression remove saturated and just above threshold events from the data 
@@ -117,93 +122,99 @@ Clockd is the clock of the digitisers, and Timewindow is the time window to buil
 	Clockd            = 16e-9;  #s CAEN V1740D clock steps
 	Timewindow        = 2e-6;   #s to create clusters 
 
-###
+###############################################################################
 
---> plotChRaw         = 0;      #ON/OFF plot of raw ch in the file (not flipped, not swapped) no thresholds (only for 1st serial)
+	plotChRaw         = 0;      #ON/OFF plot of raw ch in the file (not flipped, not swapped) no thresholds (only for 1st serial)
 
---> plottimestamp     = 0   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
+	plottimestamp     = 0   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
 
---> plottimeTofs      = 0   #ON/OFF for debugging, plot the time duration of ToFs (after thresholds)
+	plottimeTofs      = 0   #ON/OFF for debugging, plot the time duration of ToFs (after thresholds)
 
---> ToFduration       = 0.06;    #s duration of a ToF for AMOR 
---> ToFbinning        = 100e-6   #s
+	ToFduration       = 0.06;    #s duration of a ToF for AMOR 
+	ToFbinning        = 100e-6   #s
 
---> plotMultiplicity  = 0   #ON/OFF if you want to plot the multiplicity of the events 
+	plotMultiplicity  = 0   #ON/OFF if you want to plot the multiplicity of the events 
 
 ###############################################################################
-# software thresholds
-# NOTE: they are applied to the flipped or swpadded odd/even order of ch! Standard orientation wire 1 at front, strip 1 at top.
-# th on ch number: 32 w and 32 s, one row per cassette 
 
---> softthreshold = 0   #ON/OFF 
-
---> sth = np.ones((np.size(digitID,axis=0),64))
+software thresholds
+NOTE: they are applied to the flipped or swpadded odd/even order of ch! Standard orientation wire 1 at front, strip 1 at top.
+th on ch number: 32 w and 32 s, one row per cassette 
 
 The threshold have to be indicated in QDC levels (as value for energy in the file) and there is one row per digitisers loaded in digitID, one row per digitiser, in the same order as digitID, and 64 columns. 0-31 are wires, 32-63 are strips. 
 
 NOTE: the number of digitisers in digitID have to match the number of rows of sth
 
-###############################################################################
-# ToF gate, remove events with ToF outside the indicated range 
-# (it is applied globally to all images and PH and multiplicity)
---> ToFgate      = 0               # ON/OFF
---> ToFgaterange = [0.035, 0.04]   # s  
+	softthreshold = 0   #ON/OFF 
+
+	sth = np.ones((np.size(digitID,axis=0),64))
 
 ###############################################################################
-# ToF per digitizer, plot the ToF hist per digitiser
---> plotToFhist  = 0    #ON/OFF
+
+ToF gate, remove events with ToF outside the indicated range (it is applied globally to all images and PH and multiplicity)
+
+	ToFgate      = 0               # ON/OFF
+	ToFgaterange = [0.035, 0.04]   # s  
+
+###############################################################################
+
+ToF per digitizer, plot the ToF hist per digitiser
+	plotToFhist  = 0    #ON/OFF
                                                    
 ###############################################################################
-# PHS image of all wires and strips for all digitizers             
---> EnerHistIMG   = 0              # ON/OFF
 
---> energybins    = 128
---> maxenerg      = 65.6e3 
+PHS image of all wires and strips for all digitizers             
+	EnerHistIMG   = 0              # ON/OFF
+
+	energybins    = 128
+	maxenerg      = 65.6e3 
 
 ###############################################################################
-# Position reconstruction, calculating the reconstructed position of the clusters with a Max amplitude algorithm or a CoG (Center of Gravity)
 
---> ChW = [0,31]  # wire channels NOTE: if ch from 1 many things do not work on indexes, keep ch num from 0
---> ChS = [0,31]  # strip channels
+Position reconstruction, calculating the reconstructed position of the clusters with a Max amplitude algorithm or a CoG (Center of Gravity)
 
---> positionRecon = 2
+	ChW = [0,31]  # wire channels NOTE: if ch from 1 many things do not work on indexes, keep ch num from 0
+	ChS = [0,31]  # strip channels
 
-if positionRecon == 0:
-   posBins = [32,32]     # w x s max max
-elif positionRecon == 1:
-   posBins = [65,65]     # w x s CoG CoG
-elif positionRecon == 2:
-   posBins = [32,65]     # w x s max CoG
+	positionRecon = 2
+
+	if positionRecon == 0:
+  	   posBins = [32,32]     # w x s max max
+	elif positionRecon == 1:
+  	   posBins = [65,65]     # w x s CoG CoG
+	elif positionRecon == 2:
+   	   posBins = [32,65]     # w x s max CoG
    
 ###############################################################################
-# LAMBDA: calcualates lambda and plot hist 
---> calculateLambda  = 1              # ON/OFF  
-   
---> inclination     = 5       #deg
---> wirepitch       = 4e-3    #m 
---> DistanceWindow1stWire = (36+2)*1e-3    #m distance between vessel window and first wire
---> DistanceAtWindow      = 9.288          #m
---> Distance        = DistanceWindow1stWire + DistanceAtWindow    #m  flight path from chopper at 1st wire
---> lambdaBins      = 191   
---> lambdaRange     = [1,18]    #A
 
-#if chopper has two openings or more per reset of ToF
---> MultipleFramePerReset = 1  #ON/OFF (this only affects the lambda calculation)
---> NumOfBunchesPerPulse  = 2
---> lambdaMIN             = 2.5     #A
+LAMBDA: calculates lambda and plot hist 
+	calculateLambda  = 1              # ON/OFF  
+   
+	inclination     = 5       #deg
+	wirepitch       = 4e-3    #m 
+	DistanceWindow1stWire = (36+2)*1e-3    #m distance between vessel window and first wire
+	DistanceAtWindow      = 9.288          #m
+	Distance        = DistanceWindow1stWire + DistanceAtWindow    #m  flight path from chopper at 1st wire
+	lambdaBins      = 191   
+	lambdaRange     = [1,18]    #A
+
+if chopper has two openings or more per reset of ToF
+	MultipleFramePerReset = 1  #ON/OFF (this only affects the lambda calculation)
+	NumOfBunchesPerPulse  = 2
+	lambdaMIN             = 2.5     #A
 
 ###############################################################################
-# MONITOR (if present)
-# NOTE: if the MON does not have any ToF, lambda and ToF spectra can be
-# still calculated but perhaps meaningless
 
---> MONOnOff = 1       #ON/OFF
+MONITOR (if present)
+NOTE: if the MON does not have any ToF, lambda and ToF spectra can be still calculated but perhaps meaningless
 
---> MONdigit = 137     #digitiser of the Monitor
---> MONch    = 63      #ch after reorganization of channels (from 0 to 63)
+	MONOnOff = 1       #ON/OFF
 
---> MONThreshold = 0   #threshold on MON, th is OFF if 0, any other value is ON
+	MONdigit = 137     #digitiser of the Monitor
+	MONch    = 63      #ch after reorganization of channels (from 0 to 63)
+
+	MONThreshold = 0   #threshold on MON, th is OFF if 0, any other value is ON
  
---> plotMONtofPH = 0   #ON/OFF plotting (MON ToF and Pulse Height) 
+	plotMONtofPH = 0   #ON/OFF plotting (MON ToF and Pulse Height) 
 
---> MONDistance  = 3   #m distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
+	MONDistance  = 3   #m distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
