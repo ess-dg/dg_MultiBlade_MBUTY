@@ -26,11 +26,13 @@ from PyQt5 import uic
 import time
 import h5py
 
+# import the library with all specific functions that this code uses 
 import MBUTYLIB as mb 
 
 ###############################################################################
 ###############################################################################
 ###############################################################################
+########    here starts the section with all the settings you can choose  #####
 ###############################################################################
 ###############################################################################
 
@@ -57,7 +59,7 @@ SingleFileDuration       = 60   #s to check if h5 file has all the resets
 
 ###############################################################################
 # variable POPH will be saved in a new h5 file
-saveReducedData = 0
+saveReducedData = 0 #ON/OFF
 
 savereducedpath = '/Users/francescopiscitelli/Desktop/dest/'
 
@@ -88,7 +90,7 @@ Timewindow        = 2e-6;   #s to create clusters
 
 ###############################################################################
 
-plotChRaw         = 0;      #ON/OFF plot of raw ch in the file (not flipped, not swpadded) no thresholds (only for 1st serial)
+plotChRaw         = 0;      #ON/OFF plot of raw ch in the file (not flipped, not swapped) no thresholds (only for 1st serial)
 
 plottimestamp     = 0   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
 
@@ -142,7 +144,7 @@ maxenerg      = 65.6e3
 ###############################################################################
 # Position reconstruction 
 
-ChW = [0,31]  # wire channels NOTE: if ch from 1 many things do not work on idexes, keep ch num from 0
+ChW = [0,31]  # wire channels NOTE: if ch from 1 many things do not work on indexes, keep ch num from 0
 ChS = [0,31]  # strip channels
 
 positionRecon = 2
@@ -181,7 +183,7 @@ lambdaMIN             = 2.5     #A
 ###############################################################################
 # MONITOR (if present)
 # NOTE: if the MON does not have any ToF, lambda and ToF spectra can be
-# still calcualted but peraph meaningless
+# still calculated but perhaps meaningless
 
 MONOnOff = 1       #ON/OFF
 
@@ -196,6 +198,8 @@ MONDistance  = 3   #m distance of MON from chopper if plotMONtofPH == 1 (needed 
 
 ###############################################################################
 ###############################################################################
+########    end of with all the settings you can choose   #####################
+########        DO NOT EDIT BELOW THIS LINE!!!!           #####################
 ###############################################################################
 ###############################################################################
 ###############################################################################
