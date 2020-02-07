@@ -11,22 +11,22 @@ A file 13827-C-ESSmask-20181116-120805_00000.h5 is in this folder as an example.
 
 This code needs the following imports:
 
-import numpy as np
-import pandas as pd
-import math as mt
-import matplotlib.pyplot as plt
-import os
-import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5 import uic
-import time
-import h5py
+	import numpy as np
+	import pandas as pd
+	import math as mt
+	import matplotlib.pyplot as plt
+	import os
+	import sys
+	from PyQt5.QtWidgets import *
+	from PyQt5.QtCore import *
+	from PyQt5.QtGui import *
+	from PyQt5 import uic
+	import time
+	import h5py
 
 And to load specific functions in the file MBUTYLIB.py, this file contains functions like the clustering function and the h5 file reader, etc. 
 
-import MBUTYLIB as mb 
+	import MBUTYLIB as mb 
 
 
 At the top of the code there is a section where you can edit some variables to select options.
@@ -34,91 +34,90 @@ When #ON/OFF is indicated you cans elect 0 for OFF and 1 for ON.
 
 List of variables a user can edit: 
 
-###############################################################################
+If ON you rsync the data from pathsource (on remote computer) to desitnationpath, if you already have the data this must be OFF
 
---> sync = 0   #ON/OFF if you want to rsync the data 
+	sync = 0   #ON/OFF if you want to rsync the data 
 
-	If ON you rsync the data from pathsource (on remote computer) to desitnationpath, if you already 	have the data this must be OFF
+Folders and open file options.
 
-###############################################################################
+Folder where the data is saved on remote computer, generally: efu@192.168.0.58:/home/efu/data/
 
---> pathsource          = ''
+	pathsource          = ''
 
-	Folder where the data is saved on remote computer, generally: efu@192.168.0.58:/home/efu/data/
+Folder on your computer where to put the data from pathsource
 
---> desitnationpath     = ''
+	desitnationpath     = ''
 
-	Folder on your computer where to put the data from pathsource
+Folder on your computer where to find the data to open
+	
+	datapath            = desitnationpath 
 
---> datapath            = desitnationpath 
+Filename of the file to open		
 
-	Folder on your computer where to find the data to open	
+	filename = '13827-C-ESSmask-20181116-120805_00000.h5'
 
---> filename = '13827-C-ESSmask-20181116-120805_00000.h5'
+Filenames are created with a serial _00000.h5, several serials can be loaded at the same time
+	 
+	acqnum   = [0]    #do not need to be senquential
 
-	Filename of the file to open 
+3 options are available, also if you want to click with the mouse on the file to open, in this case filename is ignored.
+-  0 = filename and acqnum is loaded, no window opens
+-  1 = (does nothing for the moment)
+-  2 = filename and acqnum are both ignored, window opens and serial is the only one selected 
+-  3 = filename is ignored, window opens and serial is acqnum  
+	 
+	openWindowToSelectFiles = 0
+     
+If you know that a file has to last 60 sec, you pre-enter this info to check that everything is alright 
 
---> acqnum   = [0]    #do not need to be senquential
+	SingleFileDuration       = 60   #s to check if h5 file has all the resets that are foreseen 
 
-	Filenames are created with a serial _00000.h5, several serials can be loaded at the same time 
+The varriable POPH will be saved in a new h5 file containing the clustered data 
 
---> openWindowToSelectFiles = 0
-     #  0 = filename and acqnum is loaded, no window opens
-     #  1 = (does nothing for the moment)
-     #  2 = filename and acqnum are both ignored, window opens and 
-     #      serial is the only one selected 
-     #  3 = filename is ignored, window opens and serial is acqnum  
+###
 
-	3 options are available, also if you want to click with the mouse on the file to open, in this 		case filename is ignored. 
+	saveReducedData = 0 #ON/OFF 
 
---> SingleFileDuration       = 60   #s to check if h5 file has all the resets that are foreseen 
+path where to save the clustered data in h5
 
-	If you know that a file has to last 60 sec, you pre-enter this info to check that everything is 	alright 
+	savereducedpath = '/Users/francescopiscitelli/Desktop/dest/'
 
-###############################################################################
-# variable POPH will be saved in a new h5 file containing the clustered data 
+In h5 file all data is under a main folder	
 
---> saveReducedData = 0 #ON/OFF 
+	nameMainFolder  = 'entry1'
 
---> savereducedpath = '/Users/francescopiscitelli/Desktop/dest/'
+	 
 
-	path where to save the clustered data in h5
+	compressionHDFT  = 'gzip'  
+	compressionHDFL  = 9     # gzip compression level 0 - 9 of your h5 file 
 
---> nameMainFolder  = 'entry1'
+###
 
-	In h5 file all data is under a main folder 
+indicate the order the digitisers has to be read, reflecting the order of the cassette of the Multi-Blade, you can also load only one digitiser
 
---> compressionHDFT  = 'gzip'  
---> compressionHDFL  = 9     # gzip compression level 0 - 9 of your h5 file 
+	digitID = [34,33,31,142,143,137] or # digitID = [137]
 
-###############################################################################
-
---> digitID = [34,33,31,142,143,137]
-# digitID = [137]
-
-	indicate the order the digitisers has to be read, reflecting the order of the cassette of the Multi-Blade, you can also load only one digitiser
-
-###############################################################################
+###
 
 Keep all this settings as they are, they only depend on the specific detector and electronics you are using, switchOddEven and flipOrderCh are because in MB18 the channels are physically swapped and this function renders them as a standard config, wire 1 at front, strip 1 at top. 
 overflowcorr and zerosuppression remove saturated and just above threshold events from the data 
 Clockd is the clock of the digitisers, and Timewindow is the time window to build the clusters and depends also on the front-end electronics used. 
 
 # switch odd and even channels  
---> switchOddEven  = 1   # 0 = OFF, 1 = swaps both w and s,  2 = swaps only w, 3 = swaps only s
+	switchOddEven  = 1   # 0 = OFF, 1 = swaps both w and s,  2 = swaps only w, 3 = swaps only s
 
 # reverse ch number 
---> flipOrderCh    = 2   # 0 = OFF, 1 = flips both w and s,  2 = flips only w, 3 = flips only s (Note: wire 1 must be at front!)
+	flipOrderCh    = 2   # 0 = OFF, 1 = flips both w and s,  2 = flips only w, 3 = flips only s (Note: wire 1 must be at front!)
                       # 1 becomes 32 and 33 becomes 64
                     
---> overflowcorr      = 1   #ON/OFF (does not affect the MONITOR)
---> zerosuppression   = 1   #ON/OFF (does not affect the MONITOR)
+	overflowcorr      = 1   #ON/OFF (does not affect the MONITOR)
+	zerosuppression   = 1   #ON/OFF (does not affect the MONITOR)
 
 
---> Clockd            = 16e-9;  #s CAEN V1740D clock steps
---> Timewindow        = 2e-6;   #s to create clusters 
+	Clockd            = 16e-9;  #s CAEN V1740D clock steps
+	Timewindow        = 2e-6;   #s to create clusters 
 
-###############################################################################
+###
 
 --> plotChRaw         = 0;      #ON/OFF plot of raw ch in the file (not flipped, not swapped) no thresholds (only for 1st serial)
 
