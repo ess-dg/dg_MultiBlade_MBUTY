@@ -50,11 +50,51 @@ def syncData (pathsource,desitnationpath):
 ###############################################################################
 ###############################################################################
     
+def softThresholds (sthpath,sthfile,digitID,softthreshold):    
+    
+# digitID = [33,142,143,137]
+
+# sthpath =  '/Users/francescopiscitelli/Documents/PYTHON/MBUTY/'
+# sthfile = 'ThresholdsMB182.xlsx'
+
+# softthreshold = 1
+
+# 
+
+        sthfullpath = sthpath+sthfile
+        
+        sth = np.zeros((np.size(digitID,axis=0),64))
+        
+        if os.path.exists(sthfullpath) == False:
+            print('\n ---> WARNING ... File: '+sthfullpath+' NOT FOUND')
+            print("\t ... software thresholds switched OFF ... ")
+            softthreshold = 0
+            return sth, softthreshold
+        else:
+            digit = pd.read_excel(sthfullpath).columns
+            temp  = pd.read_excel(sthfullpath).values
+            temp  = np.matrix.transpose(temp)
+                 
+        for k in range(len(digitID)):
+           
+             if not(digitID[k] in digit):
+                print('\n ---> WARNING ... Threshold File does NOT contain all the digitser IDs')
+                print("\t ... software thresholds switched OFF for digitiser ",+(digitID[k]))
+                sth[k,:] = 0  
+             else:
+                index = np.where(digitID[k] == digit)
+                sth[k,:] = temp[index,:]
+                
+        return sth, softthreshold
+    
+###############################################################################
+###############################################################################
+    
 #this is the equivalent of the MATALB function 
 #[DATA,Ntoffi,GTime] = readHDFEFUfile(datapathinput,filename,digitID,ordertime)
 # output data 4 columns, col 0 time stamp, col 1 ch num from 0 to 63, col 2 ADC value, col 3 reset of ToF in ms
 
-def readHDFefu (datapathinput,filename,digitID,ordertime):
+def readHDFefu (datapathinput,filename,digitID,Clockd,ordertime):
     
     DATA = np.array(pd.read_hdf((datapathinput+filename),'mbcaen_readouts'))
     
@@ -105,6 +145,8 @@ def readHDFefu (datapathinput,filename,digitID,ordertime):
                 temp = Bdata[index[k]:index[k+1],:]
                 temp = temp[temp[:,0].argsort(),]
                 Bdata[index[k]:index[k+1]] = temp
+                
+        Bdata[:,0] = Bdata[:,0]*Clockd       # time in s 
             
     return Bdata, Ntoffi, GTime, flag
 
@@ -185,7 +227,7 @@ def cleaning (data,overflowcorr,zerosuppression):
 #this is the equivalent of the MATALB function 
 #[POPH,Numevent] = clusterPOPH(data,Clockd,Timewindow,thermalNmultiplicityON);
 
-def clusterPOPH (data,Clockd,Timewindow):
+def clusterPOPH (data,Timewindow):
 
     #data is col 0: time stamp in 16ns precision, col 1: ch number (FROM 0 TOP 63), col2: ADC value, col3: global time reset delta in ms
     # if there is no strip it will be -1, with 0 PH and 0 multiplicity
@@ -203,9 +245,9 @@ def clusterPOPH (data,Clockd,Timewindow):
     
     data = np.concatenate((np.zeros([1,4]),data),axis=0)  #add a line at top not to lose the 1st event
     
-    tof     = data[:,0]*Clockd           #tof column from 16ns steps in seconds
+    tof     = data[:,0]                  #tof column in seconds
     tof1us  = np.around(tof, decimals=6) #tof rounded at 1us precision 
-    #data[:,0] = data[:,0]*Clockd
+    #data[:,0] = data[:,0]
     
     data[:,0] = tof1us
     

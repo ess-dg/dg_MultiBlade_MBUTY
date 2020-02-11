@@ -30,6 +30,7 @@ import h5py
 import MBUTYLIB as mb 
 
 ###############################################################################
+print('----------------------------------------------------------------------')
 ###############################################################################
 ###############################################################################
 ########    here starts the section with all the settings you can choose  #####
@@ -71,7 +72,7 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 ###############################################################################
 
 # digitID = [34,33,31,142,143,137]
-digitID = [137]
+digitID = [34]
 
 ###############################################################################
 # switch odd and even channels  
@@ -105,24 +106,43 @@ plotMultiplicity  = 1   #ON/OFF
 # software thresholds
 # NOTE: they are applied to the flipped or swpadded odd/even order of ch!
 # th on ch number: 32 w and 32 s, one row per cassette 
-softthreshold = 0   #ON/OFF 
+softthreshold = 1   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines the Thresholds in an array sth 
 
-sth = np.ones((np.size(digitID,axis=0),64))
+#####
 
-# sth[0:1,0:31] = 1
-sth[0,15] = 50000
-# sth[1,0:31] = 6000
+if softthreshold == 0:
+    print(' ---> Thresholds OFF ...')
+elif softthreshold == 1:
+    
+    print(' ---> Thresholds ON ... Loading Threshold File ...')
 
-# sth[:,31]   = 10e3
+    sthpath =  '/Users/francescopiscitelli/Documents/PYTHON/MBUTY/'
+    sthfile =  'ThresholdsMB182.xlsx'
+
+    [sth,softthreshold] = mb.softThresholds(sthpath,sthfile,digitID,softthreshold)
+
+##### User defined thresholds 
+elif softthreshold == 2:
+        
+    print(' ---> Thresholds ON ... Defined by User ...')
+
+    sth = np.ones((np.size(digitID,axis=0),64))
+        
+    # sth[0:1,0:31] = 1
+    sth[0,15] = 50000
+    sth[1,0:31] = 6000
+        
+    sth[:,31]   = 10e3
+
+    sth[1,42] = 9000
+        
+    sth[0,0:31] = 25000
+    sth[0,4]  = 1000
+    sth[0,0]  = 1000
+    sth[0,28]  = 12
+    sth[0,31]  = 2
 
 
-# sth[1,42] = 9000
-
-# sth[0,0:31] = 25000
-# sth[0,4]  = 1000
-# sth[0,0]  = 1000
-# sth[0,28]  = 12
-# sth[0,31]  = 2
 
 ###############################################################################
 # ToF gate, remove events with ToF outside the indicated range 
@@ -208,7 +228,6 @@ MONDistance  = 3   #m distance of MON from chopper if plotMONtofPH == 1 (needed 
 ###############################################################################
 ###############################################################################
 ###############################################################################
-print('----------------------------------------------------------------------')
 ###############################################################################
 #  syncing the data from remote computer where files are written
 if sync == 1:
@@ -409,8 +428,8 @@ for dd in range(len(digitID)):
         #####################################
            
         ordertime = 1
-        [data, Ntoffi, GTime, flag] = mb.readHDFefu(datapath,filenamefull,digitID[dd],ordertime)
-        # data here is 4 cols: time stamp in clocks steps, ch 0to63, ADC, global reset in ms
+        [data, Ntoffi, GTime, flag] = mb.readHDFefu(datapath,filenamefull,digitID[dd],Clockd,ordertime)
+        # data here is 4 cols: time stamp in s, ch 0to63, ADC, global reset in ms
         # Ntoffi num of resets
         # GTime is time of the resets in ms, absolute time, make diff to see delta time betwen resets
         # flag is -1 if no digit is found otherwise 0    
@@ -451,7 +470,7 @@ for dd in range(len(digitID)):
            selMON  = data[:,1] == MONch
            temp    = data[:,[0,2]] #selct only col with time stamp and charge
            MONdata = temp[selMON,:]
-           MONdata[:,0] = np.around((MONdata[:,0]*Clockd),decimals=6)     #  time stamp in s and round at 1us
+           MONdata[:,0] = np.around((MONdata[:,0]),decimals=6)     #  time stamp in s and round at 1us
            data    = data[np.logical_not(selMON),:] # remove MON data from data 
            
            print('\n \t Monitor found ... splitting MON data (%d ev.) from Data' % (len(MONdata)))
@@ -508,7 +527,7 @@ for dd in range(len(digitID)):
         if plottimestamp == 1:
             fig = plt.figure(figsize=(9,6))
             ax1  = fig.add_subplot(111)
-            plt.plot(data[:,0]*Clockd,'k+')
+            plt.plot(data[:,0],'k+')
             plt.xlabel('trigger no.')
             plt.ylabel('time (s)')
             plt.grid(axis='x', alpha=0.75)
@@ -516,7 +535,7 @@ for dd in range(len(digitID)):
             
         #####################################
         # clustering
-        [POPH, Nevents] = mb.clusterPOPH(data,Clockd,Timewindow)
+        [POPH, Nevents] = mb.clusterPOPH(data,Timewindow)
         
         #####################################
         # gating ToF
@@ -633,7 +652,7 @@ for dd in range(len(digitID)):
        multcum = multcum/multcumnorm
        # ax  = figmult.add_subplot(1,len(digitID),dd+1) # alternative way
        if len(digitID)>1:
-          axmult[dd].step(multx[0:],multcum[:6,:],where='mid')
+          axmult[dd].step(multx[:6],multcum[:6,:],where='mid')
           axmult[dd].set_xlabel('multiplicity')
           axmult[dd].set_title('digit '+str(digitID[dd]))
           if dd == 0:

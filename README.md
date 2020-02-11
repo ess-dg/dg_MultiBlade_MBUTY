@@ -145,9 +145,11 @@ The threshold have to be indicated in QDC levels (as value for energy in the fil
 
 NOTE: the number of digitisers in digitID have to match the number of rows of sth
 
-	softthreshold = 0   #ON/OFF 
-
+	softthreshold = 1   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = USer defines the Thresholds in an array sth 
+	
 	sth = np.ones((np.size(digitID,axis=0),64))
+	
+file ThresholdsMB18.xlsx contains the calibrated th for the MB18 
 
 ###############################################################################
 
