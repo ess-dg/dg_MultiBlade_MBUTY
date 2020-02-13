@@ -1,12 +1,43 @@
 MBUTY is a code to read the hdf5 files created by the EFU that collects data from the CAEN V1740D digitisers and the Multi-Blade detector
 
-V8.22 2020/02/01      
 Author: francesco piscitelli 
-Mail: francesco.piscitelli@ess.eu   
+Mail:   francesco.piscitelli@ess.eu 
 
-(this version is equivalent of version MATLAB MBUTI v8.22)  
+Older Versions: 
+V8.22 2020/01/20  
+(this version is equivalent of version MATLAB MBUTI v8.22) 
 
-A file 13827-C-ESSmask-20181116-120805_00000.h5 is in this folder as an example.
+Current version:
+V9.0 2020/02/13  
+(this version has the mapping of channels implemented as an excel file) 
+  
+###############################################################################
+
+Folder structure:
+
+MBUTY_currentVersion (v9.0) and README in main folder.
+
+Subfolders: 
+
+./olderVersionsOfMBUTY contains older versions of MBUTY (v8.22) 
+
+./lib contains the module MBUTYLIB that contains alll functions like the clustering function and the h5 file reader, etc. 
+
+./data contains a couple of example data file, one from CAEN/JADAQ/EFU and one from the VMM/EFU
+
+CAEN/JADAQ/EFU file: 13827-C-ESSmask-20181116-120805_00000.h5 (this file was recorded with the MB18)
+
+VMM/EFU file: AmBeSource1526gdgem-readouts-20190819-152708_00000.he
+
+./devel contains new functions in development to be added to MBUTY in the future, for example the function to load a VMM h5 file
+
+./developedFunctions contains all functions that are already included in MBUTYLIB
+
+./tables contains the xlsx files that contain the calibrated threshold and the channel mapping for a specific detector (MB18 in this case)
+
+###############################################################################
+
+NOTE: To start with this code, just download the folder and run as is, all settings are set to run as an example , no need to edit anything.
 
 ###############################################################################
 
@@ -27,7 +58,7 @@ This code needs the following imports:
 
 And to load specific functions in the file MBUTYLIB.py, this file contains functions like the clustering function and the h5 file reader, etc. 
 
-	import MBUTYLIB as mb 
+	from lib import MBUTYLIB as mb
 
 
 At the top of the code there is a section where you can edit some variables to select options.
@@ -100,24 +131,27 @@ In h5 file all data is under a main folder
 
 indicate the order the digitisers has to be read, reflecting the order of the cassette of the Multi-Blade, you can also load only one digitiser
 
-	digitID = [34,33,31,142,143,137] or # digitID = [137]
+	digitID = [34,33,31,142,143,137] or  digitID = [137]
 
 ###############################################################################
 
-Keep all this settings as they are, they only depend on the specific detector and electronics you are using, switchOddEven and flipOrderCh are because in MB18 the channels are physically swapped and this function renders them as a standard config, wire 1 at front, strip 1 at top. 
-overflowcorr and zerosuppression remove saturated and just above threshold events from the data 
-Clockd is the clock of the digitisers, and Timewindow is the time window to build the clusters and depends also on the front-end electronics used. 
+Keep all this settings as they are, they only depend on the specific detector and electronics you are using, for example in MB18 the channels are physically swapped and this function renders them as a standard config, wire 1 at front, strip 1 at top. 
 
-# switch odd and even channels  
-	switchOddEven  = 1   # 0 = OFF, 1 = swaps both w and s,  2 = swaps only w, 3 = swaps only s
+	MAPPING = 1     # ON/OFF, if OFF channels are used as in the file
 
-# reverse ch number 
-	flipOrderCh    = 2   # 0 = OFF, 1 = flips both w and s,  2 = flips only w, 3 = flips only s (Note: wire 1 must be at front!)
-                      # 1 becomes 32 and 33 becomes 64
-                    
+Path and filename of specific mapping file for a detector, stored in ./tables
+
+	mappath = ''
+	mapfile = 'MB18_mapping.xlsx'
+
+###############################################################################
+
+overflowcorr and zerosuppression remove saturated and just slightly above threshold events from the data 
+                
 	overflowcorr      = 1   #ON/OFF (does not affect the MONITOR)
 	zerosuppression   = 1   #ON/OFF (does not affect the MONITOR)
 
+Clockd is the clock of the digitisers, and Timewindow is the time window to build the clusters and depends also on the front-end electronics used. 
 
 	Clockd            = 16e-9;  #s CAEN V1740D clock steps
 	Timewindow        = 2e-6;   #s to create clusters 
@@ -145,11 +179,24 @@ The threshold have to be indicated in QDC levels (as value for energy in the fil
 
 NOTE: the number of digitisers in digitID have to match the number of rows of sth
 
-	softthreshold = 1   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = USer defines the Thresholds in an array sth 
+	softthreshold = 1   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines the Thresholds in an array sth 
+
+If softthreshold = 0 the th are OFF, not applied.
+If softthreshold = 1 the th are loaded from the file in ./tables 
+
+Path and filename of threshold file in ./tables:
+
+	sthpath =  ''
+	sthfile =  'MB18_thresholds.xlsx'
+
+The file ThresholdsMB18.xlsx contains the calibrated th for the MB18 
 	
+If softthreshold = 2 the user can define the th in an array of num_of_rows = number of digitisers and num_of_columns = number of ch per digitiser
+
 	sth = np.ones((np.size(digitID,axis=0),64))
-	
-file ThresholdsMB18.xlsx contains the calibrated th for the MB18 
+
+	sth[0,15] = 50000
+	...
 
 ###############################################################################
 

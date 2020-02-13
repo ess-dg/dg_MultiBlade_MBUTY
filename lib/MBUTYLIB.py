@@ -12,6 +12,8 @@ import os
 import math as mt
 import pandas as pd
 import numpy  as np
+import sys
+import time
 
 ###############################################################################
 ###############################################################################
@@ -69,6 +71,7 @@ def softThresholds (sthpath,sthfile,digitID,softthreshold):
             print('\n ---> WARNING ... File: '+sthfullpath+' NOT FOUND')
             print("\t ... software thresholds switched OFF ... ")
             softthreshold = 0
+            time.sleep(2)
             return sth, softthreshold
         else:
             digit = pd.read_excel(sthfullpath).columns
@@ -187,6 +190,28 @@ def flipSwapChOrder (data,flipOrderCh,switchOddEven):
        data[sch,1] = 32 + (63-data[sch,1])
        
     return data
+
+###############################################################################
+###############################################################################
+#MAPPING according to excel file 
+    
+def mappingChToGeometry (data,MAPPING,mappath,mapfile):
+       
+    if MAPPING == 1:
+        
+       mapfullpath = mappath+mapfile
+    
+       mappe = pd.read_excel(mapfullpath).values
+           
+       dataorig = np.copy(data) 
+           
+       for k in range(np.shape(mappe)[0]):
+           position = dataorig[:,1] == mappe[k,1] 
+           data[position,1] = mappe[k,0]
+              
+    return data
+               
+        
 
 ###############################################################################
 ###############################################################################
