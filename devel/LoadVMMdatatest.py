@@ -22,5 +22,9 @@ TIME = (DATA[:,2]+DATA[:,8])*Clockd   # in s
 
 # check ch num has to start from 0 
 
-CH = DATA[:,3]
+FEC = DATA[:,0]
+
+ChipID = DATA[:,1]
+
+CH  = DATA[:,3]
 ADC = DATA[:,6]

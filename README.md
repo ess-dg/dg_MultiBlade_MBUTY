@@ -233,7 +233,14 @@ Position reconstruction, calculating the reconstructed position of the clusters 
   	   posBins = [65,65]     # w x s CoG CoG
 	elif positionRecon == 2:
    	   posBins = [32,65]     # w x s max CoG
-   
+	   
+###############################################################################
+Remove the shadowed channels, close the gaps, remove wires hidden; only works with posreconn 0 or 2, i.e. 32 bins on wires. 
+	closeGaps = 1               # ON/OFF
+	gaps      = [0, 3, 4, 4, 3, 2]   # (first must be always 0)
+	
+if posreconn == 1 it is automatically switched off, and if gaps does not relfect the amount of cassettes, 3 wires is used as default to be removed. 
+
 ###############################################################################
 
 LAMBDA: calculates lambda and plot hist 
