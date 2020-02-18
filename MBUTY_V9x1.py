@@ -24,6 +24,8 @@ import h5py
 # import the library with all specific functions that this code uses 
 from lib import MBUTYLIB_V9x1 as mb 
 
+# t3 = time.time()
+
 ###############################################################################
 print('----------------------------------------------------------------------')
 ###############################################################################
@@ -581,7 +583,10 @@ for dd in range(len(digitID)):
             
         #####################################
         # clustering
-        [POPH, Nevents] = mb.clusterPOPH(data,Timewindow)
+            # old cluster function
+        # [POPH, Nevents] = mb.clusterPOPH(data,Timewindow)
+            # use _q for speed -> new cluster
+        [POPH, Nevents] = mb.clusterPOPH_q(data,Timewindow)
         
         #####################################
         # gating ToF
@@ -955,6 +960,9 @@ if closeGaps == 1:
 ###############################################################################
 
 plt.show()
+
+# elapsed3 = time.time() - t3
+# print('--> time el.: ' + str(elapsed3) + ' s')  
 
 ###############################################################################
 ###############################################################################
