@@ -683,6 +683,9 @@ def clusterPOPH_q (data,Timewindow):
     for kk in np.arange(0,NumClusters,1):
             
             clusterq = ADCCH[index[kk,0]:index[kk+1,0],:]
+            
+            # comment if you use method 2
+            clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort')]  #order cluster by ch number
      
             acceptWindow = ((clusterq[-1,0] - clusterq[0,0]) <= Timewindow)  #max difference in time between first and last in cluster 
             
@@ -692,16 +695,22 @@ def clusterPOPH_q (data,Timewindow):
             # n wires n strips in cluster
             ww = len(clusterq[is_wire, 5])  #num of wires in cluster
             ss = len(clusterq[is_strip, 6])  #num of strips in cluster
-                
-            # clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort')]  #order cluster by ch number
+
             
             if (ww != 0 and ss != 0 and ss <= 32 and ww <= 32 and acceptWindow): #if there is at least 1 wire and 1 strip and no ch number above 32
-                         
-                #check if they are neighbour
-                mmaxw = np.max(clusterq[is_wire, 7],axis=0)
-                mmaxs = np.max(clusterq[is_strip, 8],axis=0)
-                mminw = np.min(clusterq[is_wire, 7],axis=0)
-                mmins = np.min(clusterq[is_strip, 8],axis=0)
+                 
+                # method 2 comment above
+            # #check if they are neighbour
+                # mmaxw = np.max(clusterq[is_wire, 7],axis=0)
+                # mmaxs = np.max(clusterq[is_strip, 8],axis=0)
+                # mminw = np.min(clusterq[is_wire, 7],axis=0)
+                # mmins = np.min(clusterq[is_strip, 8],axis=0)
+            
+                # method 1 
+                mmaxw = clusterq[is_wire, 7][-1]
+                mmaxs = clusterq[is_strip, 8][-1]
+                mminw = clusterq[is_wire, 7][0]
+                mmins = clusterq[is_strip, 8][0]
     
                 neigw = (mmaxw - mminw) == (ww-1) #if event repated is rejected because neigw is 1 even if the same wire is repeated and should be 2 
                 neigs = (mmaxs - mmins) == (ss-1)
