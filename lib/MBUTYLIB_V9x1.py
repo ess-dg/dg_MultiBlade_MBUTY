@@ -30,7 +30,7 @@ def myHist1D (XX,A):
     index = np.int_(np.around(((binX-1)*((A-Xmin)/(Xmax-Xmin)))))
     
     if not(np.all(index >= 0) and np.all(index <= binX-1)):
-       print('warning: hist out of bounds') 
+       print('warning: hist out of bounds, change limits!') 
     
     for k in range(len(XX)):    
        histXX[k] = np.sum(index == k) 
@@ -299,29 +299,28 @@ def softThresholds (sthpath,sthfile,digitID,softthreshold):
 def readHDFefu (datapathinput,filename,digitID,Clockd,ordertime):
     
     DATA = np.array(pd.read_hdf((datapathinput+filename),'mbcaen_readouts'))
-    
-    DD = DATA[:,1]
-    selectdigi = DD == digitID
-    
-    if sum(selectdigi) == 0:  #if the digitID does not exist in the file 
+   
+    if not(digitID in DATA[:,1]): #if the digitID does not exist in the file 
         
         Bdata  = np.ones([2,4], dtype='float64' )*np.inf
         Ntoffi = np.array([1], dtype='float64' )*np.inf
         GTime  = np.array([1], dtype='float64' )*np.inf
         flag   = -1
-        presentdigit = np.unique(DD)
+        presentdigit = np.unique(DATA[:,1])
         print('\n \t No Digit ',str(digitID),' found! This file only contains Digitizers:', end=' ')
         for digit in presentdigit:
             print(digit,end=' ')
-
+               
     else:
         
         flag   = 0
+        
+        selectdigi = DATA[:,1] == digitID
     
         Adata = DATA[selectdigi,:]
         
         ## CH NUMBER FROM 0 NOT FROM 1 AS MATLAB !!!!! OTHERVIWISE ADD A LINE HERE TO ADD +1
-#        uncomment for ch from 1 to 64
+    #        uncomment for ch from 1 to 64
         # Adata[:,3] = Adata[:,3]+np.float64(1) ## ch is from 1 to 64
         
         GTime  = np.unique(Adata[:,0]) 

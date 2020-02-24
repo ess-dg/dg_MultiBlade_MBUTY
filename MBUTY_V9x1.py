@@ -8,6 +8,9 @@
 ###############################################################################
 ###############################################################################
 
+# argparse 
+
+
 import numpy as np
 import pandas as pd
 import math as mt
@@ -24,9 +27,8 @@ import h5py
 # import the library with all specific functions that this code uses 
 from lib import MBUTYLIB_V9x1 as mb 
 
-# t3 = time.time()
-
 ###############################################################################
+tProfilingStart = time.time()
 print('----------------------------------------------------------------------')
 ###############################################################################
 ###############################################################################
@@ -60,7 +62,7 @@ SingleFileDuration       = 60   #s to check if h5 file has all the resets
 # variable POPH will be saved in a new h5 file
 saveReducedData = 0 #ON/OFF
 
-savereducedpath = '/Users/francescopiscitelli/Desktop/dest/'
+savereducedpath = '/Users/francescopiscitelli/Desktop/'
 
 nameMainFolder  = 'entry1'
 
@@ -160,7 +162,8 @@ energybins    = 128
 maxenerg      = 70e3
 
 ###############################################################################
-# Position reconstruction 
+# Position reconstruction (max is max amplitude ch in clsuter either on w or s,
+# CoG is centre of gravity on ch)
 
 ChW = [0,31]  # wire channels NOTE: if ch from 1 many things do not work on indexes, keep ch num from 0
 ChS = [0,31]  # strip channels
@@ -961,8 +964,8 @@ if closeGaps == 1:
 
 plt.show()
 
-# elapsed3 = time.time() - t3
-# print('--> time el.: ' + str(elapsed3) + ' s')  
+tElapsedProfiling = time.time() - tProfilingStart
+print('\n Completed --> time elapsed: %.2f s' % tElapsedProfiling)
 
 ###############################################################################
 ###############################################################################
