@@ -10,19 +10,20 @@
 
 # argparse 
 
-
 import numpy as np
-import pandas as pd
-import math as mt
 import matplotlib.pyplot as plt
-import os
-import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5 import uic
 import time
 import h5py
+import os
+import sys
+from PyQt5.QtWidgets import QFileDialog
+
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import *
+# from PyQt5 import uic
+
+# import pandas as pd
+# import math as mt
 
 # import the library with all specific functions that this code uses 
 from lib import MBUTYLIB_V9x1 as mb 
@@ -179,7 +180,7 @@ elif positionRecon == 2:
    
 ###############################################################################
 # close the gaps, remove wires hidden; only works with posreconn 0 or 2, i.e. 32 bins on wires
-closeGaps = 1               # ON/OFF
+closeGaps = 0               # 0 = OFF shows the raw image, 1 = ON shows only the closed gaps img, 2 shows both
 gaps      = [0, 3, 4, 4, 3, 2]   # (first must be always 0)
    
    
@@ -308,7 +309,7 @@ elif MAPPING == 1:
 ###############################################################################
 ###############################################################################
       
-if closeGaps == 1:
+if closeGaps == 1 or closeGaps == 2:
     
     print(' ---> Closing gaps ON ...')
 
@@ -875,56 +876,58 @@ if saveReducedData == 1:
         
 ###############################################################################
 ###############################################################################
-          
-########   
-# 2D image of detector X,Y
-fig2D, (ax1, ax2) = plt.subplots(figsize=(6,12), nrows=2, ncols=1)    
-# #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
-pos1  = ax1.imshow(XYglob,aspect='auto',interpolation='nearest',extent=[XXg[0],XXg[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
-# cbar1 =fig2D.colorbar(pos1,ax=ax1)
-# cbar2.minorticks_on()
-# ax1.set_aspect('tight')
-ax1.set_xlabel('Wire ch.')
-ax1.set_ylabel('Strip ch.')
+
+if closeGaps == 0 or closeGaps == 2:     
+    
+    ########   
+    # 2D image of detector X,Y
+    fig2D, (ax1, ax2) = plt.subplots(figsize=(6,12), nrows=2, ncols=1)    
+    # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
+    pos1  = ax1.imshow(XYglob,aspect='auto',interpolation='nearest',extent=[XXg[0],XXg[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
+    # cbar1 =fig2D.colorbar(pos1,ax=ax1)
+    # cbar2.minorticks_on()
+    # ax1.set_aspect('tight')
+    ax1.set_xlabel('Wire ch.')
+    ax1.set_ylabel('Strip ch.')
+    
+    
+    ########
+    # 1D image of detector, opnly wires, in coincidence with strips (2D) and not (1D)
+    XYprojGlobCoinc = np.sum(XYglob,axis=0) 
+    
+    pos2 = ax2.step(XXg,XYprojGlob,'r',where='mid',label='1D')
+    ax2.step(XXg,XYprojGlobCoinc,'b',where='mid',label='2D')
+    ax2.set_xlabel('Wire ch.')
+    ax2.set_ylabel('counts')
+    ax2.set_xlim(XXg[0],XXg[-1])
+    legend = ax2.legend(loc='upper right', shadow=False, fontsize='large')
 
 
-########
-# 1D image of detector, opnly wires, in coincidence with strips (2D) and not (1D)
-XYprojGlobCoinc = np.sum(XYglob,axis=0) 
-
-pos2 = ax2.step(XXg,XYprojGlob,'r',where='mid',label='1D')
-ax2.step(XXg,XYprojGlobCoinc,'b',where='mid',label='2D')
-ax2.set_xlabel('Wire ch.')
-ax2.set_ylabel('counts')
-ax2.set_xlim(XXg[0],XXg[-1])
-legend = ax2.legend(loc='upper right', shadow=False, fontsize='large')
-
-
-########
-# 2D image of detector ToF vs Wires 
-ToFxgms = ToFxg*1e3 # in ms 
-
-fig2, ax2 = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
-pos2  = ax2.imshow(XToFglob,aspect='auto',interpolation='none',extent=[ToFxgms[0],ToFxgms[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
-# cbar2 = fig2D.colorbar(pos2,ax=ax2)
-# cbar2.minorticks_on()
-ax2.set_ylabel('Wire ch.')
-ax2.set_xlabel('ToF (ms)')
-
-######## 
-# 2D image of detector Lambda vs Wires
-if calculateLambda == 1:
-   figl, axl = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
-   posl1  = axl.imshow(XLamGlob,aspect='auto',interpolation='none',extent=[xlambdag[0],xlambdag[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
-   # cbar2 = fig2D.colorbar(pos2,ax=ax2)
-   # cbar2.minorticks_on()
-   axl.set_ylabel('Wire ch.')
-   axl.set_xlabel('lambda (A)')
+    ########
+    # 2D image of detector ToF vs Wires 
+    ToFxgms = ToFxg*1e3 # in ms 
+    
+    fig2, ax2 = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
+    pos2  = ax2.imshow(XToFglob,aspect='auto',interpolation='none',extent=[ToFxgms[0],ToFxgms[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
+    # cbar2 = fig2D.colorbar(pos2,ax=ax2)
+    # cbar2.minorticks_on()
+    ax2.set_ylabel('Wire ch.')
+    ax2.set_xlabel('ToF (ms)')
+    
+    ######## 
+    # 2D image of detector Lambda vs Wires
+    if calculateLambda == 1:
+       figl, axl = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
+       posl1  = axl.imshow(XLamGlob,aspect='auto',interpolation='none',extent=[xlambdag[0],xlambdag[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
+       # cbar2 = fig2D.colorbar(pos2,ax=ax2)
+       # cbar2.minorticks_on()
+       axl.set_ylabel('Wire ch.')
+       axl.set_xlabel('lambda (A)')
    
    
 ########  CLOSED GAPS PLOTS  
 # 2D and 1D image of detector X,Y with removed shadowed channels
-if closeGaps == 1:
+if closeGaps == 1 or closeGaps == 2:
     
     XYglobc, XXgc = mb.closeTheGaps(XYglob,XXg,YYg,gaps,1)
   
@@ -943,6 +946,9 @@ if closeGaps == 1:
     
     XToFglobc, __ = mb.closeTheGaps(XToFglob,XXg,ToFxg,gaps,0)
     XLamGlobc, __ = mb.closeTheGaps(XLamGlob,XXg,xlambdag,gaps,0)
+    
+    # 2D image of detector ToF vs Wires 
+    ToFxgms = ToFxg*1e3 # in ms 
     
     ########
     # 2D image of detector ToF vs Wires 

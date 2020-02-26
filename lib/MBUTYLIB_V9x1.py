@@ -9,10 +9,8 @@ Created on Mon Jan 20 12:02:23 2020
 ###############################################################################
 
 import os
-import math as mt
 import pandas as pd
 import numpy  as np
-import sys
 import time
 
 ###############################################################################
@@ -460,7 +458,7 @@ def clusterPOPH (data,Timewindow):
     print('\n \t clustering ... ')
     
     # this is a trick to accept also the clusters very close in time otherwise rejected
-    Timewindowrec = mt.ceil(Timewindow*1e6/3)/1e6+0.01e-6;
+    Timewindowrec = np.ceil(Timewindow*1e6/3)/1e6+0.01e-6;
     Timewindow    = Timewindow+0.01e-6;
     ##########
     
@@ -622,7 +620,7 @@ def clusterPOPH_q (data,Timewindow):
     print('\n \t clustering ... ')
         
     # this is a trick to accept also the clusters very close in time otherwise rejected
-    Timewindowrec = mt.ceil(Timewindow*1e6/3)/1e6+0.01e-6;
+    Timewindowrec = np.ceil(Timewindow*1e6/3)/1e6+0.01e-6;
     Timewindow    = Timewindow+0.01e-6;
     ##########
         
