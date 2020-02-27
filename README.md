@@ -44,21 +44,16 @@ NOTE: To start with this code, just download the folder and run as is, all setti
 This code needs the following imports:
 
 	import numpy as np
-	import pandas as pd
-	import math as mt
 	import matplotlib.pyplot as plt
-	import os
-	import sys
-	from PyQt5.QtWidgets import *
-	from PyQt5.QtCore import *
-	from PyQt5.QtGui import *
-	from PyQt5 import uic
 	import time
 	import h5py
+	import os
+	import sys
+	from PyQt5.QtWidgets import QFileDialog
 
 And to load specific functions in the file MBUTYLIB.py, this file contains functions like the clustering function and the h5 file reader, etc. 
 
-	from lib import MBUTYLIB as mb
+	from lib import MBUTYLIB_V9x1 as mb 
 
 
 At the top of the code there is a section where you can edit some variables to select options.
