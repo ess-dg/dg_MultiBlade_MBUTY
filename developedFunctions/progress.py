@@ -20,6 +20,9 @@ from time import sleep
 
 import sys
 import numpy as np
+import time
+import os
+
 # for i in range(21):
 #     sys.stdout.write('\r')
 #     # the exact output you're looking for:
@@ -27,31 +30,50 @@ import numpy as np
 #     sys.stdout.flush()
 #     sleep(0.25)
 
-NumClusters = 3459
+NumClusters = 2000
 n_bar = 10 #size of progress bar
-postText = 'clustering ...'
+text = 'clustering ...'
 
 # for kk in np.arange(NumClusters):
 #     j = kk/(NumClusters-1)
 #     # sys.stdout.write('\r')
-#     sys.stdout.write(f"{postText} [{'=' * int(n_bar * j):{n_bar}s}] {int(100 * j)}%")
+#     sys.stdout.write(f"{text} [{'=' * int(n_bar * j):{n_bar}s}] {int(100 * j)}%")
 #     sys.stdout.flush()
 
 # def progress(count, total, status=''):
-status = 'cdfvf'
+
 total = NumClusters
-bar_len = 60
-count = 56
+bar_len = 10
 
 for kk in np.arange(NumClusters):
-    count = kk
-    filled_len = int(round(bar_len * count / float(total)))
     
-    percents = round(100.0 * count / float(total), 1)
-    bar = '=' * filled_len + '-' * (bar_len - filled_len)
-    
-    sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', status))
-    sys.stdout.flush() 
 
+    
+    # filled_len = int(round(bar_len * count / float(total)))
+    
+    intervals = 7
+    total = NumClusters
+    current = kk 
+    
+    steps = round(total/intervals)
+    
+    if np.mod(current,steps) == 0 or kk == (total-1):
+      
+        percents = int(round(100.0 * kk / float(total), 1))
+        # print(percents)
+        # bar = '=' * filled_len + ' ' * (bar_len - filled_len)
         
-        
+        # print('%s [%s] %s%s \r' % (text, bar, percents, '%'),end='')
+        time.sleep(0.2)
+        # print('%s [ {:.2f}% ] \r' % (text,percents),end=' ')
+        print('['+format(percents,'01d') + '%]',end=' ')
+        # print('\r',end=' ')
+        # 
+    
+    # sys.stdout.flush() 
+    # time.sleep(0.02)
+    # os.system('cls')
+
+
+# print(format(3,'03d'))
+      

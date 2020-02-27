@@ -617,7 +617,7 @@ def clusterPOPH_q (data,Timewindow):
         #data is col 0: time stamp in s, col 1: ch number (FROM 0 TOP 63), col2: ADC value, col3: global time reset delta in ms
         # if there is no strip it will be -1, with 0 PH and 0 multiplicity
     
-    print('\n \t clustering ... ')
+    print('\n \t clustering ... ',end='')
         
     # this is a trick to accept also the clusters very close in time otherwise rejected
     Timewindowrec = np.ceil(Timewindow*1e6/3)/1e6+0.01e-6;
@@ -677,7 +677,14 @@ def clusterPOPH_q (data,Timewindow):
     index = np.concatenate((index,[[np.shape(data)[0]]]),axis=0)
     ADCCH = np.concatenate((ADCCH,np.zeros((1,13))),axis=0) 
     
+    intervals = 4
+    
     for kk in np.arange(0,NumClusters,1):
+        
+            steps = round(NumClusters/intervals)
+            if np.mod(kk,steps) == 0 or kk == (NumClusters-1):
+                percents = int(round(100.0 * kk / float(NumClusters), 1))
+                print('['+format(percents,'01d') + '%]',end=' ')
             
             clusterq = ADCCH[index[kk,0]:index[kk+1,0],:]
             
@@ -752,8 +759,10 @@ def clusterPOPH_q (data,Timewindow):
                  
             else:
                 rejCounter[4] = rejCounter[4]+1               #any other case not taken into account previously
-            
-            
+                
+    
+    print('\n')        
+       
     rejected = np.logical_and((POPH[:,5] == 0),(POPH[:,6] == 0))    #remove rejected from data in rejCoiunter[4] it is when only strips and wire and sgtrip mult is 0, whole row in POPH is 0 actually 
         
     POPH     = POPH[np.logical_not(rejected),:]    #remove rejected from data
@@ -828,3 +837,6 @@ def closeTheGaps (XYglob,XXg,YYg,gaps,axis):
             XYglobc[indexes2,:] = XYglobc[indexes2,:] + XYglob[indexes1,:]
     
     return XYglobc, XXgc
+
+###############################################################################
+###############################################################################

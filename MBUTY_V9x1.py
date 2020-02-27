@@ -525,7 +525,7 @@ for dd in range(len(digitID)):
            MONdata[:,0] = np.around((MONdata[:,0]),decimals=6)     #  time stamp in s and round at 1us
            data    = data[np.logical_not(selMON),:] # remove MON data from data 
            
-           print('\n \t Monitor found ... splitting MON data (%d ev.) from Data' % (len(MONdata)))
+           print('\n \t Monitor found ... splitting MONITOR data (%d ev.) from Data' % (len(MONdata)))
            
            if ac == 0:
              MONdataCum = MONdata
