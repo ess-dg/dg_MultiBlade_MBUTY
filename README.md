@@ -53,7 +53,7 @@ This code needs the following imports:
 
 And to load specific functions in the file MBUTYLIB.py, this file contains functions like the clustering function and the h5 file reader, etc. 
 
-	from lib import MBUTYLIB_V9x1 as mb 
+	from lib import MBUTYLIB_V9x11 as mb 
 
 
 At the top of the code there is a section where you can edit some variables to select options.
@@ -212,6 +212,9 @@ PHS image of all wires and strips for all digitizers
 
 	energybins    = 128
 	maxenerg      = 65.6e3 
+
+correlation of PHS wires VS strips per digitiser (only calculated first serial acqnum)
+	CorrelationPHSws = 0              # ON/OFF
 
 ###############################################################################
 

@@ -27,6 +27,8 @@ datapathinput = os.path.abspath('../.')+'/data/'
 filename = '13827-C-ESSmask-20181116-120805_00000.h5'
     
 # def readHDFefu (datapathinput,filename,digitID,Clockd,ordertime):
+
+
     
 DATA = np.array(pd.read_hdf((datapathinput+filename),'mbcaen_readouts'))
    
@@ -78,6 +80,59 @@ else:
             Bdata[index[k]:index[k+1]] = temp
             
     Bdata[:,0] = Bdata[:,0]*Clockd       # time in s 
+            
+    # return Bdata, Ntoffi, GTime, flag
+    
+# DATA = np.array(pd.read_hdf((datapathinput+filename),'mbcaen_readouts'))
+   
+# if not(digitID in DATA[:,1]): #if the digitID does not exist in the file 
+    
+#     Bdata  = np.ones([2,4], dtype='float64' )*np.inf
+#     Ntoffi = np.array([1], dtype='float64' )*np.inf
+#     GTime  = np.array([1], dtype='float64' )*np.inf
+#     flag   = -1
+#     presentdigit = np.unique(DATA[:,1])
+#     print('\n \t No Digit ',str(digitID),' found! This file only contains Digitizers:', end=' ')
+#     for digit in presentdigit:
+#         print(digit,end=' ')
+           
+# else:
+    
+#     flag   = 0
+    
+#     selectdigi = DATA[:,1] == digitID
+
+#     Adata = DATA[selectdigi,:]
+    
+#     ## CH NUMBER FROM 0 NOT FROM 1 AS MATLAB !!!!! OTHERVIWISE ADD A LINE HERE TO ADD +1
+# #        uncomment for ch from 1 to 64
+#     # Adata[:,3] = Adata[:,3]+np.float64(1) ## ch is from 1 to 64
+    
+#     GTime  = np.unique(Adata[:,0]) 
+#     Ntoffi = len(GTime)
+    
+#     #plt.plot(GTime)
+    
+#     tofChange = np.diff(Adata[:,0])
+#     tofChange = np.append([np.float64(1)], tofChange)
+#     ###tofChange[tofChange != 0] = 1
+#     index = np.flatnonzero(tofChange)
+#     index = np.append(index,[np.int64(len(tofChange))])
+    
+#     Bdata = Adata[:,2:5] 
+#     Bdata =  np.concatenate((Bdata,tofChange[:,None]),axis=1)
+#     # col 1 time stamp, col 2 channel, col 3 ADC, col 4 global time reset delta in ms
+    
+#     #Bdata[2:10,0] = range(444008,444000,-1)
+    
+#     if ordertime == 1:
+#         for k in range(0,Ntoffi,1):
+#         #    print(index[k])
+#             temp = Bdata[index[k]:index[k+1],:]
+#             temp = temp[temp[:,0].argsort(),]
+#             Bdata[index[k]:index[k+1]] = temp
+            
+#     Bdata[:,0] = Bdata[:,0]*Clockd       # time in s 
         
 # return Bdata, Ntoffi, GTime, flag
 
