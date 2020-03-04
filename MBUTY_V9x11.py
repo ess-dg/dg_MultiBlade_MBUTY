@@ -73,7 +73,7 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 ###############################################################################
 
 digitID = [34,33,31,142,143,137]
-# digitID = [34]
+# digitID = [34,33]
 
 ###############################################################################
 # mapping channels into geometry 
@@ -103,7 +103,7 @@ plottimeTofs      = 0   #ON/OFF for debugging, plot the time duration of ToFs (a
 ToFduration       = 0.06;    #s
 ToFbinning        = 100e-6   #s
 
-plotMultiplicity  = 0   #ON/OFF
+plotMultiplicity  = 1   #ON/OFF
 
 ###############################################################################
 # software thresholds
@@ -509,7 +509,7 @@ for dd in range(len(digitID)):
         if np.logical_and(plotChRaw == 1, ac == 0):
             
             Xaxis  = np.arange(0,64,1)
-            histxx = mb.myHist1D(Xaxis,data[:,1])     
+            histxx = mb.myHist1D(Xaxis,data[:,1],1)     
             
             fig = plt.figure(figsize=(9,6))
             ax1 = fig.add_subplot(111)
@@ -634,9 +634,9 @@ for dd in range(len(digitID)):
         #####################################           
         if plotMultiplicity == 1:
             
-           myw  = mb.myHist1D(multx,POPH[:,5]) # wires all
-           mys  = mb.myHist1D(multx,POPH[:,6]) # strips all
-           mywc = mb.myHist1D(multx,POPH[POPH[:,1]>=0,5]) # wires coinc
+           myw  = mb.myHist1D(multx,POPH[:,5],1) # wires all
+           mys  = mb.myHist1D(multx,POPH[:,6],1) # strips all
+           mywc = mb.myHist1D(multx,POPH[POPH[:,1]>=0,5],1) # wires coinc
 
            multcum[:,0] = multcum[:,0]+myw         
            multcum[:,1] = multcum[:,1]+mys
@@ -656,14 +656,15 @@ for dd in range(len(digitID)):
            chwcRound = chwRound[TwoDim]
            POPHcoinc = POPH[TwoDim,:]
             
+           # this can be replaced with a 2D hist done in a single shot!
            for chi in range(0,32,1):    # wires
-               PHSIw[:,chi] = mb.myHist1D(xener,POPH[chwRound == chi,3]) # wires all
+               PHSIw[:,chi] = mb.myHist1D(xener,POPH[chwRound == chi,3],1) # wires all
                           
            for chi in range(0,32,1):    # strips
-               PHSIs[:,chi] = mb.myHist1D(xener,POPH[chsRound == chi,4]) # strips all
+               PHSIs[:,chi] = mb.myHist1D(xener,POPH[chsRound == chi,4],1) # strips all
                
            for chi in range(0,32,1):    # wires in coincidence 2D
-               PHSIwc[:,chi] = mb.myHist1D(xener,POPHcoinc[chwcRound == chi,3]) # wires coinc.
+               PHSIwc[:,chi] = mb.myHist1D(xener,POPHcoinc[chwcRound == chi,3],1) # wires coinc.
 
            PHSIwCum  = PHSIwCum  + PHSIw
            PHSIsCum  = PHSIsCum  + PHSIs
@@ -706,7 +707,7 @@ for dd in range(len(digitID)):
             # PH1 = POPH[:,3]
             # PH2 = POPH[:,4]
             
-            PHcorr = mb.myHist2D(xener,PH1,xener,PH2)
+            PHcorr = mb.myHist2D(xener,PH1,xener,PH2,0)
             
             if len(digitID)>1:
                 axphscorr[dd].imshow(PHcorr,aspect='auto',interpolation='none',extent=[xener[0],xener[-1],xener[0],xener[-1]], origin='lower',cmap='jet')
@@ -741,26 +742,28 @@ for dd in range(len(digitID)):
     if plotMultiplicity == 1:     
         
        multcumnorm[0,:] = np.sum(multcum[1:,:],axis=0)
+      
+       width = 0.2
     
        multcum = multcum/multcumnorm
        # ax  = figmult.add_subplot(1,len(digitID),dd+1) # alternative way
        if len(digitID)>1:
-          axmult[dd].step(multx[:6],multcum[:6,:],where='mid')
+          axmult[dd].bar(multx[:6]- width,multcum[:6,0],width,label='w')
+          axmult[dd].bar(multx[:6]+ width,multcum[:6,1],width,label='s')
+          axmult[dd].bar(multx[:6],multcum[:6,2],width,label='w coinc. s')
           axmult[dd].set_xlabel('multiplicity')
           axmult[dd].set_title('digit '+str(digitID[dd]))
+          legend = axmult[dd].legend(loc='upper right', shadow=False, fontsize='large')
           if dd == 0:
              axmult[dd].set_ylabel('probability')
        else:
-          # axmult.step(multx[:6],multcum[:6,:], where='mid', label=( i for i in range(3)))
-          #             # [['w'],['s'],['w coinc.']])
-          axmult.step(multx[:6],multcum[:6,0],where='mid',label=['w'])
-          axmult.step(multx[:6],multcum[:6,1],where='mid',label=['s'])
-          axmult.step(multx[:6],multcum[:6,2],where='mid',label=['w coinc.'])
+          axmult.bar(multx[:6]- width,multcum[:6,0],width,label='w')
+          axmult.bar(multx[:6]+ width,multcum[:6,1],width,label='s')
+          axmult.bar(multx[:6],multcum[:6,2],width,label='w coinc. s')
           # CHECK HOW TO MAKE LEGEND IT DOES NOT WORK 
           axmult.set_xlabel('multiplicity')
           axmult.set_ylabel('probability')
           legend = axmult.legend(loc='upper right', shadow=False, fontsize='large')
-          
           
    ##################################### 
     if plotToFhist == 1:
@@ -862,8 +865,8 @@ if MONfound == 1:
 
     if plotMONtofPH == 1:
  
-        MONToFhistCum = mb.myHist1D(ToFx,MONdataCum[:,0])
-        MONPHShistCum = mb.myHist1D(xener,MONdataCum[:,1])
+        MONToFhistCum = mb.myHist1D(ToFx,MONdataCum[:,0],1)
+        MONPHShistCum = mb.myHist1D(xener,MONdataCum[:,1],1)
              
         figmon, (axm1, axm2) = plt.subplots(figsize=(6,6), nrows=1, ncols=2)    
         pos2 = axm1.step(ToFx*1e3,MONToFhistCum,'k',where='mid')
@@ -891,7 +894,7 @@ if MONfound == 1:
          # append to MONdataCum col 0 ToF, col 1 PH, col 2 lambda if present 
         MONdataCum = np.append(MONdataCum,np.round(MONlamb[:,None],decimals=2),axis=1) 
            
-        MONLamHistCum = mb.myHist1D(xlambda,MONdataCum[:,2]) 
+        MONLamHistCum = mb.myHist1D(xlambda,MONdataCum[:,2],1) 
         
         figmonl, axml = plt.subplots(figsize=(6,6), nrows=1, ncols=1)
         axml.step(xlambda,MONLamHistCum,'k',where='mid')

@@ -16,7 +16,7 @@ import time
 ###############################################################################
 ###############################################################################
 
-def myHist1D (XX,A):
+def myHist1D (XX,A,OutBound):
     
     binX   = len(XX) 
         
@@ -27,19 +27,25 @@ def myHist1D (XX,A):
     
     index = np.int_(np.around(((binX-1)*((A-Xmin)/(Xmax-Xmin)))))
     
-    if not(np.all(index >= 0) and np.all(index <= binX-1)):
-       print('warning: hist out of bounds, change limits!') 
+    if OutBound == 0:
+        if not(np.all(index >= 0) and np.all(index <= binX-1)):
+           print('warning: hist out of bounds, change limits!') 
     
     for k in range(len(XX)):    
        histXX[k] = np.sum(index == k) 
        
-  
+       if OutBound == 1:
+            # fill overflow last bin and first bin
+            histXX[0]  += np.sum(index<0)
+            histXX[-1] += np.sum(index>=binX-1)
+        
     return histXX
 
 ###############################################################################
 ###############################################################################
 
-def myHist2D (XX,A,YY,B):
+# this 2D hist states a warning if there is an out of bounds events, buth these events are not shown in the hist 
+def myHist2D (XX,A,YY,B,OutBound):
     
     binX   = len(XX) 
     binY   = len(YY)
@@ -49,8 +55,10 @@ def myHist2D (XX,A,YY,B):
     Ymin   = min(YY) 
     Ymax   = max(YY) 
     
+    cont = 0
+    
     histXY = np.zeros((binY,binX)) 
-
+    
     if not( (len(A) == len(B))):
         print('\n \t ----> ABORT: X and Y not same length! \n')
         return histXY
@@ -60,14 +68,31 @@ def myHist2D (XX,A,YY,B):
          
     for k in range(len(A)):
      
-       xx =  xxtemp[k]
-       yy =  yytemp[k]
-
-       if ( (xx >= 0) and (xx <= binX-1) and (yy >= 0) and (yy <= binY-1) ):
-           histXY[yy,xx] += 1
-       else:
-           print('warning: hist out of bounds')    
-                  
+        xx =  xxtemp[k]
+        yy =  yytemp[k]
+    
+        if OutBound == 1:
+            
+           if ( (xx >= 0) and (xx <= binX-1) and (yy >= 0) and (yy <= binY-1) ):
+               histXY[yy,xx] += 1
+           elif ( (xx >= 0) and (xx > binX-1) and (yy >= 0) and (yy <= binY-1) ):
+                histXY[yy,-1] += 1
+           elif ( (xx < 0) and (xx <= binX-1) and (yy >= 0) and (yy <= binY-1) ):
+                histXY[yy,0] += 1
+           elif ( (xx >= 0) and (xx <= binX-1) and (yy < 0) and (yy <= binY-1) ):
+               histXY[0,xx] += 1
+           elif ( (xx >= 0) and (xx <= binX-1) and (yy >= 0) and (yy > binY-1) ):
+               histXY[-1,xx] += 1
+               
+        elif OutBound == 0:
+             
+           if ( (xx >= 0) and (xx <= binX-1) and (yy >= 0) and (yy <= binY-1) ):
+              histXY[yy,xx] += 1
+           else:
+               if cont == 0:
+                   print('warning: hist out of bounds') 
+                   cont = 1  
+                      
     return histXY
 
 ###############################################################################
