@@ -37,7 +37,7 @@ def myHist1D (XX,A,OutBound):
        if OutBound == 1:
             # fill overflow last bin and first bin
             histXX[0]  += np.sum(index<0)
-            histXX[-1] += np.sum(index>=binX-1)
+            histXX[-1] += np.sum(index>binX-1)
         
     return histXX
 
@@ -325,7 +325,7 @@ def readHDFefu_3col (datapathinput,filename,digitID,Clockd,ordertime):
        
     if not(digitID in DATA[:,1]): #if the digitID does not exist in the file 
         
-        Bdata  = np.ones([2,3], dtype='float64' )*np.inf
+        Cdata  = np.ones([2,3], dtype='float64' )*np.inf
         Ntoffi = np.array([1], dtype='float64' )*np.inf
         GTime  = np.array([1], dtype='float64' )*np.inf
         DGTime = np.array([1], dtype='float64' )*np.inf
