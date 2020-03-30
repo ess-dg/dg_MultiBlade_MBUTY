@@ -21,12 +21,13 @@ Clockd = 16e-9
 datapathinput = os.path.abspath('../.')+'/data/' 
 
 filename = '13827-C-ESSmask-20181116-120805_00000.h5'
-
+###############################################################################
+###############################################################################
 DATA = np.array(pd.read_hdf((datapathinput+filename),'mbcaen_readouts'))
    
 if not(digitID in DATA[:,1]): #if the digitID does not exist in the file 
     
-    Bdata  = np.ones([2,3], dtype='float64' )*np.inf
+    Cdata  = np.ones([2,3], dtype='float64' )*np.inf
     Ntoffi = np.array([1], dtype='float64' )*np.inf
     GTime  = np.array([1], dtype='float64' )*np.inf
     DGTime = np.array([1], dtype='float64' )*np.inf

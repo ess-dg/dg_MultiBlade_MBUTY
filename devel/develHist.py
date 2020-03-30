@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 
 data = np.load('datate.npy')
 
-XX = np.linspace(1e4,3e4,128)
+XX = np.arange(0,64,1)
 
-YY = data[:,2]
+YY = data[:,1]
 
 # 
 
@@ -80,7 +80,7 @@ for k in range(len(XX)):
     
 # fill overflow last bin and first bin
 histXX3[0]  += np.sum(aa<0)
-histXX3[-1] += np.sum(aa>=binX-1)
+histXX3[-1] += np.sum(aa>binX-1)
 
 fig, ax = plt.subplots(figsize=(6,6), nrows=1, ncols=1)    
 pos = ax.step(XX,histXX3,'k',where='mid')
