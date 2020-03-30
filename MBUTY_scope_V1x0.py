@@ -152,8 +152,8 @@ ax2 = ax1.twinx()
 ax3 = ax1.twiny()
 
 
-# for k in range(Nevents):
-for k in range(7):
+for k in range(Nevents):
+#for k in range(7):
     
     # k = 5
     
