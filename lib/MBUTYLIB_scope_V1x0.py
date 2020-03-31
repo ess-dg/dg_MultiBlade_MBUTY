@@ -56,6 +56,9 @@ def readHDFjadaqTraces (datapathinput,filename,digitID,Clockd,ordertime=1):
             cont = 0 
     
             for k, dset in enumerate(digitgroup.keys()) :
+            # for k in range(1):
+                
+            #     dset = '0'
                 
                 # print(dset, k )
                 
@@ -85,14 +88,22 @@ def readHDFjadaqTraces (datapathinput,filename,digitID,Clockd,ordertime=1):
                         
                         print('\n \t WARNING: Digit ',str(digitID),' has no samples! Only QDC data loaded.')
                         cont += 1
+                        
+                        # numSamples   = 0
+                        # preTrigger   = 0
+                        # gateStart    = 0 
+                        # gateStop     = 0
+                        # holdOffStart = 0 
+                        # holdOffStop  = 0
+                        # overThStart  = 0
+                        # overThStop   = 0
+                        # traceData    = 0
+                        
                         numSamples   = 0
                         preTrigger   = 0
-                        gateStart    = 0 
-                        gateStop     = 0
-                        holdOffStart = 0 
-                        holdOffStop  = 0
-                        overThStart  = 0
-                        overThStop   = 0
+                        gate         = 0
+                        holdOff      = 0 
+                        overTh       = 0
                         traceData    = 0
                     
                     if ordertime == 1:
@@ -106,36 +117,60 @@ def readHDFjadaqTraces (datapathinput,filename,digitID,Clockd,ordertime=1):
                         
                 if samplesFound == 1:
                     
-                    if k == 0:
-                        numSamples   = dsetsel['num_samples'][0]
-                        preTrigger   = dsetsel['trigger'][0]
-                        gateStart, gateStop        = dsetsel['gate'][0]
-                        holdOffStart, holdOffStop  = dsetsel['holdoff'][0]
-                        overThStart,  overThStop   = dsetsel['overthreshold'][0]
+                    # if k == 0:
+                    # numSamples   = dsetsel['num_samples'][0]
+                    # preTrigger   = dsetsel['trigger'][0]
+                    # gateStart, gateStop        = dsetsel['gate'][0]
+                    # holdOffStart, holdOffStop  = dsetsel['holdoff'][0]
+                    # overThStart,  overThStop   = dsetsel['overthreshold'][0]
+                    
+                    numSamplesTemp   = dsetsel['num_samples']
+                    preTriggerTemp   = dsetsel['trigger']
+                    gateTemp         = dsetsel['gate']
+                    holdOffTemp      = dsetsel['holdoff']
+                    overThTemp       = dsetsel['overthreshold']
                    
                     # traceTemp = dsetsel['samples']
                 
                     if ordertime == 1:
-                        dataTemp  = dataTemp[dataTemp[:,0].argsort(),]
-                        traceTemp = traceTemp[dataTemp[:,0].argsort(),]
-                
+                        
+                        reoder         = dataTemp[:,0].argsort()
+                        
+                        dataTemp       = dataTemp[reoder,]
+                        traceTemp      = traceTemp[reoder,]
+                        numSamplesTemp = numSamplesTemp[reoder,]
+                        preTriggerTemp = preTriggerTemp[reoder,]
+                        gateTemp       = gateTemp[reoder,]
+                        holdOffTemp    = holdOffTemp[reoder,]
+                        overThTemp     = overThTemp[reoder,]
+                        
                     if k == 0:
-                        Cdata     =  dataTemp
-                        traceData = traceTemp
+                        Cdata      = dataTemp
+                        traceData  = traceTemp
+                        numSamples = numSamplesTemp
+                        preTrigger = preTriggerTemp
+                        gate       = gateTemp
+                        holdOff    = holdOffTemp
+                        overTh     = overThTemp
+                        
                     else:
-                        Cdata     =  np.concatenate((Cdata,dataTemp),axis=0)
-                        traceData =  np.concatenate((traceData,traceTemp),axis=0)
-      
-                           
-            
+                        Cdata      =  np.concatenate((Cdata,dataTemp),axis=0)
+                        traceData  =  np.concatenate((traceData,traceTemp),axis=0)
+                        numSamples =  np.concatenate((numSamples,numSamplesTemp),axis=0)
+                        preTrigger =  np.concatenate((preTrigger,preTriggerTemp),axis=0)
+                        gate       =  np.concatenate((gate,gateTemp),axis=0)
+                        holdOff    =  np.concatenate((holdOff,holdOffTemp),axis=0)
+                        overTh     =  np.concatenate((overTh,overThTemp),axis=0)
+                 
             DGTime = np.zeros([len(Cdata)], dtype='float64' )
                    
             Cdata[:,0] = Cdata[:,0]*Clockd       # time in s 
         
     f.close()    
                     
-    return Cdata, Ntoffi, GTime, DGTime, flag, numSamples, preTrigger, gateStart, gateStop, holdOffStart, holdOffStop, overThStart, overThStop, traceData
+    return Cdata, Ntoffi, GTime, DGTime, flag, numSamples, preTrigger, gate, holdOff, overTh, traceData
 
+     
 ###############################################################################
 ###############################################################################  
 

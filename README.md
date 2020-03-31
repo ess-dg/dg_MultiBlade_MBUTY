@@ -340,7 +340,7 @@ The file can be loaded from filename or from a window:
 	 
 	openWindowToSelectFiles = 0
      #  0 = filename is loaded, no window opens
-     #  1 = filename is ignored, window opens to selct the file
+     #  1 = filename is ignored, window opens to select the file
 
 ###############################################################################
 

@@ -6,11 +6,6 @@ Created on Sun Mar 29 13:51:09 2020
 @author: francescopiscitelli
 """
 
-
-#  NOTE it works on CAEN V1740D config that has the same settings for all signals, 
-#  common pretrigger, pregate etc....
-
-
 ###############################################################################
 ###############################################################################
 ########    V1.0  2020/03/30      francescopiscitelli    ######################
@@ -19,8 +14,6 @@ Created on Sun Mar 29 13:51:09 2020
 
 import numpy as np
 import matplotlib.pyplot as plt
-import time
-import h5py
 import os
 import sys
 from PyQt5.QtWidgets import QFileDialog
@@ -120,29 +113,21 @@ print('File selected: '+fname+' \n')
 ###############################################################################
 #loading file
 
-#  NOTE it works on CAEN V1740D config that has the same settings for all signals, 
-#  common pretrigger, pregate etc....
-
 ordertime = 1
 
 Cdata, Ntoffi, GTime, DGTime, flag, \
-    numSamples, preTrigger, gateStart, gateStop, \
-    holdOffStart, holdOffStop, overThStart, overThStop, \
+    numSamples, preTrigger, gate, holdOff, overTh, \
     traceData = mbs.readHDFjadaqTraces(datapath,fname,digitID,Clockd,ordertime)
    
-print('preTrigger '+str(preTrigger)) 
-print('preGate '+str(preTrigger-gateStart))  
-print('gateWidth '+str(gateWidth))  
+# print('preTrigger '+str(preTrigger)) 
+# print('preGate '+str(preTrigger-gate[))  
+# print('gateWidth '+str(gateWidth))  
 
-print('\n')
+# print('\n')
 ###############################################################################
 ###############################################################################
 
 Nevents = np.shape(Cdata)[0]
-
-Tn = np.arange(0,numSamples,1)
-
-Ts = (Clockd*(Tn-preTrigger))*1e6 #in us
 
 # initialize fig 
 # plt.ion()
@@ -151,17 +136,22 @@ ax1 = fig.add_subplot(111)
 ax2 = ax1.twinx()
 ax3 = ax1.twiny()
 
-
 for k in range(Nevents):
-#for k in range(7):
+# for k in range(7):
     
     # k = 5
+    
+    Tn = np.arange(0,numSamples[k],1)
+
+    Ts = (Clockd*(Tn-preTrigger[k]))*1e6 #in us
     
     trace  = traceData[k,:]
     
     traceV = VoltADCconversion*trace - 1
     
-    threshold = trace[preTrigger]
+    threshold = trace[preTrigger[k]]
+    
+    gateStart = gate[k][0]
     
     ########################
     
@@ -186,7 +176,7 @@ for k in range(Nevents):
     ax1.xaxis.grid()
     ax1.yaxis.grid()
     
-    ax1.set_xlim(0,numSamples)
+    ax1.set_xlim(0,numSamples[k])
     ax1.set_ylim(0,4096)
     
     # ax2.set_xlim(0,numSamples)
@@ -203,9 +193,9 @@ for k in range(Nevents):
     # ax1.plot([gateStop, gateStop], [0, 4096],color='green', linestyle='-', linewidth=2)
     ax1.plot([gateStart+gateWidth, gateStart+gateWidth], [0, 4096],color='green', linestyle='--', linewidth=1)
     
-    ax1.plot([preTrigger, preTrigger], [0, 4096],color='magenta', linestyle=':', linewidth=2)
+    ax1.plot([preTrigger[k], preTrigger[k]], [0, 4096],color='magenta', linestyle=':', linewidth=2)
     
-    ax1.plot([0, numSamples], [threshold, threshold], color='magenta', linestyle=':', linewidth=2)
+    ax1.plot([0, numSamples[k]], [threshold, threshold], color='magenta', linestyle=':', linewidth=2)
     
     # ax1.plot([overThStart, overThStart], [0, 4096],color='black', linestyle='-', linewidth=2)
     # ax1.plot([overThStop, overThStop], [0, 4096],color='magenta', linestyle='-', linewidth=2)
@@ -215,14 +205,14 @@ for k in range(Nevents):
     
     ########################
     
-    plt.pause(0.1)
+    plt.pause(0.5)
     
     inp = input('press (enter) to continue or (q + enter) to quit ')
     
     if inp == 'q':
-       plt.close()
-       print('----------------------------------------------------------------------')
-       sys.exit()
+        plt.close()
+        print('----------------------------------------------------------------------')
+        sys.exit()
        
     ########################
     
