@@ -352,7 +352,7 @@ def readHDFefu_3col (datapathinput,filename,digitID,Clockd,ordertime=1):
     
     if not(digitID in DATA[:,1]): #if the digitID does not exist in the file 
         
-        Cdata  = np.ones([2,3], dtype='float64' )*np.inf
+        Bdata  = np.ones([2,3], dtype='float64' )*np.inf
         Ntoffi = np.array([1], dtype='float64' )*np.inf
         GTime  = np.array([1], dtype='float64' )*np.inf
         DGTime = np.array([1], dtype='float64' )*np.inf
@@ -385,8 +385,8 @@ def readHDFefu_3col (datapathinput,filename,digitID,Clockd,ordertime=1):
         index = np.flatnonzero(tofChange)
         index = np.append(index,[np.int64(len(tofChange))])
         
-        Bdata  = Adata[:,2:5] 
-        Bdata  =  np.concatenate((Bdata,tofChange[:,None]),axis=1)
+        Bdata  = np.float64(Adata[:,2:5]) 
+        # Bdata  =  np.concatenate((Bdata,tofChange[:,None]),axis=1)
      
         # col 1 time stamp, col 2 channel, col 3 ADC, 
         # col 4 global time reset delta in ms moved to DGTime
@@ -397,16 +397,16 @@ def readHDFefu_3col (datapathinput,filename,digitID,Clockd,ordertime=1):
             for k in range(0,Ntoffi,1):
             #    print(index[k])
                 temp = Bdata[index[k]:index[k+1],:]
-                temp = temp[temp[:,0].argsort(),]
-                Bdata[index[k]:index[k+1]] = temp
+                temp = temp[temp[:,0].argsort(),:]
+                Bdata[index[k]:index[k+1],:] = temp
                 
         Bdata[:,0] = Bdata[:,0]*Clockd       # time in s 
         
-        DGTime = Bdata[:,3]
+        # DGTime = Bdata[:,3]
         
-        Cdata  = Bdata[:,0:3]
+        DGTime = tofChange
                 
-    return Cdata, Ntoffi, GTime, DGTime, flag
+    return Bdata, Ntoffi, GTime, DGTime, flag
 
 ###############################################################################
 ###############################################################################
