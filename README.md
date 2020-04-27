@@ -59,7 +59,11 @@ This code needs the following imports:
 
 And to load specific functions in the file MBUTYLIB.py, this file contains functions like the clustering function and the h5 file reader, etc. 
 
-	from lib import MBUTYLIB_V9x12 as mb 
+	from lib import libSyncUtil as syu 
+	from lib import libLoadFile as lof 
+	from lib import libHistog as hh
+	from lib import libToFconverter as tcl
+	from lib import libMBUTY_V9x13 as mbl 
 
 
 At the top of the code there is a section where you can edit some variables to select options.
@@ -303,7 +307,8 @@ imports:
 
 import the library with all specific functions that this code uses 
 
-	from lib import MBUTYLIB_scope_V1x0 as mbs 
+	from lib import libSyncUtil as syu 
+	from lib import libLoadFile as lof 
 	
 
 ###############################################################################

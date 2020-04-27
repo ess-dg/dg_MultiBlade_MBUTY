@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Apr 27 08:33:38 2020
+
+@author: francescopiscitelli
+"""
+
+import os 
+
+###############################################################################
+############################################################################### 
+
+def syncData (pathsource,desitnationpath):
+
+    command = 'rsync -av --progress'
+
+    # command = 'cp'
+    
+    comm = command + ' ' + pathsource + ' ' + desitnationpath
+    
+    # print(comm)
+    
+    print('\n ... syncing data ...');
+    
+    status = os.system(comm);
+    
+    # NOTE: it will ask for password 
+    
+    # disp(cmdout)
+    
+    if status == 0: 
+          print('\n data sync completed')
+    else:
+          print('\n ERROR ... \n')
+    
+    # print(status)      
+          
+    print('\n-----')
+    
+    return status 
+
+###############################################################################
+############################################################################### 
