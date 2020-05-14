@@ -57,7 +57,7 @@ def loadVMMdata (datapathinput,filename,Clockd):
     
     Nhybrids  = np.int(np.ceil(Nvmm/2))
     
-    print('--> ',str(Nrows),' rows found with ',str(Nfec),' FEC and with ',str(Nvmm),' VMMs (',str(Nhybrids),' hybrids)')
+    print(' ---> ',str(Nrows),' rows found with ',str(Nfec),' FEC and with ',str(Nvmm),' VMMs (',str(Nhybrids),' hybrids)')
     
     ################################
     

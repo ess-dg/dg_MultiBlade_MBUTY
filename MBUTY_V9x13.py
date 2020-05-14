@@ -70,7 +70,7 @@ SingleFileDuration       = 60   #s to check if h5 file has all the resets
 # variable POPH will be saved in a new h5 file
 saveReducedData = 0 #ON/OFF
 
-savereducedpath = '/Users/francescopiscitelli/Desktop/try/'
+savereducedpath = '/Users/francescopiscitelli/Desktop/reducedFile/'
 
 nameMainFolder  = 'entry1'
 
@@ -81,7 +81,7 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 
 digitID = [34,33,31,142,143,137]
 
-# digitID = [34]
+digitID = [34]
 
 ###############################################################################
 # mapping channels into geometry 
@@ -191,7 +191,7 @@ elif positionRecon == 2:
    
 ###############################################################################
 # close the gaps, remove wires hidden; only works with posreconn 0 or 2, i.e. 32 bins on wires
-closeGaps = 1               # 0 = OFF shows the raw image, 1 = ON shows only the closed gaps img, 2 shows both
+closeGaps = 0               # 0 = OFF shows the raw image, 1 = ON shows only the closed gaps img, 2 shows both
 gaps      = [0, 3, 4, 4, 3, 2]   # (first must be always 0)
    
    
@@ -647,7 +647,7 @@ for dd in range(len(digitID)):
             
         if plottimestamp == 1:
             fig = plt.figure(figsize=(9,6))
-            ax1  = fig.add_subplot(111)
+            ax1 = fig.add_subplot(111)
             plt.plot(data[:,0],'k+')
             plt.xlabel('trigger no.')
             plt.ylabel('time (s)')
@@ -665,6 +665,8 @@ for dd in range(len(digitID)):
         
         #  POPH has 7 cols:X,Y,ToF,PHwires,PHstrips,multW,multS
         #  units:pix(0.350mm),pix(4mm),seconds,a.u.,a.u.,int,int
+        
+        # aaaa = POPH
         
         #####################################
         # gating ToF
@@ -777,7 +779,7 @@ for dd in range(len(digitID)):
                 if dd == 0:
                     axphscorr[dd].set_ylabel('pulse height strips (a.u.)')
                 axphscorr[dd].set_xlabel('pulse height wires (a.u.)')
-                axphscorr[dd].set_title('digit '+str(digitID[dd]))
+                axphscorr[dd].set_title('digit '+str(digitID[dd]))            
             else:
                 axphscorr.imshow(PHcorr,aspect='auto',interpolation='none',extent=[xener[0],xener[-1],xener[0],xener[-1]], origin='lower',cmap='jet')
                 if dd == 0:
@@ -986,6 +988,7 @@ if closeGaps == 0 or closeGaps == 2:
     fig2D, (ax1, ax2) = plt.subplots(figsize=(6,12), nrows=2, ncols=1)    
     # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
     pos1  = ax1.imshow(XYglob,aspect='auto',interpolation='nearest',extent=[XXg[0],XXg[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
+    fig2D.colorbar(pos1, ax=ax1)
     # cbar1 =fig2D.colorbar(pos1,ax=ax1)
     # cbar2.minorticks_on()
     # ax1.set_aspect('tight')
@@ -1011,8 +1014,7 @@ if closeGaps == 0 or closeGaps == 2:
     
     fig2, ax2 = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
     pos2  = ax2.imshow(XToFglob,aspect='auto',interpolation='none',extent=[ToFxgms[0],ToFxgms[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
-    # cbar2 = fig2D.colorbar(pos2,ax=ax2)
-    # cbar2.minorticks_on()
+    fig2.colorbar(pos2, ax=ax2)
     ax2.set_ylabel('Wire ch.')
     ax2.set_xlabel('ToF (ms)')
     
@@ -1021,8 +1023,7 @@ if closeGaps == 0 or closeGaps == 2:
     if calculateLambda == 1:
        figl, axl = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
        posl1  = axl.imshow(XLamGlob,aspect='auto',interpolation='none',extent=[xlambdag[0],xlambdag[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
-       # cbar2 = fig2D.colorbar(pos2,ax=ax2)
-       # cbar2.minorticks_on()
+       figl.colorbar(posl1, ax=axl)
        axl.set_ylabel('Wire ch.')
        axl.set_xlabel('lambda (A)')
    
@@ -1038,6 +1039,7 @@ if closeGaps == 1 or closeGaps == 2:
     posc1  = axc1.imshow(XYglobc,aspect='auto',interpolation='nearest',extent=[XXgc[0],XXgc[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
     axc1.set_xlabel('Wire ch.')
     axc1.set_ylabel('Strip ch.')
+    fig2Dc.colorbar(posc1, ax=axc1)
     
     XYprojGlobCoincC = np.sum(XYglobc,axis=0)
     
@@ -1056,6 +1058,7 @@ if closeGaps == 1 or closeGaps == 2:
     # 2D image of detector ToF vs Wires 
     fig2C, ax2C = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
     pos2C  = ax2C.imshow(XToFglobc,aspect='auto',interpolation='none',extent=[ToFxgms[0],ToFxgms[-1],XXgc[0],XXgc[-1]], origin='lower',cmap='jet')
+    fig2C.colorbar(pos2C, ax=ax2C)
     ax2C.set_ylabel('Wire ch.')
     ax2C.set_xlabel('ToF (ms)')
     
@@ -1064,6 +1067,7 @@ if closeGaps == 1 or closeGaps == 2:
     if calculateLambda == 1:
        figlC, axlC = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
        posl1C  = axlC.imshow(XLamGlobc,aspect='auto',interpolation='none',extent=[xlambdag[0],xlambdag[-1],XXgc[0],XXgc[-1]], origin='lower',cmap='jet')
+       figlC.colorbar(posl1C, ax=axlC)
        axlC.set_ylabel('Wire ch.')
        axlC.set_xlabel('lambda (A)')
 

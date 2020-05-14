@@ -63,7 +63,7 @@ gateWidth          = 320   # in samples, 16ns
 
 Clockd             = 16e-9   #s CAEN V1740D clock steps
 
-VoltADCconversion  = 2/4096;  #V/ADC CAEN V1740D
+VoltADCconversion  = 2/4096  #V/ADC CAEN V1740D
 
 ###############################################################################
 ###############################################################################

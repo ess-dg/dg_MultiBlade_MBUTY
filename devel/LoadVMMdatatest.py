@@ -9,14 +9,17 @@ Created on Tue Feb 11 13:59:56 2020
 import numpy as np
 # import pandas as pd
 import h5py
+import os
 
 ###############################################################################
 
-datapathinput  = '/Users/francescopiscitelli/Desktop/temp/dataVMMutgard/'
+# datapathinput  = '/Users/francescopiscitelli/Desktop/temp/dataVMMutgard/'
 
-filename = 'almostgdgem_readouts_20200402-154729_00000.h5'
+datapathinput            = os.path.abspath('../')+'/data/' 
 
-# filename = 'AmBeSource1526gdgem-readouts-20190819-152708_00000.h5'
+# filename = 'almostgdgem_readouts_20200402-154729_00000.h5'
+
+filename = 'AmBeSource1526gdgem-readouts-20190819-152708_00000.h5'
 
 # filename = 'Testinggdgem_readouts_20200402-133556_00000.h5'
 

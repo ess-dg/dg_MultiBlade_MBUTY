@@ -54,7 +54,7 @@ filename = 'AmBeSource1526gdgem-readouts-20190819-152708_00000.h5'
 
 # filename = 'almostgdgem_readouts_20200402-154729_00000.h5'
 
-openWindowToSelectFiles = 2
+openWindowToSelectFiles = 1
      #  0 = filename is loaded, no window opens 
      #  1 = filename is ignored, no window open, last created file in directory is loaded automatically 
      #  2 = filename is ignored, window opens to selct the file 
@@ -63,7 +63,7 @@ openWindowToSelectFiles = 2
 
 Clockd      = 1e-9   #s clock steps
 
-Timewindow  = 5e-6   #s time window for clustering 
+Timewindow  = 2e-6   #s time window for clustering 
 
 plotTimeStamps   =   1
 
