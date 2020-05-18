@@ -171,7 +171,7 @@ energybins    = 128
 maxenerg      = 70e3
 
 # correlation of PHS wires VS strips per digitiser (only calculated first serial acqnum)
-CorrelationPHSws = 0              # ON/OFF
+CorrelationPHSws = 1              # ON/OFF
 
 ###############################################################################
 # Position reconstruction (max is max amplitude ch in clsuter either on w or s,
@@ -659,6 +659,8 @@ for dd in range(len(digitID)):
             # old cluster function
         # [POPH, Nevents] = mb.clusterPOPH(data,Timewindow)
             # use _q for speed -> new cluster
+            
+        # np.save('data4cluster.npy',data)
             
         # data input here is 3 cols: time stamp in s, ch 0to63, ADC,
         [POPH, Nevents] = mbl.clusterPOPH_q(data,Timewindow)

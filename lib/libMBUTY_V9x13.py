@@ -258,10 +258,10 @@ def clusterPOPH_q (data,Timewindow):
             
             clusterq = ADCCH[index[kk,0]:index[kk+1,0],:]
             
-            clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort')]  #order cluster by ch number
-     
             acceptWindow = ((clusterq[-1,0] - clusterq[0,0]) <= Timewindow)  #max difference in time between first and last in cluster 
             
+            clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort')]  #order cluster by ch number
+       
             is_wire  = clusterq[:,4] == 1
             is_strip = clusterq[:,5] == 1
             
