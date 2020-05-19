@@ -81,7 +81,7 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 
 digitID = [34,33,31,142,143,137]
 
-digitID = [34]
+# digitID = [34,33]
 
 ###############################################################################
 # mapping channels into geometry 
@@ -171,7 +171,7 @@ energybins    = 128
 maxenerg      = 70e3
 
 # correlation of PHS wires VS strips per digitiser (only calculated first serial acqnum)
-CorrelationPHSws = 1              # ON/OFF
+CorrelationPHSws = 0              # ON/OFF
 
 ###############################################################################
 # Position reconstruction (max is max amplitude ch in clsuter either on w or s,
@@ -191,7 +191,7 @@ elif positionRecon == 2:
    
 ###############################################################################
 # close the gaps, remove wires hidden; only works with posreconn 0 or 2, i.e. 32 bins on wires
-closeGaps = 0               # 0 = OFF shows the raw image, 1 = ON shows only the closed gaps img, 2 shows both
+closeGaps = 1               # 0 = OFF shows the raw image, 1 = ON shows only the closed gaps img, 2 shows both
 gaps      = [0, 3, 4, 4, 3, 2]   # (first must be always 0)
    
    
@@ -354,8 +354,8 @@ if closeGaps == 1 or closeGaps == 2:
 
     if len(gaps) != len(digitID):
         print(' ---> closing gaps: length(gaps) ~= length(cassette) ... check! -> Default 3 wires used ... ')
-        gaps      = 3*np.ones((1,len(digitID)))
-        gaps[0,0] = 0
+        gaps    = [3]*len(digitID)
+        gaps[0] = 0
 
 ###############################################################################
 ###############################################################################
@@ -1051,7 +1051,9 @@ if closeGaps == 1 or closeGaps == 2:
     axc2.set_xlim(XXgc[0],XXgc[-1])
     
     XToFglobc, __ = mbl.closeTheGaps(XToFglob,XXg,ToFxg,gaps,0)
-    XLamGlobc, __ = mbl.closeTheGaps(XLamGlob,XXg,xlambdag,gaps,0)
+    
+    if calculateLambda == 1:
+        XLamGlobc, __ = mbl.closeTheGaps(XLamGlob,XXg,xlambdag,gaps,0)
     
     # 2D image of detector ToF vs Wires 
     ToFxgms = ToFxg*1e3 # in ms 
