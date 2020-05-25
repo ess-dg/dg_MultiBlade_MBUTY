@@ -69,7 +69,7 @@ def clusterPOPH (data,Timewindow):
         
     #    clusterq_old = clusterq
             
-        clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort')]  #order cluster by ch number
+        clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort'),:]  #order cluster by ch number
         
         # IF CH FORM 1 TO 64
         # wws = clusterq[:,1] <= 32;    #wires 
@@ -260,7 +260,7 @@ def clusterPOPH_q (data,Timewindow):
             
             acceptWindow = ((clusterq[-1,0] - clusterq[0,0]) <= Timewindow)  #max difference in time between first and last in cluster 
             
-            clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort')]  #order cluster by ch number
+            clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort'),:]  #order cluster by ch number
        
             is_wire  = clusterq[:,4] == 1
             is_strip = clusterq[:,5] == 1

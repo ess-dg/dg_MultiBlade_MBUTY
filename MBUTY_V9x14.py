@@ -13,6 +13,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 import time
 import h5py
 import os
@@ -20,13 +21,12 @@ import glob
 import sys
 from PyQt5.QtWidgets import QFileDialog
 
-
 # import the library with all specific functions that this code uses 
 from lib import libSyncUtil as syu 
 from lib import libLoadFile as lof 
 from lib import libHistog as hh
 from lib import libToFconverter as tcl
-from lib import libMBUTY_V9x13 as mbl 
+from lib import libMBUTY_V9x14 as mbl 
 
 ###############################################################################
 tProfilingStart = time.time()
@@ -44,8 +44,8 @@ sync = 0   #ON/OFF if you want to rsync the data
 
 EFU_JADAQ_fileType = 1  # 0 = JADAQ, 1 = EFU file loading 
 
-pathsourceEFU         = 'efu@192.168.0.58:/home/efu/data/temp/'
-pathsourceJDQ         = ''
+pathsourceEFU      = 'efu@192.168.0.58:/home/efu/data/temp/'
+pathsourceJDQ      = ''
 
 # desitnationpath     = '/Users/francescopiscitelli/Documents/DOC/DATA/2018_11/DATA_PSI/DATAraw/C_Masks/'
 desitnationpath  = '/Users/francescopiscitelli/Desktop/try/'
@@ -81,7 +81,7 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 
 digitID = [34,33,31,142,143,137]
 
-# digitID = [34,33]
+# digitID = [34]
 
 ###############################################################################
 # mapping channels into geometry 
@@ -160,12 +160,14 @@ ToFgate      = 0               # ON/OFF
 ToFgaterange = [0.035, 0.04]   # s  
 
 ###############################################################################
-# ToF per digitizer
+# ToF per digitizer (all ch summed togheter)
 plotToFhist  = 0    #ON/OFF
                                                    
 ###############################################################################
 # PHS image of all wires and strips for all digitizers             
 EnerHistIMG   = 1              # ON/OFF
+
+plotEnerHistIMGinLogScale = 0   # ON/OFF
 
 energybins    = 128
 maxenerg      = 70e3
@@ -191,13 +193,19 @@ elif positionRecon == 2:
    
 ###############################################################################
 # close the gaps, remove wires hidden; only works with posreconn 0 or 2, i.e. 32 bins on wires
-closeGaps = 1               # 0 = OFF shows the raw image, 1 = ON shows only the closed gaps img, 2 shows both
+closeGaps = 1     # 0 = OFF shows the raw image, 1 = ON shows only the closed gaps img, 2 shows both
 gaps      = [0, 3, 4, 4, 3, 2]   # (first must be always 0)
    
+###############################################################################
+# plot the 2D imafge of the detector, lambda and ToF in linear =0 or log scale =1
+plotIMGinLogScale = 0
    
 ###############################################################################
 # LAMBDA: calcualates lambda and plot hist 
-calculateLambda  = 1              # ON/OFF  
+calculateLambda  = 1    # ON/OFF  
+
+plotLambdaHist   = 0    # ON/OFF hist per digitiser (all ch summed togheter)
+                        # (calculateLambda has to be ON to plot this)
    
 inclination     = 5       #deg
 wirepitch       = 4e-3    #m 
@@ -255,7 +263,7 @@ if sync == 1:
 #opening files 
    
      #  0 = filename and acqnum is loaded, no window opens
-     #  1 = (does nothing for the moment)
+     #  1 = latest file created in folder is loaded with its serial
      #  2 = filename and acqnum are both ignored, window opens and 
      #      serial is the only one selected 
      #  3 = filename is ignored, window opens and serial is acqnum  
@@ -275,12 +283,7 @@ elif openWindowToSelectFiles == 1:
     temp        = os.path.split(latestFile)
     datapath    = temp[0]+'/'
     fname       = temp[1]
-        
-    # print('\n Option not supported yet! \n')
-    # print(' ---> Exiting ... \n')
-    # print('------------------------------------------------------------- \n') 
-    # sys.exit()
-    
+
 elif openWindowToSelectFiles >= 2:
     temp = QFileDialog.getOpenFileName(None, "Select Files", datapath, "hdf files (*.h5)")
     temp = os.path.split(temp[0])
@@ -351,11 +354,24 @@ if closeGaps == 1 or closeGaps == 2:
     if len(digitID) == 1: 
         closeGaps = 0
         print(' ---> closing gaps OFF for only 1 cassette! \n')
+    else:
+        if len(gaps) != len(digitID):
+            print(' ---> closing gaps: length(gaps) ~= length(cassette) ... check! -> Default 3 wires used ... ')
+            gaps    = [3]*len(digitID)
+            gaps[0] = 0
 
-    if len(gaps) != len(digitID):
-        print(' ---> closing gaps: length(gaps) ~= length(cassette) ... check! -> Default 3 wires used ... ')
-        gaps    = [3]*len(digitID)
-        gaps[0] = 0
+###############################################################################
+###############################################################################
+        
+if plotIMGinLogScale == 1:
+    normColors = LogNorm()
+elif plotIMGinLogScale == 0:
+    normColors = None
+    
+if plotEnerHistIMGinLogScale == 1:
+    normColorsPH = LogNorm()
+elif plotEnerHistIMGinLogScale == 0:
+    normColorsPH = None
 
 ###############################################################################
 ###############################################################################
@@ -442,24 +458,38 @@ XYprojGlob = np.zeros(len(digitID)*len(XX))
 XToFglob   = np.zeros(((len(digitID)*len(XX)),len(ToFx)))
 
 if plotChRaw == 1:
-   figchraw, axchraw = plt.subplots(1, len(digitID), sharex='col', sharey='row')
-
+   figchraw, axchraw = plt.subplots(num=901, nrows=1, ncols=len(digitID), sharex='col', sharey='row')
+   axchraw.shape     =  (1,len(digitID))
+   axchraw           = np.atleast_2d(axchraw)
+   
 if plotMultiplicity == 1:
    # figmult = plt.figure(figsize=(9,6)) # alternative way
-   figmult, axmult = plt.subplots(1, len(digitID), sharex='col', sharey='row')
+   figmult, axmult = plt.subplots(num=401, nrows=1, ncols=len(digitID), sharex='col', sharey='row')
+   axmult.shape    = (1,len(digitID))
+   axmult          = np.atleast_2d(axmult)
 
 if EnerHistIMG == 1:
-   figphs, axphs = plt.subplots(4, len(digitID), sharex='col', sharey='row')  
+   figphs, axphs = plt.subplots(num=601, nrows=4, ncols=len(digitID), sharex='col', sharey='row')  
+   axphs.shape   = (4,len(digitID))
+   axphs         = np.atleast_2d(axphs)
    
 if CorrelationPHSws == 1:
-   figphscorr, axphscorr = plt.subplots(1, len(digitID), sharex='col', sharey='row') 
+   figphscorr, axphscorr = plt.subplots(num=602, nrows=1, ncols=len(digitID), sharex='col', sharey='row') 
+   axphscorr.shape       = (1,len(digitID))
+   axphscorr             = np.atleast_2d(axphscorr)
 
 if plotToFhist == 1:
-   figtof, axtof = plt.subplots(1, len(digitID), sharex='col', sharey='row')
+   figtof, axtof = plt.subplots(num=301, nrows=1, ncols=len(digitID), sharex='col', sharey='row')
+   axtof.shape   = (1,len(digitID))
+   axtof         = np.atleast_2d(axtof)
    
 if calculateLambda == 1:
-   figlam, axlam = plt.subplots(1, len(digitID), sharex='col', sharey='row')
    XLamGlob      = np.zeros(((len(digitID)*len(XX)),len(xlambda))) 
+   if plotLambdaHist == 1:
+       figlam, axlam = plt.subplots(num=302, nrows=1, ncols=len(digitID), sharex='col', sharey='row')
+       axlam.shape   = (1,len(digitID))
+       axlam         = np.atleast_2d(axlam)
+  
    
 ###############################################################################
 ###############################################################################
@@ -569,20 +599,16 @@ for dd in range(len(digitID)):
             Xaxis  = np.arange(0,64,1)
             histxx = hh.hist1(Xaxis,data[:,1],1)     
             
-            if len(digitID)>1:
-               axchraw[dd].bar(Xaxis[:32],histxx[:32],0.8,color='r')
-               axchraw[dd].bar(Xaxis[32:],histxx[32:],0.8,color='b')
-               axchraw[dd].set_xlabel('raw ch no.')
-               axchraw[dd].set_title('digit '+str(digitID[dd]))
-               if dd == 0:
-                  axchraw[dd].set_ylabel('counts')
-            else:
-               axchraw.bar(Xaxis[:32],histxx[:32],0.8,color='r')
-               axchraw.bar(Xaxis[32:],histxx[32:],0.8,color='b')
-               axchraw.set_xlabel('raw ch no.')
-               axchraw.set_ylabel('counts')
+            # if len(digitID)>1:
+            axchraw[0][dd].bar(Xaxis[:32],histxx[:32],0.8,color='r')
+            axchraw[0][dd].bar(Xaxis[32:],histxx[32:],0.8,color='b')
+            axchraw[0][dd].set_xlabel('raw ch no.')
+            axchraw[0][dd].set_title('digit '+str(digitID[dd]))
+            if dd == 0:
+               axchraw[0][dd].set_ylabel('counts')
             
-        #####################################   
+        #####################################  
+        
         data = mbl.mappingChToGeometry(data,MAPPING,mappath,mapfile)
 
         #####################################
@@ -623,7 +649,7 @@ for dd in range(len(digitID)):
             xax2   = np.arange(1,len(tsecn),1)
             xax3   = np.arange(0,0.1,0.0005) #in s
             
-            fig = plt.figure(figsize=(9,6))
+            fig = plt.figure(num=902, figsize=(9,6))
             ax1  = fig.add_subplot(131)
             plt.plot(xax1,tsecn,'r+')
             plt.xlabel('ToF no.')
@@ -646,7 +672,7 @@ for dd in range(len(digitID)):
         ##################
             
         if plottimestamp == 1:
-            fig = plt.figure(figsize=(9,6))
+            fig = plt.figure(num=903, figsize=(9,6))
             ax1 = fig.add_subplot(111)
             plt.plot(data[:,0],'k+')
             plt.xlabel('trigger no.')
@@ -723,15 +749,20 @@ for dd in range(len(digitID)):
            chwcRound = chwRound[TwoDim]
            POPHcoinc = POPH[TwoDim,:]
             
-           # this can be replaced with a 2D hist done in a single shot!
+            # # this can be replaced with a 2D hist done in a single shot!
+           # # with something like this 
+           # PHSIw  = hh.hist2(XX,chwRound,xener,POPH[:,3],1)
+           # PHSIs  = hh.hist2(XX,chsRound[TwoDim],xener,POPH[:,4],1) 
+           # PHSIwc = hh.hist2(XX,chwcRound,xener,POPHcoinc[:,3],1)
+           
            for chi in range(0,32,1):    # wires
-               PHSIw[:,chi] = hh.hist1(xener,POPH[chwRound == chi,3],1) # wires all
+                 PHSIw[:,chi] = hh.hist1(xener,POPH[chwRound == chi,3],1) # wires all
                           
            for chi in range(0,32,1):    # strips
-               PHSIs[:,chi] = hh.hist1(xener,POPH[chsRound == chi,4],1) # strips all
+                 PHSIs[:,chi] = hh.hist1(xener,POPH[chsRound == chi,4],1) # strips all
                
            for chi in range(0,32,1):    # wires in coincidence 2D
-               PHSIwc[:,chi] = hh.hist1(xener,POPHcoinc[chwcRound == chi,3],1) # wires coinc.
+                 PHSIwc[:,chi] = hh.hist1(xener,POPHcoinc[chwcRound == chi,3],1) # wires coinc.
 
            PHSIwCum  = PHSIwCum  + PHSIw
            PHSIsCum  = PHSIsCum  + PHSIs
@@ -775,20 +806,12 @@ for dd in range(len(digitID)):
             # PH2 = POPH[:,4]
             
             PHcorr = hh.hist2(xener,PH1,xener,PH2,0)
-            
-            if len(digitID)>1:
-                axphscorr[dd].imshow(PHcorr,aspect='auto',interpolation='none',extent=[xener[0],xener[-1],xener[0],xener[-1]], origin='lower',cmap='jet')
-                if dd == 0:
-                    axphscorr[dd].set_ylabel('pulse height strips (a.u.)')
-                axphscorr[dd].set_xlabel('pulse height wires (a.u.)')
-                axphscorr[dd].set_title('digit '+str(digitID[dd]))            
-            else:
-                axphscorr.imshow(PHcorr,aspect='auto',interpolation='none',extent=[xener[0],xener[-1],xener[0],xener[-1]], origin='lower',cmap='jet')
-                if dd == 0:
-                    axphscorr.set_ylabel('pulse height strips (a.u.)')
-                axphscorr.set_xlabel('pulse height wires (a.u.)')
-                axphscorr.set_title('digit '+str(digitID[dd]))
-           
+        
+            axphscorr[0][dd].imshow(PHcorr,aspect='auto',norm=normColorsPH,interpolation='none',extent=[xener[0],xener[-1],xener[0],xener[-1]], origin='lower',cmap='jet')
+            if dd == 0:
+               axphscorr[0][dd].set_ylabel('pulse height strips (a.u.)')
+               axphscorr[0][dd].set_xlabel('pulse height wires (a.u.)')
+               axphscorr[0][dd].set_title('digit '+str(digitID[dd]))            
     
 #####################################             
 ##################################### 
@@ -814,23 +837,19 @@ for dd in range(len(digitID)):
     
        multcum = multcum/multcumnorm
        # ax  = figmult.add_subplot(1,len(digitID),dd+1) # alternative way
-       if len(digitID)>1:
-          axmult[dd].bar(multx[:6]- width,multcum[:6,0],width,label='w')
-          axmult[dd].bar(multx[:6]+ width,multcum[:6,1],width,label='s')
-          axmult[dd].bar(multx[:6],multcum[:6,2],width,label='w coinc. s')
-          axmult[dd].set_xlabel('multiplicity')
-          axmult[dd].set_title('digit '+str(digitID[dd]))
-          legend = axmult[dd].legend(loc='upper right', shadow=False, fontsize='large')
-          if dd == 0:
-             axmult[dd].set_ylabel('probability')
-       else:
-          axmult.bar(multx[:6]- width,multcum[:6,0],width,label='w')
-          axmult.bar(multx[:6]+ width,multcum[:6,1],width,label='s')
-          axmult.bar(multx[:6],multcum[:6,2],width,label='w coinc. s')
-          # CHECK HOW TO MAKE LEGEND IT DOES NOT WORK 
-          axmult.set_xlabel('multiplicity')
-          axmult.set_ylabel('probability')
-          legend = axmult.legend(loc='upper right', shadow=False, fontsize='large')
+       axmult[0][dd].bar(multx[:6]- width,multcum[:6,0],width,label='w')
+       axmult[0][dd].bar(multx[:6]+ width,multcum[:6,1],width,label='s')
+       axmult[0][dd].bar(multx[:6],multcum[:6,2],width,label='w coinc. s')
+       axmult[0][dd].set_xlabel('multiplicity')
+       axmult[0][dd].set_title('digit '+str(digitID[dd]))
+       legend = axmult[0][dd].legend(loc='upper right', shadow=False, fontsize='large')
+       if dd == 0:
+          axmult[0][dd].set_ylabel('probability')
+
+       #    # CHECK HOW TO MAKE LEGEND IT DOES NOT WORK 
+       #    axmult.set_xlabel('multiplicity')
+       #    axmult.set_ylabel('probability')
+       #    legend = axmult.legend(loc='upper right', shadow=False, fontsize='large')
           
    ##################################### 
     if plotToFhist == 1:
@@ -838,38 +857,24 @@ for dd in range(len(digitID)):
        
        ToFxms = ToFx*1e3 # in ms 
        
-       if len(digitID)>1:
-          axtof[dd].step(ToFxms,XToFcumSum,where='mid')
-          axtof[dd].set_xlabel('ToF (ms)')
-          axtof[dd].set_title('digit '+str(digitID[dd]))
-          if dd == 0:
-             axtof[dd].set_ylabel('counts')
-       else:
-          axtof.step(ToFxms,XToFcumSum,where='mid')
-          axtof.set_xlabel('ToF (ms)')
-          axtof.set_ylabel('counts')
+       # if len(digitID)>1:
+       axtof[0][dd].step(ToFxms,XToFcumSum,where='mid')
+       axtof[0][dd].set_xlabel('ToF (ms)')
+       axtof[0][dd].set_title('digit '+str(digitID[dd]))
+       if dd == 0:
+          axtof[0][dd].set_ylabel('counts')
           
     #####################################         
     # energy hist
     if EnerHistIMG == 1:
-               
-       if len(digitID)>1:
-           axphs[0,dd].imshow(np.rot90(PHSIwCum),aspect='auto',interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
-           axphs[1,dd].imshow(np.rot90(PHSIsCum),aspect='auto',interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
-           axphs[2,dd].imshow(np.rot90(PHSIwcCum),aspect='auto',interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
-           if dd == 0:
-              axphs[0,dd].set_ylabel('wires ch. no.')
-              axphs[1,dd].set_ylabel('strips ch. no.')
-              axphs[2,dd].set_ylabel('wires coinc. ch. no.')
-           
-       else:
-           axphs[0].imshow(np.rot90(PHSIwCum),aspect='auto',interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
-           axphs[1].imshow(np.rot90(PHSIsCum),aspect='auto',interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
-           axphs[2].imshow(np.rot90(PHSIwcCum),aspect='auto',interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
-           if dd == 0:
-              axphs[0].set_ylabel('wires ch. no.')
-              axphs[1].set_ylabel('strips ch. no.')
-              axphs[2].set_ylabel('wires coinc. ch. no.')
+
+       axphs[0][dd].imshow(np.rot90(PHSIwCum),aspect='auto',norm=normColorsPH,interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
+       axphs[1][dd].imshow(np.rot90(PHSIsCum),aspect='auto',norm=normColorsPH,interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
+       axphs[2][dd].imshow(np.rot90(PHSIwcCum),aspect='auto',norm=normColorsPH,interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
+       if dd == 0:
+           axphs[0][dd].set_ylabel('wires ch. no.')
+           axphs[1][dd].set_ylabel('strips ch. no.')
+           axphs[2][dd].set_ylabel('wires coinc. ch. no.')
            
        #global PHS
        PHSGw  = np.sum(PHSIwCum,axis=1)
@@ -877,38 +882,25 @@ for dd in range(len(digitID)):
        PHSGwc = np.sum(PHSIwcCum,axis=1)
        
        # global PHS plot
-       if len(digitID)>1:
-          axphs[3,dd].step(xener,PHSGw,'r',where='mid')
-          axphs[3,dd].step(xener,PHSGs,'b',where='mid')
-          axphs[3,dd].step(xener,PHSGwc,'k',where='mid')
-          axphs[3,dd].set_xlabel('pulse height (a.u.)')
-          if dd == 0:
-             axphs[3,dd].set_ylabel('counts')
-       else:
-          axphs[3].step(xener,PHSGw,'r',where='mid')
-          axphs[3].step(xener,PHSGs,'b',where='mid')
-          axphs[3].step(xener,PHSGwc,'k',where='mid')
-          axphs[3].set_xlabel('pulse height (a.u.)')
-          axphs[3].set_ylabel('counts')
+       axphs[3][dd].step(xener,PHSGw,'r',where='mid')
+       axphs[3][dd].step(xener,PHSGs,'b',where='mid')
+       axphs[3][dd].step(xener,PHSGwc,'k',where='mid')
+       axphs[3][dd].set_xlabel('pulse height (a.u.)')
+       if dd == 0:
+           axphs[3][dd].set_ylabel('counts')
 
-       
     #################################### 
     # hist lambda
-    if calculateLambda == 1: 
+    if calculateLambda == 1 and plotLambdaHist == 1:
        XLamCumProj = np.sum(XLamCum,axis=0) 
        
        # lambda hist per digit
-       if len(digitID)>1:
-          axlam[dd].step(xlambda,XLamCumProj,where='mid')
-          axlam[dd].set_xlabel('lambda (A)')
-          axlam[dd].set_title('digit '+str(digitID[dd]))
-          if dd == 0:
-             axlam[dd].set_ylabel('counts')
-       else:
-          axlam.step(xlambda,XLamCumProj,where='mid')
-          axlam.set_xlabel('lambda (A)')
-          axlam.set_ylabel('counts')
-          
+       axlam[0][dd].step(xlambda,XLamCumProj,where='mid')
+       axlam[0][dd].set_xlabel('lambda (A)')
+       axlam[0][dd].set_title('digit '+str(digitID[dd]))
+       if dd == 0:
+          axlam[0][dd].set_ylabel('counts')
+  
     ####################################    
     # saving data to h5 file      
     if saveReducedData == 1:
@@ -935,7 +927,7 @@ if MONfound == 1:
         MONToFhistCum = hh.hist1(ToFx,MONdataCum[:,0],1)
         MONPHShistCum = hh.hist1(xener,MONdataCum[:,1],1)
              
-        figmon, (axm1, axm2) = plt.subplots(figsize=(6,6), nrows=1, ncols=2)    
+        figmon, (axm1, axm2) = plt.subplots(num=801, figsize=(6,6), nrows=1, ncols=2)    
         pos2 = axm1.step(ToFx*1e3,MONToFhistCum,'k',where='mid')
         axm1.set_xlabel('ToF (ms)')
         axm1.set_ylabel('counts')
@@ -963,7 +955,7 @@ if MONfound == 1:
            
         MONLamHistCum = hh.hist1(xlambda,MONdataCum[:,2],1) 
         
-        figmonl, axml = plt.subplots(figsize=(6,6), nrows=1, ncols=1)
+        figmonl, axml = plt.subplots(num=802, figsize=(6,6), nrows=1, ncols=1)
         axml.step(xlambda,MONLamHistCum,'k',where='mid')
         axml.set_xlabel('lambda (A)')
         axml.set_ylabel('counts')
@@ -987,9 +979,9 @@ if closeGaps == 0 or closeGaps == 2:
     
     ########   
     # 2D image of detector X,Y
-    fig2D, (ax1, ax2) = plt.subplots(figsize=(6,12), nrows=2, ncols=1)    
+    fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
     # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
-    pos1  = ax1.imshow(XYglob,aspect='auto',interpolation='nearest',extent=[XXg[0],XXg[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
+    pos1  = ax1.imshow(XYglob,aspect='auto',norm=normColors,interpolation='nearest',extent=[XXg[0],XXg[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
     fig2D.colorbar(pos1, ax=ax1)
     # cbar1 =fig2D.colorbar(pos1,ax=ax1)
     # cbar2.minorticks_on()
@@ -1014,8 +1006,8 @@ if closeGaps == 0 or closeGaps == 2:
     # 2D image of detector ToF vs Wires 
     ToFxgms = ToFxg*1e3 # in ms 
     
-    fig2, ax2 = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
-    pos2  = ax2.imshow(XToFglob,aspect='auto',interpolation='none',extent=[ToFxgms[0],ToFxgms[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
+    fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
+    pos2  = ax2.imshow(XToFglob,aspect='auto',norm=normColors,interpolation='none',extent=[ToFxgms[0],ToFxgms[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
     fig2.colorbar(pos2, ax=ax2)
     ax2.set_ylabel('Wire ch.')
     ax2.set_xlabel('ToF (ms)')
@@ -1023,8 +1015,8 @@ if closeGaps == 0 or closeGaps == 2:
     ######## 
     # 2D image of detector Lambda vs Wires
     if calculateLambda == 1:
-       figl, axl = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
-       posl1  = axl.imshow(XLamGlob,aspect='auto',interpolation='none',extent=[xlambdag[0],xlambdag[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
+       figl, axl = plt.subplots(num=103,figsize=(6,6), nrows=1, ncols=1) 
+       posl1  = axl.imshow(XLamGlob,aspect='auto',norm=normColors,interpolation='none',extent=[xlambdag[0],xlambdag[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
        figl.colorbar(posl1, ax=axl)
        axl.set_ylabel('Wire ch.')
        axl.set_xlabel('lambda (A)')
@@ -1036,9 +1028,9 @@ if closeGaps == 1 or closeGaps == 2:
     
     XYglobc, XXgc = mbl.closeTheGaps(XYglob,XXg,YYg,gaps,1)
   
-    fig2Dc, (axc1, axc2) = plt.subplots(figsize=(6,12), nrows=2, ncols=1)    
+    fig2Dc, (axc1, axc2) = plt.subplots(num=201,figsize=(6,12), nrows=2, ncols=1)    
     
-    posc1  = axc1.imshow(XYglobc,aspect='auto',interpolation='nearest',extent=[XXgc[0],XXgc[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
+    posc1  = axc1.imshow(XYglobc,aspect='auto',norm=normColors,interpolation='nearest',extent=[XXgc[0],XXgc[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
     axc1.set_xlabel('Wire ch.')
     axc1.set_ylabel('Strip ch.')
     fig2Dc.colorbar(posc1, ax=axc1)
@@ -1060,8 +1052,8 @@ if closeGaps == 1 or closeGaps == 2:
     
     ########
     # 2D image of detector ToF vs Wires 
-    fig2C, ax2C = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
-    pos2C  = ax2C.imshow(XToFglobc,aspect='auto',interpolation='none',extent=[ToFxgms[0],ToFxgms[-1],XXgc[0],XXgc[-1]], origin='lower',cmap='jet')
+    fig2C, ax2C = plt.subplots(num=202,figsize=(6,6), nrows=1, ncols=1) 
+    pos2C  = ax2C.imshow(XToFglobc,aspect='auto',norm=normColors,interpolation='none',extent=[ToFxgms[0],ToFxgms[-1],XXgc[0],XXgc[-1]], origin='lower',cmap='jet')
     fig2C.colorbar(pos2C, ax=ax2C)
     ax2C.set_ylabel('Wire ch.')
     ax2C.set_xlabel('ToF (ms)')
@@ -1069,8 +1061,8 @@ if closeGaps == 1 or closeGaps == 2:
     ######## 
     # 2D image of detector Lambda vs Wires
     if calculateLambda == 1:
-       figlC, axlC = plt.subplots(figsize=(6,6), nrows=1, ncols=1) 
-       posl1C  = axlC.imshow(XLamGlobc,aspect='auto',interpolation='none',extent=[xlambdag[0],xlambdag[-1],XXgc[0],XXgc[-1]], origin='lower',cmap='jet')
+       figlC, axlC = plt.subplots(num=203,figsize=(6,6), nrows=1, ncols=1) 
+       posl1C  = axlC.imshow(XLamGlobc,aspect='auto',norm=normColors,interpolation='none',extent=[xlambdag[0],xlambdag[-1],XXgc[0],XXgc[-1]], origin='lower',cmap='jet')
        figlC.colorbar(posl1C, ax=axlC)
        axlC.set_ylabel('Wire ch.')
        axlC.set_xlabel('lambda (A)')
@@ -1081,7 +1073,7 @@ if closeGaps == 1 or closeGaps == 2:
 plt.show()
 
 tElapsedProfiling = time.time() - tProfilingStart
-print('\n Completed --> time elapsed: %.2f s' % tElapsedProfiling)
+print('\n Completed --> elapsed time: %.2f s' % tElapsedProfiling)
 
 ###############################################################################
 ###############################################################################

@@ -82,79 +82,79 @@ ADCCH = np.concatenate((ADCCH,np.zeros((1,12))),axis=0)
 
 intervals = 4
 
-for kk in np.arange(0,NumClusters,1):
+# for kk in np.arange(0,NumClusters,1):
     
-# kk = 12
+kk = 1
     
-    steps = round(NumClusters/intervals)
-    if np.mod(kk,steps) == 0 or kk == (NumClusters-1):
-            percents = int(round(100.0 * kk / float(NumClusters), 1))
-            print('['+format(percents,'01d') + '%]',end=' ')
+steps = round(NumClusters/intervals)
+if np.mod(kk,steps) == 0 or kk == (NumClusters-1):
+        percents = int(round(100.0 * kk / float(NumClusters), 1))
+        print('['+format(percents,'01d') + '%]',end=' ')
+    
+clusterq = ADCCH[index[kk,0]:index[kk+1,0],:]
+
+acceptWindow = ((clusterq[-1,0] - clusterq[0,0]) <= Timewindow)  #max difference in time between first and last in cluster 
         
-    clusterq = ADCCH[index[kk,0]:index[kk+1,0],:]
+clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort'),:]  #order cluster by ch number
+ 
+is_wire  = clusterq[:,4] == 1
+is_strip = clusterq[:,5] == 1
+
+# n wires n strips in cluster
+ww = len(clusterq[is_wire, 4])   #num of wires in cluster
+ss = len(clusterq[is_strip, 5])  #num of strips in cluster
+
+
+if (ww != 0 and ss != 0 and ss <= 32 and ww <= 32 and acceptWindow): #if there is at least 1 wire and 1 strip and no ch number above 32
+
+    mmaxw = clusterq[is_wire, 6][-1]
+    mmaxs = clusterq[is_strip, 7][-1]
+    mminw = clusterq[is_wire, 6][0]
+    mmins = clusterq[is_strip, 7][0]
+
+    neigw = (mmaxw - mminw) == (ww-1) #if event repated is rejected because neigw is 1 even if the same wire is repeated and should be 2 
+    neigs = (mmaxs - mmins) == (ss-1)
     
-    acceptWindow = ((clusterq[-1,0] - clusterq[0,0]) <= Timewindow)  #max difference in time between first and last in cluster 
-            
-    clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort')]  #order cluster by ch number
-     
-    is_wire  = clusterq[:,4] == 1
-    is_strip = clusterq[:,5] == 1
-    
-    # n wires n strips in cluster
-    ww = len(clusterq[is_wire, 4])   #num of wires in cluster
-    ss = len(clusterq[is_strip, 5])  #num of strips in cluster
-    
-    
-    if (ww != 0 and ss != 0 and ss <= 32 and ww <= 32 and acceptWindow): #if there is at least 1 wire and 1 strip and no ch number above 32
-    
-        mmaxw = clusterq[is_wire, 6][-1]
-        mmaxs = clusterq[is_strip, 7][-1]
-        mminw = clusterq[is_wire, 6][0]
-        mmins = clusterq[is_strip, 7][0]
-    
-        neigw = (mmaxw - mminw) == (ww-1) #if event repated is rejected because neigw is 1 even if the same wire is repeated and should be 2 
-        neigs = (mmaxs - mmins) == (ss-1)
+    if (neigw == 1 and neigs == 1):    #if they are neighbour then...
         
-        if (neigw == 1 and neigs == 1):    #if they are neighbour then...
-            
-            rejCounter[0] = rejCounter[0]+1   #counter 2D
-            
-            POPH[kk,5]   = ww     #multiuplicity wires
-            POPH[kk,6]   = ss     #multiuplicity strips
-            POPH[kk,3]   = np.sum(clusterq[:,8],axis=0)   #PH wires
-            POPH[kk,4]   = np.sum(clusterq[:,9],axis=0)  #PH strips
-            POPH[kk,0]   = round((np.sum(clusterq[:,10],axis=0))/(POPH[kk,3]),2)         #position wires
-            POPH[kk,1]   = round((((np.sum(clusterq[:,11],axis=0))/(POPH[kk,4]))-32),2)  #position strips from 1 to 32 or from 0 to 31
-    
-        else:
-            rejCounter[1] = rejCounter[1]+1                #counter if they are no neighbour 
-            
-    elif (ww >= 1 and ss == 0 and ww <= 32 and acceptWindow): #put in 1D hist only for wires when there is no strip 
-            
-        mmaxw = clusterq[is_wire, 6][-1]
-        mminw = clusterq[is_wire, 6][0] 
-    
-        neigw = (mmaxw - mminw) == (ww-1)    #if event repated is rejected because neigw is 1 even if the same wire is repeated and should be 2 
-       
-        if (neigw == 1):    #if they are neighbour then...
-    
-            rejCounter[2] = rejCounter[2]+1;                #counter 1D
-    
-            POPH[kk,5]   = ww     #multiuplicity wires
-            POPH[kk,3]   = np.sum(clusterq[:,8],axis=0)   #PH wires
-            POPH[kk,0]   = round((np.sum(clusterq[:,10],axis=0))/(POPH[kk,3]),2)         #position wires
-            POPH[kk,1]   = -1 #position strips if absent
-               
-        else:
-            rejCounter[1] = rejCounter[1]+1              #counter if they are no neighbour 
-            
-    elif (ww >= 33 or ss >= 33):
-          rejCounter[3] = rejCounter[3]+1               #counter if cluster above possible limits          
-          print('\n cluster > 32 in either directions w or s -> probably rate too high \n')
-         
+        rejCounter[0] = rejCounter[0]+1   #counter 2D
+        
+        POPH[kk,5]   = ww     #multiuplicity wires
+        POPH[kk,6]   = ss     #multiuplicity strips
+        POPH[kk,3]   = np.sum(clusterq[:,8],axis=0)   #PH wires
+        POPH[kk,4]   = np.sum(clusterq[:,9],axis=0)  #PH strips
+        POPH[kk,0]   = round((np.sum(clusterq[:,10],axis=0))/(POPH[kk,3]),2)         #position wires
+        POPH[kk,1]   = round((((np.sum(clusterq[:,11],axis=0))/(POPH[kk,4]))-32),2)  #position strips from 1 to 32 or from 0 to 31
+
     else:
-        rejCounter[4] = rejCounter[4]+1               #any other case not taken into account previously
+        rejCounter[1] = rejCounter[1]+1                #counter if they are no neighbour 
         
+elif (ww >= 1 and ss == 0 and ww <= 32 and acceptWindow): #put in 1D hist only for wires when there is no strip 
+        
+    mmaxw = clusterq[is_wire, 6][-1]
+    mminw = clusterq[is_wire, 6][0] 
+
+    neigw = (mmaxw - mminw) == (ww-1)    #if event repated is rejected because neigw is 1 even if the same wire is repeated and should be 2 
+   
+    if (neigw == 1):    #if they are neighbour then...
+
+        rejCounter[2] = rejCounter[2]+1;                #counter 1D
+
+        POPH[kk,5]   = ww     #multiuplicity wires
+        POPH[kk,3]   = np.sum(clusterq[:,8],axis=0)   #PH wires
+        POPH[kk,0]   = round((np.sum(clusterq[:,10],axis=0))/(POPH[kk,3]),2)         #position wires
+        POPH[kk,1]   = -1 #position strips if absent
+           
+    else:
+        rejCounter[1] = rejCounter[1]+1              #counter if they are no neighbour 
+        
+elif (ww >= 33 or ss >= 33):
+      rejCounter[3] = rejCounter[3]+1               #counter if cluster above possible limits          
+      print('\n cluster > 32 in either directions w or s -> probably rate too high \n')
+     
+else:
+    rejCounter[4] = rejCounter[4]+1               #any other case not taken into account previously
+    
 
 print('\n')        
    
