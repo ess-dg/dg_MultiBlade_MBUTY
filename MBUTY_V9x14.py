@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V9.12 2020/03/30      francescopiscitelli    ######################
+########    V9.14 2020/05/27      francescopiscitelli    ######################
 ########    (this version uses an excel file for mapping channels into geometry)
 ########    (and can load either EFU files or JADAQ files)
 ###############################################################################
@@ -274,7 +274,7 @@ elif openWindowToSelectFiles == 1:
     
     listOfFiles = glob.glob(datapath+'/*.h5') 
     if not len(listOfFiles):
-        print('\n No file exists in directory \n')
+        print('\n \033[1;31mNo file exists in directory \033[1;37m\n')
         print(' ---> Exiting ... \n')
         print('------------------------------------------------------------- \n')
         sys.exit()
@@ -290,18 +290,18 @@ elif openWindowToSelectFiles >= 2:
     datapath = temp[0]+'/'
     fname    = temp[1]
     if fname == "":
-        print('\n Nothing selected! \n')
+        print('\n \033[1;31mNothing selected! \033[1;37m\n')
         print(' ---> Exiting ... \n')
         print('------------------------------------------------------------- \n')
         sys.exit()
 else:
-    print('\n Please select a correct open file mode! \n')
+    print('\n \033[1;31mPlease select a correct open file mode! \033[1;37m\n')
     print(' ---> Exiting ... \n')
     print('------------------------------------------------------------- \n')
     sys.exit()
     
 # print('\n File selected: '+datapath)      
-print('File selected: '+fname)
+print('\033[1;36mFile selected: '+fname+' \033[1;37m')
 
 temp1 = fname.split('_')
 fnamepart1 = temp1[0]+'_'      #file name without serial and exstension .h5
@@ -311,7 +311,7 @@ fnamepart3 = '.'+temp2[1]      #.h5
 if openWindowToSelectFiles == 2 or openWindowToSelectFiles == 1:
     acqnum = [int(temp2[0])]
 
-print('with serials: '+str(acqnum))
+print('\033[1;36mwith serials: '+str(acqnum)+'\033[1;37m')
 time.sleep(1)
    
 ###############################################################################
@@ -333,7 +333,7 @@ if MAPPING == 0:
 elif MAPPING == 1:
    mapfullpath = mappath+mapfile         
    if os.path.exists(mapfullpath) == False:
-      print('\n ---> WARNING ... File: '+mapfullpath+' NOT FOUND')
+      print('\n \033[1;33m---> WARNING ... File: '+mapfullpath+' NOT FOUND\033[1;37m')
       print("\t ... Mapping switched OFF ... ")
       MAPPING = 0
       time.sleep(2)
@@ -349,14 +349,14 @@ if closeGaps == 1 or closeGaps == 2:
 
     if positionRecon == 1: 
         closeGaps = 0
-        print(' ---> closing gaps for pos. reconstr. 1 not allowed ... skipped! ')
+        print(' \033[1;33m---> closing gaps for pos. reconstr. 1 not allowed ... skipped! \033[1;37m')
 
     if len(digitID) == 1: 
         closeGaps = 0
-        print(' ---> closing gaps OFF for only 1 cassette! \n')
+        print(' \033[1;33m---> closing gaps OFF for only 1 cassette! \033[1;37m\n')
     else:
         if len(gaps) != len(digitID):
-            print(' ---> closing gaps: length(gaps) ~= length(cassette) ... check! -> Default 3 wires used ... ')
+            print(' \033[1;33m---> closing gaps: length(gaps) ~= length(cassette) ... check! -> Default 3 wires used ... \033[1;37m')
             gaps    = [3]*len(digitID)
             gaps[0] = 0
 
@@ -396,7 +396,7 @@ if saveReducedData == 1:
     
     # check if file already exist and in case yes delete it 
     if os.path.exists(outfile) == True:
-       print('\n WARNING: Reduced DATA file exists, it will be overwritten!')
+       print('\n \033[1;33mWARNING: Reduced DATA file exists, it will be overwritten!\033[1;37m')
        os.system('rm '+outfile)
        
     # if you want to save reduced data, it must include lambda, so lambda calculation is turned ON if not yet 
@@ -528,13 +528,14 @@ for dd in range(len(digitID)):
         if calculateLambda == 1:
            XLam = np.zeros((len(XX),len(xlambda))) 
    
-        print('\n ---> Reading Digitizer '+str(digitID[dd])+', serial '+str(acqnum[ac]))
-        
+        # print('\n ---> Reading Digitizer '+str(digitID[dd])+', serial '+str(acqnum[ac]))
+        print('\n \033[1;32m---> Reading Digitizer '+str(digitID[dd])+', serial '+str(acqnum[ac])+'\033[1;37m')
+       
         filenamefull = fnamepart1+str(format(acqnum[ac],'05d'))+fnamepart3
 
         # check if file exists in folder
         if os.path.exists(datapath+filenamefull) == False:
-           print('\n ---> File: '+filenamefull+' DOES NOT EXIST')
+           print('\n \033[1;31m---> File: '+filenamefull+' DOES NOT EXIST \033[1;37m')
            print('\n ---> in folder: '+datapath+' \n')
            print(' ---> Exiting ... \n')
            print('------------------------------------------------------------- \n')
@@ -547,7 +548,7 @@ for dd in range(len(digitID)):
                 ordertime = 1
                 [data, Ntoffi, GTime, _, flag] = lof.readHDFjadaq_3col(datapath,filenamefull,digitID[dd],Clockd,ordertime)
             except: 
-                print('\n ---> this looks like a file created with the EFU file writer, change mode with EFU_JADAQ_fileType set to 1!')
+                print('\n \033[1;31m---> this looks like a file created with the EFU file writer, change mode with EFU_JADAQ_fileType set to 1!\033[1;37m')
                 print(' ---> Exiting ... \n')
                 print('------------------------------------------------------------- \n')
                 sys.exit()
@@ -565,7 +566,7 @@ for dd in range(len(digitID)):
                     # flag is -1 if no digit is found otherwise 0    
                     #####################################
             except: 
-                print('\n ---> this looks like a file created with the JADAQ file writer, change mode with EFU_JADAQ_fileType set to 0!')
+                print('\n \033[1;31m---> this looks like a file created with the JADAQ file writer, change mode with EFU_JADAQ_fileType set to 0!\033[1;37m')
                 print(' ---> Exiting ... \n')
                 print('------------------------------------------------------------- \n')
                 sys.exit()
@@ -581,14 +582,14 @@ for dd in range(len(digitID)):
                
            SingleFileDurationFromFile = tsecn[-1] 
            if abs(SingleFileDurationFromFile-SingleFileDuration) > 1: #if they differ for more then 1s then warning
-              print('\n     WARNING: check file duration ... found %.2f s, expected %.2f s' % (SingleFileDurationFromFile,SingleFileDuration))
+              print('\n     \033[1;33mWARNING: check file duration ... found %.2f s, expected %.2f s \033[1;37m' % (SingleFileDurationFromFile,SingleFileDuration))
               time.sleep(2)
            Ntoffiapriori = round(SingleFileDuration/ToFduration)   
            if abs(Ntoffiapriori-Ntoffi) >= 2: 
-              print('\n     WARNING: check Num of ToFs ... found %d, expected %d' % (Ntoffi, Ntoffiapriori))
+              print('\n     \033[1;33mWARNING: check Num of ToFs ... found %d, expected %d \033[1;37m' % (Ntoffi, Ntoffiapriori))
         elif flag == -1:
            SingleFileDurationFromFile = 0
-           print('\n \t ---> No Data for Digitizer '+str(digitID[dd])+', serial '+str(acqnum[ac])+', to display ... skipped!')
+           print('\n \t \033[1;33m---> No Data for Digitizer '+str(digitID[dd])+', serial '+str(acqnum[ac])+', to display ... skipped!\033[1;37m')
            continue
         #####################################
         # histogram raw channels in the file 
@@ -619,8 +620,8 @@ for dd in range(len(digitID)):
            MONdata = temp[selMON,:]
            MONdata[:,0] = np.around((MONdata[:,0]),decimals=6)     #  time stamp in s and round at 1us
            data    = data[np.logical_not(selMON),:] # remove MON data from data 
-           
-           print('\n \t Monitor found ... splitting MONITOR data (%d ev.) from Data' % (len(MONdata)))
+                      
+           print('\n \t \033[1;35mMonitor found ... splitting MONITOR data (%d ev.) from Data \033[1;37m' % (len(MONdata)))
            
            if ac == 0:
              MONdataCum = MONdata

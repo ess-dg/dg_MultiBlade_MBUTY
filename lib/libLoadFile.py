@@ -53,9 +53,10 @@ def readHDFefu_3col (datapathinput,filename,digitID,Clockd,ordertime=1):
         DGTime = np.array([1], dtype='float64' )*np.inf
         flag   = -1
         presentdigit = np.unique(DATA[:,1])
-        print('\n \t No Digit ',str(digitID),' found! This file only contains Digitizers:', end=' ')
+        print('\n \t \033[1;33mWARNING: No Digit ',str(digitID),' found! This file only contains Digitizers:', end=' ')
         for digit in presentdigit:
             print(digit,end=' ')
+        print('\033[1;37m')
                
     else:
         
@@ -121,10 +122,11 @@ def readHDFjadaq_3col (datapathinput,filename,digitID,Clockd,ordertime=1):
             Ntoffi = np.array([1], dtype='float64' )*np.inf
             GTime  = np.array([1], dtype='float64' )*np.inf
             DGTime = np.array([1], dtype='float64' )*np.inf
-            flag   = -1
-            print('\n \t No Digit ',str(digitID),' found! This file only contains Digitizers:', end=' ')
+            flag   = -1    
+            print('\n \t \033[1;33mWARNING: No Digit ',str(digitID),' found! This file only contains Digitizers:', end=' ')
             for digit in presentdigit:
                 print(digit,end=' ')
+            print('\033[1;37m')
     
     else:
         
@@ -190,9 +192,10 @@ def readHDFjadaqTraces (datapathinput,filename,digitID,Clockd,ordertime=1):
             GTime  = np.array([1], dtype='float64' )*np.inf
             DGTime = np.array([1], dtype='float64' )*np.inf
             flag   = -1
-            print('\n \t No Digit ',str(digitID),' found! This file only contains Digitizers:', end=' ')
+            print('\n \t \033[1;33mWARNING: No Digit ',str(digitID),' found! This file only contains Digitizers:', end=' ')
             for digit in presentdigit:
                 print(digit,end=' ')
+            print('\033[1;37m')
     
     else:
         
@@ -245,7 +248,7 @@ def readHDFjadaqTraces (datapathinput,filename,digitID,Clockd,ordertime=1):
                      
                     if cont == 0:
                         
-                        print('\n \t WARNING: Digit ',str(digitID),' has no samples! Only QDC data loaded.')
+                        print('\n \t \033[1;33mWARNING: Digit ',str(digitID),' has no samples! Only QDC data loaded.\033[1;37m')
                         cont += 1
                         
                         # numSamples   = 0
@@ -380,10 +383,12 @@ def readHDFreducedFile (datapathinput,filename,digitID):
                 presentDigit = np.append(presentDigit,np.int64(temp[1]))
         
         if not(digitID in presentDigit):
-            data = np.ones((1,9),dtype=float)*np.inf
-            print('\n \t No Digit ',str(digitID),' found! This file only contains Digitizers:', end=' ')
+            data = np.ones((1,9),dtype=float)*np.inf                
+            print('\n \t \033[1;33mWARNING: No Digit ',str(digitID),' found! This file only contains Digitizers:', end=' ')
             for digit in presentDigit:
                 print(np.int(digit),end=' ')
+            print('\033[1;37m')
+            
         else:
     
             selDigit = stringToFind+str(digitID)
@@ -394,7 +399,7 @@ def readHDFreducedFile (datapathinput,filename,digitID):
                     data = dtemp[selDigit]['data'][()]
                    
     except:
-        print('--> no detector data')
+        print('\033[1;33m-->WARNING: no detector data\033[1;37m')
         arrangement = 0
         data        = np.ones((1,9),dtype=float)*np.inf
         

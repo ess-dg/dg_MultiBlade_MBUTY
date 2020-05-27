@@ -123,11 +123,19 @@ if sync == 1:
 
 if openWindowToSelectFiles == 0:
     fname = filename
+    
+    # check if file exists in folder
+    if os.path.exists(datapath+filename) == False:
+           print('\n \033[1;31m---> File: '+filename+' DOES NOT EXIST \033[1;37m')
+           print('\n ---> in folder: '+datapath+' \n')
+           print(' ---> Exiting ... \n')
+           print('------------------------------------------------------------- \n')
+           sys.exit()
 
 elif openWindowToSelectFiles == 1: 
     listOfFiles = glob.glob(datapath+'/*.h5') 
     if not len(listOfFiles):
-        print('\n No file exists in directory \n')
+        print('\n \033[1;31mNo file exists in directory \033[1;37m\n')
         print(' ---> Exiting ... \n')
         print('------------------------------------------------------------- \n')
         sys.exit()   
@@ -142,19 +150,19 @@ elif openWindowToSelectFiles == 2:
     datapath = temp[0]+'/'
     fname = temp[1]
     if fname == "":
-        print('\n Nothing selected! \n')
+        print('\n \033[1;31mNothing selected! \033[1;37m\n')
         print(' ---> Exiting ... \n')
         print('------------------------------------------------------------- \n')
         sys.exit()
         
 else:
-    print('\n Please select a correct open file mode! \n')
+    print('\n \033[1;31mPlease select a correct open file mode! \033[1;37m\n')
     print(' ---> Exiting ... \n')
     print('------------------------------------------------------------- \n')
     sys.exit()
     
 # print('\n File selected: '+datapath)      
-print('File selected: '+fname)
+print('\033[1;36mFile selected: '+fname+' \033[1;37m\n')
 
 ###############################################################################
 ###############################################################################
@@ -165,7 +173,7 @@ if MAPPING == 0:
 elif MAPPING == 1:
    mapfullpath = mappath+mapfile         
    if os.path.exists(mapfullpath) == False:
-      print('\n ---> WARNING ... File: '+mapfullpath+' NOT FOUND')
+      print('\n \033[1;33m---> WARNING ... File: '+mapfullpath+' NOT FOUND\033[1;37m')
       print("\t ... Mapping switched OFF ... ")
       MAPPING = 0
       time.sleep(2)

@@ -397,7 +397,7 @@ def myHistXYZ (XX,A,YY,B,ZZ,C,coincidence=1,showStats=1):
     count   = np.zeros((3,2)) #counter for rejected and good evetns
            
     if (not( (len(A) == len(B)) and (len(A) == len(C)))):
-        print('\n \t ----> ABORT: X and/or Y and/or T not same length! \n')
+        print('\n \t \033[1;31m----> ABORT: X and/or Y and/or T not same length! \033[1;37m\n')
         return XY, XYproj, XZ
 
     xxtemp  =  np.int_(np.around(((binX-1)*((A-Xmin)/(Xmax-Xmin)))))
@@ -447,7 +447,7 @@ def myHistXYZ (XX,A,YY,B,ZZ,C,coincidence=1,showStats=1):
     countn = 100*(count/Nev)
        
     if count[1,1] != 0 :
-       print('\n \t WARNING: %.1f%% out of 1D boundaries \n' % count[1,1])
+       print('\n \t \033[1;33mWARNING: %.1f%% out of 1D boundaries \033[1;37m\n' % count[1,1])
 
     if showStats == 1:
        print(' \t percentage in 2D hist: %.1f%%, out of boundaries or only w %.1f%%' % (countn[0,0],countn[0,1]))
@@ -474,7 +474,7 @@ def softThresholds (sthpath,sthfile,digitID,softthreshold):
         sth = np.zeros((np.size(digitID,axis=0),64))
         
         if os.path.exists(sthfullpath) == False:
-            print('\n ---> WARNING ... File: '+sthfullpath+' NOT FOUND')
+            print('\n \033[1;33m---> WARNING ... File: '+sthfullpath+' NOT FOUND\033[1;37m')
             print("\t ... software thresholds switched OFF ... ")
             softthreshold = 0
             time.sleep(2)
@@ -487,7 +487,7 @@ def softThresholds (sthpath,sthfile,digitID,softthreshold):
         for k in range(len(digitID)):
            
              if not(digitID[k] in digit):
-                print('\n ---> WARNING ... Threshold File does NOT contain all the digitser IDs')
+                print('\n \033[1;33m---> WARNING ... Threshold File does NOT contain all the digitser IDs\033[1;37m')
                 print("\t ... software thresholds switched OFF for digitiser ",+(digitID[k]))
                 sth[k,:] = 0  
              else:

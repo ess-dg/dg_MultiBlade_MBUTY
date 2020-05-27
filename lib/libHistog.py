@@ -30,7 +30,7 @@ def hist1(xbins,xvar,outBounds=True):
     
     if outBounds == False:
         if not(np.all(index >= 0) and np.all(index <= binX-1)):
-            print('warning: hist out of bounds, change limits!') 
+            print('\033[1;33mWARNING: hist out of bounds, change limits!\033[1;37m') 
     
     for k in range(binX):    
         hist[k] = np.sum(index == k) 
@@ -65,7 +65,7 @@ def hist2(xbins, xvar, ybins, yvar, outBounds=True):
     hist = np.zeros((binY,binX)) 
     
     if not( (len(xvar) == len(yvar))):
-        print('\n \t ----> ABORT: X and Y not same length! \n')
+        print('\n \t \033[1;31m----> ABORTED: X and Y not same length! \033[1;37m\n')
         return hist
     
     xxtemp =  np.int_(np.around(((binX-1)*((xvar-Xmin)/(Xmax-Xmin)))))
@@ -95,7 +95,7 @@ def hist2(xbins, xvar, ybins, yvar, outBounds=True):
               hist[yy,xx] += 1
            else:
                if cont == 0:
-                   print('warning: hist out of bounds') 
+                   print('\033[1;33mWARNING: hist out of bounds.\033[1;37m') 
                    cont = 1  
                       
     return hist

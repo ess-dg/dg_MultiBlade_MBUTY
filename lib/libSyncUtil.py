@@ -32,7 +32,7 @@ def syncData (pathsource,desitnationpath):
     if status == 0: 
           print('\n data sync completed')
     else:
-          print('\n ERROR ... \n')
+          print('\n \033[1;31mERROR ... \n\033[1;37m')
     
     # print(status)      
           
