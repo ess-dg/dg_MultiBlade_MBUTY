@@ -13,6 +13,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 from matplotlib.colors import LogNorm
 import time
 import h5py
@@ -26,8 +27,20 @@ from lib import libSyncUtil as syu
 from lib import libLoadFile as lof 
 from lib import libHistog as hh
 from lib import libToFconverter as tcl
-from lib import libMBUTY_V9x14 as mbl 
+from lib import libMBUTY_V9x15 as mbl 
+###############################################################################
+###############################################################################
 
+# NOTES: once strips will be 64 in MB300 mapping has to be modified to map 
+# wires from 0 to 31 in each cassette and strips from 32 to 95, then clustering will do 0-31 
+# for wires and  0-63 for strips. 
+# So for each digit with a dictionary the ch must be mapped as above before any opreation.
+# Moreover, threhsold still apply to each cassette so the cols in the excelk must be 96  rows, 
+# this is already comaptible.
+# All libraries are already compatible with 64 strips instead of 32. Only the mapping and the 
+# main script has to be modified. 
+
+###############################################################################
 ###############################################################################
 tProfilingStart = time.time()
 print('----------------------------------------------------------------------')
@@ -179,11 +192,12 @@ CorrelationPHSws = 0              # ON/OFF
 # Position reconstruction (max is max amplitude ch in clsuter either on w or s,
 # CoG is centre of gravity on ch)
 
-ChW = [0,31]  # wire channels NOTE: if ch from 1 many things do not work on indexes, keep ch num from 0
-ChS = [0,31]  # strip channels
-
+numWires  = 32    # num of wire channels alweays from 0 to 31
+numStrips = 32    # num of strip channels, either 0 to 31 or 0 to 63
+  
 positionRecon = 2
 
+# binning position 
 if positionRecon == 0:
    posBins = [32,32]     # w x s max max
 elif positionRecon == 1:
@@ -312,6 +326,7 @@ if openWindowToSelectFiles == 2 or openWindowToSelectFiles == 1:
     acqnum = [int(temp2[0])]
 
 print('\033[1;36mwith serials: '+str(acqnum)+'\033[1;37m')
+print('\033[1;36mand Digitizers in this order: '+str(digitID)+'\033[1;37m\n')
 time.sleep(1)
    
 ###############################################################################
@@ -321,7 +336,7 @@ if softthreshold == 0:
     print(' ---> Thresholds OFF ...')
 elif softthreshold == 1:
     print(' ---> Thresholds ON ... Loading Threshold File ...')
-    [sth,softthreshold] = mbl.softThresholds(sthpath,sthfile,digitID,softthreshold)
+    [sth,softthreshold] = mbl.softThresholds(sthpath,sthfile,digitID,softthreshold,(numWires+numStrips))
 elif softthreshold == 2:   
     print(' ---> Thresholds ON ... Defined by User ...')
     
@@ -380,7 +395,7 @@ elif plotEnerHistIMGinLogScale == 0:
 # check if monitor is in the data
 if MONOnOff == 1: 
     if not(MONdigit in digitID):
-        print('\n MONITOR absent in this cassette selection!')
+        print(' MONITOR absent in this cassette selection!')
         MONfound = 0
     elif (MONdigit in digitID):
         MONfound = 1
@@ -427,7 +442,14 @@ if saveReducedData == 1:
     
 ###############################################################################
 ###############################################################################
-    
+
+ChWires  = [0,numWires-1]     # wire channels NOTE: if ch from 1 many things do not work on indexes, keep ch num from 0
+ChStrips = [0,numStrips-1]    # strip channels
+
+# X (w) and Y (s) axis  
+XX    = np.linspace(ChWires[0],ChWires[1],posBins[0])
+YY    = np.linspace(ChStrips[0],ChStrips[1],posBins[1])
+
 # PHS x-axis energy 
 xener = np.linspace(0,maxenerg,energybins)
 
@@ -439,10 +461,6 @@ ToFx      = np.linspace(ToFmin,ToFmax,ToFbins)
 
 # lambda axis 
 xlambda = np.linspace(lambdaRange[0],lambdaRange[1],lambdaBins)
-
-# X (w) and Y (s) axis  
-XX    = np.linspace(ChW[0],ChW[1],posBins[0])
-YY    = np.linspace(ChS[0],ChS[1],posBins[1])
 
 # global axis
 # note that bins at edges are rounded, you need to use, check XXg_explained.py
@@ -456,6 +474,9 @@ xlambdag = xlambda
 XYglob     = np.zeros((len(YY),(len(digitID)*len(XX))))
 XYprojGlob = np.zeros(len(digitID)*len(XX))
 XToFglob   = np.zeros(((len(digitID)*len(XX)),len(ToFx)))
+
+ratePerDigit  = np.zeros((3,len(digitID)))
+rateMON       = np.zeros((3,1))
 
 if plotChRaw == 1:
    figchraw, axchraw = plt.subplots(num=901, nrows=1, ncols=len(digitID), sharex='col', sharey='row')
@@ -509,9 +530,9 @@ for dd in range(len(digitID)):
        multcumnorm = np.zeros((1,3))
        
     if EnerHistIMG == 1:
-       PHSIwCum  = np.zeros((len(xener),32))
-       PHSIsCum  = np.zeros((len(xener),32))
-       PHSIwcCum = np.zeros((len(xener),32))
+       PHSIwCum  = np.zeros((len(xener),numWires))
+       PHSIsCum  = np.zeros((len(xener),numStrips))
+       PHSIwcCum = np.zeros((len(xener),numWires))
       
     if calculateLambda == 1:
        XLamCum = np.zeros((len(XX),len(xlambda))) 
@@ -546,7 +567,7 @@ for dd in range(len(digitID)):
             
             try:
                 ordertime = 1
-                [data, Ntoffi, GTime, _, flag] = lof.readHDFjadaq_3col(datapath,filenamefull,digitID[dd],Clockd,ordertime)
+                [data, Ntoffi, GTime, _, flag] = lof.readHDFjadaq(datapath,filenamefull,digitID[dd],Clockd,ordertime)
             except: 
                 print('\n \033[1;31m---> this looks like a file created with the EFU file writer, change mode with EFU_JADAQ_fileType set to 1!\033[1;37m')
                 print(' ---> Exiting ... \n')
@@ -558,13 +579,14 @@ for dd in range(len(digitID)):
             
             try:
                ordertime = 1
-               [data, Ntoffi, GTime, _, flag] = lof.readHDFefu_3col(datapath,filenamefull,digitID[dd],Clockd,ordertime)
+               [data, Ntoffi, GTime, _, flag] = lof.readHDFefu(datapath,filenamefull,digitID[dd],Clockd,ordertime)
                     # data here is 3 cols: time stamp in s, ch 0to63, ADC, 
                     # Ntoffi num of resets
                     # GTime is time of the resets in ms, absolute time, make diff to see delta time betwen resets
                     # DGTtime global reset in ms
                     # flag is -1 if no digit is found otherwise 0    
                     #####################################
+                    # IN THE FUTURE THIS HAS TO LOAD THE CASSETTE (96 CH) AND NOT THE DIGIT ONLY
             except: 
                 print('\n \033[1;31m---> this looks like a file created with the JADAQ file writer, change mode with EFU_JADAQ_fileType set to 0!\033[1;37m')
                 print(' ---> Exiting ... \n')
@@ -581,6 +603,8 @@ for dd in range(len(digitID)):
                tsecn  = tsec-tsec[1]
                
            SingleFileDurationFromFile = tsecn[-1] 
+           ratePerDigit[1,dd] =  ratePerDigit[1,dd] + SingleFileDurationFromFile
+          
            if abs(SingleFileDurationFromFile-SingleFileDuration) > 1: #if they differ for more then 1s then warning
               print('\n     \033[1;33mWARNING: check file duration ... found %.2f s, expected %.2f s \033[1;37m' % (SingleFileDurationFromFile,SingleFileDuration))
               time.sleep(2)
@@ -597,11 +621,11 @@ for dd in range(len(digitID)):
             
             # temp = data[data[:,1] <= 1 ,1]
             
-            Xaxis  = np.arange(0,64,1)
+            Xaxis  = np.arange(0,numWires+numStrips,1)
             histxx = hh.hist1(Xaxis,data[:,1],1)     
             
             # if len(digitID)>1:
-            axchraw[0][dd].bar(Xaxis[:32],histxx[:32],0.8,color='r')
+            axchraw[0][dd].bar(Xaxis[:32],histxx[:32],0.8,color='r') 
             axchraw[0][dd].bar(Xaxis[32:],histxx[32:],0.8,color='b')
             axchraw[0][dd].set_xlabel('raw ch no.')
             axchraw[0][dd].set_title('digit '+str(digitID[dd]))
@@ -609,6 +633,10 @@ for dd in range(len(digitID)):
                axchraw[0][dd].set_ylabel('counts')
             
         #####################################  
+        
+        # this has to be modified to have always ch wires 0 to 31 and ch strips either 32 to 63 or up to 95
+        # to map MB300L with 64 strips in multiple digitisers togheter with the readder of the file that has to load the 
+        # cassette and not the digit 
         
         data = mbl.mappingChToGeometry(data,MAPPING,mappath,mapfile)
 
@@ -620,6 +648,8 @@ for dd in range(len(digitID)):
            MONdata = temp[selMON,:]
            MONdata[:,0] = np.around((MONdata[:,0]),decimals=6)     #  time stamp in s and round at 1us
            data    = data[np.logical_not(selMON),:] # remove MON data from data 
+           rateMON[0,0] = rateMON[0,0]+len(MONdata)
+           rateMON[1,0] = rateMON[1,0]+SingleFileDurationFromFile
                       
            print('\n \t \033[1;35mMonitor found ... splitting MONITOR data (%d ev.) from Data \033[1;37m' % (len(MONdata)))
            
@@ -632,10 +662,10 @@ for dd in range(len(digitID)):
         data = mbl.cleaning(data,overflowcorr,zerosuppression)
         
         #####################################
-        if softthreshold > 0: # ch from 0 to 63
+        if softthreshold > 0: # ch from 0 to 63 or 95
             print(" \n \t ... software thresholds applied ... ")
             Nall = np.size(data,axis=0)
-            for chj in np.arange(0,64,1):
+            for chj in np.arange(0,numWires+numStrips,1):
                 chbelowth = np.logical_and(data[:,1] == chj,data[:,2] < sth[dd,chj])
                 data[chbelowth,2] = np.nan
             data = data[np.logical_not(np.isnan(data[:,2]))]
@@ -683,19 +713,24 @@ for dd in range(len(digitID)):
             
         #####################################
         # clustering
-            # old cluster function
-        # [POPH, Nevents] = mb.clusterPOPH(data,Timewindow)
-            # use _q for speed -> new cluster
-            
+        
         # np.save('data4cluster.npy',data)
             
-        # data input here is 3 cols: time stamp in s, ch 0to63, ADC,
-        [POPH, Nevents] = mbl.clusterPOPH_q(data,Timewindow)
+        # data input is col 0: time stamp in s, col 1: ch number (FROM 0 TO 63 or 95), col2: ADC value
+        # IT MUST BE 3 columns 
+        # it works either if strips are 32 or 64
+        # INPUT always wires ch from 0 to 31 and strips from 32 to 63 or 95 
+        # OUTPUT if there is no strip in coincidence it will be -1 in position, with 0 PH and 0 multiplicity
+        # wires in output are always from 0 to 31 and strips either from 0 to 31 or 0 to 63
+        # NOTE: in both cases of clusters with more than 32 wires or 32 strips are anyhow rejected
+        [POPH, Nevents, NumeventNoRej] = mbl.clusterPOPH(data,Timewindow)
         
-        #  POPH has 7 cols:X,Y,ToF,PHwires,PHstrips,multW,multS
+        #  POPH output has 7 cols:X,Y,ToF,PHwires,PHstrips,multW,multS
         #  units:pix(0.350mm),pix(4mm),seconds,a.u.,a.u.,int,int
         
         # aaaa = POPH
+        
+        ratePerDigit[0,dd] = ratePerDigit[0,dd]+NumeventNoRej
         
         #####################################
         # gating ToF
@@ -740,9 +775,9 @@ for dd in range(len(digitID)):
         # energy hist
         if EnerHistIMG == 1:
             
-           PHSIw  = np.zeros((len(xener),32)) 
-           PHSIs  = np.zeros((len(xener),32))
-           PHSIwc = np.zeros((len(xener),32))
+           PHSIw  = np.zeros((len(xener),numWires)) 
+           PHSIs  = np.zeros((len(xener),numStrips))
+           PHSIwc = np.zeros((len(xener),numWires))
            
            chwRound  = np.round(POPH[:,0])
            chsRound  = np.round(POPH[:,1])
@@ -756,13 +791,13 @@ for dd in range(len(digitID)):
            # PHSIs  = hh.hist2(XX,chsRound[TwoDim],xener,POPH[:,4],1) 
            # PHSIwc = hh.hist2(XX,chwcRound,xener,POPHcoinc[:,3],1)
            
-           for chi in range(0,32,1):    # wires
+           for chi in range(0,numWires,1):    # wires
                  PHSIw[:,chi] = hh.hist1(xener,POPH[chwRound == chi,3],1) # wires all
                           
-           for chi in range(0,32,1):    # strips
+           for chi in range(0,numStrips,1):    # strips
                  PHSIs[:,chi] = hh.hist1(xener,POPH[chsRound == chi,4],1) # strips all
                
-           for chi in range(0,32,1):    # wires in coincidence 2D
+           for chi in range(0,numWires,1):    # wires in coincidence 2D
                  PHSIwc[:,chi] = hh.hist1(xener,POPHcoinc[chwcRound == chi,3],1) # wires coinc.
 
            PHSIwCum  = PHSIwCum  + PHSIw
@@ -869,9 +904,9 @@ for dd in range(len(digitID)):
     # energy hist
     if EnerHistIMG == 1:
 
-       axphs[0][dd].imshow(np.rot90(PHSIwCum),aspect='auto',norm=normColorsPH,interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
-       axphs[1][dd].imshow(np.rot90(PHSIsCum),aspect='auto',norm=normColorsPH,interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
-       axphs[2][dd].imshow(np.rot90(PHSIwcCum),aspect='auto',norm=normColorsPH,interpolation='none',extent=[xener[0],xener[-1],-0.5,31.5], origin='upper',cmap='jet')
+       axphs[0][dd].imshow(np.rot90(PHSIwCum),aspect='auto',norm=normColorsPH,interpolation='none',extent=[xener[0],xener[-1],ChWires[1]+0.5,ChWires[0]-0.5], origin='lower',cmap='jet')
+       axphs[1][dd].imshow(np.rot90(PHSIsCum),aspect='auto',norm=normColorsPH,interpolation='none',extent=[xener[0],xener[-1],ChStrips[1]+0.5,ChStrips[0]-0.5], origin='lower',cmap='jet')
+       axphs[2][dd].imshow(np.rot90(PHSIwcCum),aspect='auto',norm=normColorsPH,interpolation='none',extent=[xener[0],xener[-1],ChWires[1]+0.5,ChWires[0]-0.5], origin='lower',cmap='jet')
        if dd == 0:
            axphs[0][dd].set_ylabel('wires ch. no.')
            axphs[1][dd].set_ylabel('strips ch. no.')
@@ -913,7 +948,23 @@ for dd in range(len(digitID)):
 ##################################### 
 #END LOOP OVER DIGITIZERS        
 ##################################### 
-       
+     
+###############################################################################
+###############################################################################
+#  rates 
+
+# ratePerDigit[2,:] = ratePerDigit[0,:]/ratePerDigit[1,:] 
+
+rateGlobal   = np.sum(ratePerDigit[0,:])
+rateGlobal   = round(rateGlobal/ratePerDigit[1,0],2)
+
+print('\n \033[1;36mGlobal (time averaged) rate on detector (selected Digit.): %d Hz \033[1;37m' % (rateGlobal))
+
+if MONfound == 1:
+    rateMON[2,0] = round(rateMON[0,0]/rateMON[1,0],2)
+    print(' \033[1;35mMonitor rate: %d Hz \033[1;37m' % (rateMON[2,0]))
+
+  
 ###############################################################################
 ###############################################################################
 # MONITOR
@@ -1075,6 +1126,12 @@ plt.show()
 
 tElapsedProfiling = time.time() - tProfilingStart
 print('\n Completed --> elapsed time: %.2f s' % tElapsedProfiling)
+
+img=mpimg.imread('finIMG.jpg')
+figf = plt.figure(num=1000)
+figf.add_subplot(111)
+imgplot = plt.imshow(img)
+plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
 
 ###############################################################################
 ###############################################################################

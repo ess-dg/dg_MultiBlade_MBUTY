@@ -9,6 +9,8 @@ import numpy as np
 # import pandas as pd
 import h5py
 
+# NOTE: this module already supports 32 wires and 64 strips 
+
 ###############################################################################
 ###############################################################################
 

@@ -10,6 +10,8 @@ import numpy as np
 import h5py
 # import os
 
+# NOTE: this module already supports 32 wires and 64 strips 
+
 ###############################################################################
 ###############################################################################
 
@@ -17,7 +19,7 @@ import h5py
 #[DATA,Ntoffi,GTime] = readHDFEFUfile(datapathinput,filename,digitID,ordertime)
 # output data 4 columns, col 0 time stamp, col 1 ch num from 0 to 63, col 2 ADC value, col 3 reset of ToF in ms
 
-def readHDFefu_3col (datapathinput,filename,digitID,Clockd,ordertime=1):
+def readHDFefu (datapathinput,filename,digitID,Clockd,ordertime=1):
     
     ########################################
     
@@ -107,7 +109,7 @@ def readHDFefu_3col (datapathinput,filename,digitID,Clockd,ordertime=1):
 ###############################################################################
 ###############################################################################
     
-def readHDFjadaq_3col (datapathinput,filename,digitID,Clockd,ordertime=1):
+def readHDFjadaq (datapathinput,filename,digitID,Clockd,ordertime=1):
 
     f = h5py.File(datapathinput+filename, "r")
     
@@ -400,7 +402,7 @@ def readHDFreducedFile (datapathinput,filename,digitID):
                    
     except:
         print('\033[1;33m-->WARNING: no detector data\033[1;37m')
-        arrangement = 0
+        # arrangement = 0
         data        = np.ones((1,9),dtype=float)*np.inf
         
     f.close() 

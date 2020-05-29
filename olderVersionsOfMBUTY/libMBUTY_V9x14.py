@@ -183,10 +183,14 @@ def clusterPOPH (data,Timewindow):
     
 def clusterPOPH_q (data,Timewindow):
 
-        #data is col 0: time stamp in s, col 1: ch number (FROM 0 TOP 63), col2: ADC value
+        # data is col 0: time stamp in s, col 1: ch number (FROM 0 TO 63 or 95), col2: ADC value
         # IT MUST BE 3 columns 
-        # if there is no strip it will be -1, with 0 PH and 0 multiplicity
-    
+        # it works either if strips are 32 or 64
+        # INPUT always wires ch from 0 to 31 and strips from 32 to 63 or 95 
+        # OUTPUT if there is no strip in coincidence it will be -1 in position, with 0 PH and 0 multiplicity
+        # wires in output are always from 0 to 31 and strips either from 0 to 31 or 0 to 63
+        # NOTE: in both cases of clusters with more than 32 wires or 32 strips are anyhow rejected
+        
     print('\n \t clustering ... ',end='')
         
     # this is a trick to accept also the clusters very close in time otherwise rejected
@@ -249,7 +253,7 @@ def clusterPOPH_q (data,Timewindow):
     
     intervals = 4
     
-    for kk in np.arange(0,NumClusters,1):
+    for kk in range(0,NumClusters,1):
         
             steps = round(NumClusters/intervals)
             if np.mod(kk,steps) == 0 or kk == (NumClusters-1):
@@ -289,7 +293,7 @@ def clusterPOPH_q (data,Timewindow):
                     POPH[kk,3]   = np.sum(clusterq[:,8],axis=0)   #PH wires
                     POPH[kk,4]   = np.sum(clusterq[:,9],axis=0)  #PH strips
                     POPH[kk,0]   = round((np.sum(clusterq[:,10],axis=0))/(POPH[kk,3]),2)         #position wires
-                    POPH[kk,1]   = round((((np.sum(clusterq[:,11],axis=0))/(POPH[kk,4]))-32),2)  #position strips from 1 to 32 or from 0 to 31
+                    POPH[kk,1]   = round((((np.sum(clusterq[:,11],axis=0))/(POPH[kk,4]))-32),2)  #position strips from 0 to 31 0r up to 63
     
                 else:
                     rejCounter[1] = rejCounter[1]+1;                #counter if they are no neighbour 
@@ -358,7 +362,7 @@ def clusterPOPH_q (data,Timewindow):
                 
         print(" \t 1D: percentage of  wires fired per event: %.1f%% (1), %.1f%% (2), %.1f%% (3), %.1f%% (4), %.1f%% (5) \n" % (100*wirefire1D[1],100*wirefire1D[2],100*wirefire1D[3],100*wirefire1D[4],100*wirefire1D[5])); 
 
-    return POPH, NumClusters
+    return POPH, NumClusters, NumeventNoRej
 
 
 #HERE ENDS CLUSTERPOPH improved speed

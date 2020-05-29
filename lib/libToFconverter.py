@@ -6,6 +6,8 @@ Created on Mon Apr 27 08:48:41 2020
 @author: francescopiscitelli
 """
 
+# NOTE: this module already supports 32 wires and 64 strips 
+
 import numpy as np
 
 ### constants ###

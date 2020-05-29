@@ -8,6 +8,8 @@ Created on Mon Apr 27 08:46:04 2020
 
 import numpy as np
 
+# NOTE: this module already supports 32 wires and 64 strips 
+
 # makes 1D or 2D histograms
 
 #  Usage: mm1 = hsm.histog(), nn1 = mm1.hist1(xbins=XX, xvar=AA)
