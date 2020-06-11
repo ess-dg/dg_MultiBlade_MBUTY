@@ -28,6 +28,8 @@ from lib import libLoadFile as lof
 from lib import libHistog as hh
 from lib import libToFconverter as tcl
 from lib import libMBUTY_V9x15 as mbl 
+# from lib.libMBUTY_V9x15 import clusterPOPH 
+ 
 ###############################################################################
 ###############################################################################
 
@@ -39,6 +41,14 @@ from lib import libMBUTY_V9x15 as mbl
 # this is already comaptible.
 # All libraries are already compatible with 64 strips instead of 32. Only the mapping and the 
 # main script has to be modified. 
+###############################################################################
+###############################################################################
+# check version
+if sys.version_info < (3,5):
+   print('\n \033[1;31mPython version too old, use at least Python 3.5! \033[1;37m\n')
+   print(' ---> Exiting ... \n')
+   print('------------------------------------------------------------- \n')
+   sys.exit()
 
 ###############################################################################
 ###############################################################################
