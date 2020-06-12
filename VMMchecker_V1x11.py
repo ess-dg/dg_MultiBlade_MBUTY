@@ -24,7 +24,7 @@ from PyQt5.QtWidgets import QFileDialog
 from lib import libSyncUtil as syu 
 from lib import libLoadVMMfile as lofv 
 from lib import libHistog as hh
-from lib import libMBUTY_V9x14 as mbl 
+from lib import libMBUTY_V9x15 as mbl 
 
 ###############################################################################
 # tProfilingStart = time.time()
@@ -331,7 +331,7 @@ if clusterize == 1:
         #################################################
         
         # data input here is 3 cols: time stamp in s, ch 0to63, ADC,
-        [POPH, Nevents] = mbl.clusterPOPH_q(dataSel,Timewindow)
+        [POPH, Nevents, NumeventNoRej] = mbl.clusterPOPH(dataSel,Timewindow)
         
         #  POPH has 7 cols:X,Y,ToF,PHwires,PHstrips,multW,multS
         #  units:pix(0.350mm),pix(4mm),seconds,a.u.,a.u.,int,int

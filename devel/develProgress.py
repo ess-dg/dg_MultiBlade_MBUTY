@@ -79,11 +79,15 @@ for kk in np.arange(NumClusters):
 
 
 from time import sleep
-from progress.bar import Bar
+from tqdm import tqdm
 
-with Bar('Processing...') as bar:
-    for i in range(100):
-        sleep(0.02)
-        bar.next()
+
+pbar = tqdm(total=100)
+
+
+for i in range(100):
+    sleep(0.5)
+    pbar.update(10)
+pbar.close()
         
         
