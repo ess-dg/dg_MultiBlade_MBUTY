@@ -67,27 +67,29 @@ sync = 0   #ON/OFF if you want to rsync the data
 
 EFU_JADAQ_fileType = 1  # 0 = JADAQ, 1 = EFU file loading 
 
-pathsourceEFU      = 'efu@192.168.0.58:/home/efu/data/temp/'
-pathsourceJDQ      = ''
+pathsourceEFU      = 'efu@192.168.0.58:/home/efu/data/MB18-setup/'
+pathsourceJDQ      = 'jadaq@192.168.0.57:/home/jadaq/data/MB18/'
 
 # desitnationpath     = '/Users/francescopiscitelli/Documents/DOC/DATA/2018_11/DATA_PSI/DATAraw/C_Masks/'
-desitnationpath  = '/Users/francescopiscitelli/Desktop/try/'
+desitnationpath  = '/Users/francescopiscitelli/Desktop/dataPSI/MB18-Masks/'
 
-# datapath            = desitnationpath 
-datapath            = os.path.abspath('.')+'/data/' 
+datapath            = desitnationpath 
+# datapath            = os.path.abspath('.')+'/data/' 
+
+# datapath = '/Users/francescopiscitelli/Documents/DOC/DATA/2018_11/DATA_PSI/DATAraw/'
 
 filename = '13827-C-ESSmask-20181116-120805_00000.h5'
 
 acqnum   = [0]    #do not need to be sequential
 
-openWindowToSelectFiles = 0
+openWindowToSelectFiles = 2
      #  0 = filename and acqnum is loaded, no window opens
      #  1 = latest file created in folder is loaded with its serial
      #  2 = filename and acqnum are both ignored, window opens and 
      #      serial is the only one selected 
      #  3 = filename is ignored, window opens and serial is acqnum  
 
-SingleFileDuration       = 60   #s to check if h5 file has all the resets
+SingleFileDuration       = 5   #s to check if h5 file has all the resets
 
 ###############################################################################
 # variable POPH will be saved in a new h5 file
@@ -102,9 +104,11 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 
 ###############################################################################
 
-digitID = [34,33,31,142,143,137]
+digitID = [34,33,137,142,143,31]
 
-# digitID = [34]
+colorrp = ['r','g','b','k','m','c']
+
+# digitID = [137]
 
 ###############################################################################
 # mapping channels into geometry 
@@ -147,7 +151,7 @@ softthreshold = 1   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines
 
 # sthpath =  '/Users/francescopiscitelli/Documents/PYTHON/MBUTY/'
 sthpath =  os.path.abspath('.')+'/tables/'
-sthfile =  'MB18_thresholds.xlsx'
+sthfile =  'MB18_thresholds_sw36.xlsx'
   
 #####  
 #  if 2 here you can define your thresholds  
@@ -188,7 +192,7 @@ plotToFhist  = 0    #ON/OFF
                                                    
 ###############################################################################
 # PHS image of all wires and strips for all digitizers             
-EnerHistIMG   = 1              # ON/OFF
+EnerHistIMG   = 0              # ON/OFF
 
 plotEnerHistIMGinLogScale = 0   # ON/OFF
 
@@ -205,7 +209,7 @@ CorrelationPHSws = 0              # ON/OFF
 numWires  = 32    # num of wire channels alweays from 0 to 31
 numStrips = 32    # num of strip channels, either 0 to 31 or 0 to 63
   
-positionRecon = 2
+positionRecon = 0
 
 # binning position 
 if positionRecon == 0:
@@ -217,16 +221,16 @@ elif positionRecon == 2:
    
 ###############################################################################
 # close the gaps, remove wires hidden; only works with posreconn 0 or 2, i.e. 32 bins on wires
-closeGaps = 1     # 0 = OFF shows the raw image, 1 = ON shows only the closed gaps img, 2 shows both
+closeGaps = 0     # 0 = OFF shows the raw image, 1 = ON shows only the closed gaps img, 2 shows both
 gaps      = [0, 3, 4, 4, 3, 2]   # (first must be always 0)
    
 ###############################################################################
-# plot the 2D imafge of the detector, lambda and ToF in linear =0 or log scale =1
+# plot the 2D image of the detector, lambda and ToF in linear =0 or log scale =1
 plotIMGinLogScale = 0
    
 ###############################################################################
 # LAMBDA: calcualates lambda and plot hist 
-calculateLambda  = 1    # ON/OFF  
+calculateLambda  = 0    # ON/OFF  
 
 plotLambdaHist   = 0    # ON/OFF hist per digitiser (all ch summed togheter)
                         # (calculateLambda has to be ON to plot this)
@@ -485,8 +489,10 @@ XYglob     = np.zeros((len(YY),(len(digitID)*len(XX))))
 XYprojGlob = np.zeros(len(digitID)*len(XX))
 XToFglob   = np.zeros(((len(digitID)*len(XX)),len(ToFx)))
 
-ratePerDigit  = np.zeros((3,len(digitID)))
-rateMON       = np.zeros((3,1))
+ratePerDigit      = np.zeros((4,len(digitID)))
+ratePerDigit[3,:] = SingleFileDuration
+rateMON      = np.zeros((4,1))
+rateMON[3,0] = SingleFileDuration
 
 if plotChRaw == 1:
    figchraw, axchraw = plt.subplots(num=901, nrows=1, ncols=len(digitID), sharex='col', sharey='row')
@@ -602,7 +608,7 @@ for dd in range(len(digitID)):
                 print(' ---> Exiting ... \n')
                 print('------------------------------------------------------------- \n')
                 sys.exit()
-
+                
         # check if the duration of the file is correct, expected number of resets and ToFs
         if flag == 0:
            tsec   = GTime*1e-3 #s
@@ -715,7 +721,7 @@ for dd in range(len(digitID)):
         if plottimestamp == 1:
             fig = plt.figure(num=903, figsize=(9,6))
             ax1 = fig.add_subplot(111)
-            plt.plot(data[:,0],'k+')
+            plt.plot(np.arange(len(data[:,0])),data[:,0],marker='+',color=str(colorrp[dd]))
             plt.xlabel('trigger no.')
             plt.ylabel('time (s)')
             plt.grid(axis='x', alpha=0.75)
@@ -962,18 +968,29 @@ for dd in range(len(digitID)):
 ###############################################################################
 ###############################################################################
 #  rates 
-
-# ratePerDigit[2,:] = ratePerDigit[0,:]/ratePerDigit[1,:] 
-
-rateGlobal   = np.sum(ratePerDigit[0,:])
-rateGlobal   = round(rateGlobal/ratePerDigit[1,0],2)
-
-print('\n \033[1;36mGlobal (time averaged) rate on detector (selected Digit.): %d Hz \033[1;37m' % (rateGlobal))
-
-if MONfound == 1:
-    rateMON[2,0] = round(rateMON[0,0]/rateMON[1,0],2)
-    print(' \033[1;35mMonitor rate: %d Hz \033[1;37m' % (rateMON[2,0]))
-
+try:
+    ratePerDigit[2,:] = ratePerDigit[0,:]/ratePerDigit[1,:] 
+    
+    rateGlobal   = np.sum(ratePerDigit[0,:])
+    rateGlobal   = round(rateGlobal/ratePerDigit[1,0],2)
+     
+    print('\n \033[1;36mGlobal (time averaged - duration %d s from file) rate on detector (selected Digit.): %d Hz \033[1;37m' % (SingleFileDurationFromFile, rateGlobal))
+    
+    if MONfound == 1:
+        rateMON[2,0] = round(rateMON[0,0]/rateMON[1,0],2)
+        print(' \033[1;35mMonitor rate: %d Hz \033[1;37m' % (rateMON[2,0]))
+except:
+    ratePerDigit[2,:] = ratePerDigit[0,:]/ratePerDigit[3,:] 
+    
+    rateGlobal   = np.sum(ratePerDigit[0,:])
+    rateGlobal   = round(rateGlobal/ratePerDigit[3,0],2)
+    
+    
+    print('\n \033[1;36mGlobal (time averaged - duration %d s a priori) rate on detector (selected Digit.): %d Hz \033[1;37m' % (SingleFileDuration, rateGlobal))
+    
+    if MONfound == 1:
+        rateMON[2,0] = round(rateMON[0,0]/rateMON[3,0],2)
+        print(' \033[1;35mMonitor rate: %d Hz \033[1;37m' % (rateMON[2,0]))
   
 ###############################################################################
 ###############################################################################
@@ -1043,7 +1060,7 @@ if closeGaps == 0 or closeGaps == 2:
     # 2D image of detector X,Y
     fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
     # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
-    pos1  = ax1.imshow(XYglob,aspect='auto',norm=normColors,interpolation='nearest',extent=[XXg[0],XXg[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
+    pos1  = ax1.imshow(XYglob,aspect='auto',norm=normColors,interpolation='none',extent=[XXg[0],XXg[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
     fig2D.colorbar(pos1, ax=ax1)
     # cbar1 =fig2D.colorbar(pos1,ax=ax1)
     # cbar2.minorticks_on()
@@ -1137,11 +1154,11 @@ plt.show()
 tElapsedProfiling = time.time() - tProfilingStart
 print('\n Completed --> elapsed time: %.2f s' % tElapsedProfiling)
 
-img=mpimg.imread('finIMG.jpg')
-figf = plt.figure(num=1000)
-figf.add_subplot(111)
-imgplot = plt.imshow(img)
-plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
+# img=mpimg.imread('finIMG.jpg')
+# figf = plt.figure(num=1000)
+# figf.add_subplot(111)
+# imgplot = plt.imshow(img)
+# plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
 
 ###############################################################################
 ###############################################################################

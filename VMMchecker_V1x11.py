@@ -45,7 +45,9 @@ pathsource        = 'mg@10.0.0.3:/home/mg/dataVMMutgard2/'
 
 desitnationpath   = '/Users/francescopiscitelli/Desktop/temp/dataVMMutgard2/'
 
-datapath          = desitnationpath 
+datapath = '/Users/francescopiscitelli/Desktop/reducedFile/'
+
+# datapath          = desitnationpath 
 # datapath          = os.path.abspath('.')+'/data/' 
 
 # datapath = '/Users/francescopiscitelli/Documents/DOC/DATA/2020_04/04_VMM_2hybr_ClusteringTestFunctGen/'
@@ -54,7 +56,7 @@ filename = 'AmBeSource1526gdgem-readouts-20190819-152708_00000.h5'
 
 # filename = 'almostgdgem_readouts_20200402-154729_00000.h5'
 
-openWindowToSelectFiles = 1
+openWindowToSelectFiles = 2
      #  0 = filename is loaded, no window opens 
      #  1 = filename is ignored, no window open, last created file in directory is loaded automatically 
      #  2 = filename is ignored, window opens to selct the file 

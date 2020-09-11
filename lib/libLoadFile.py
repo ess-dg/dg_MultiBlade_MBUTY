@@ -72,15 +72,26 @@ def readHDFefu (datapathinput,filename,digitID,Clockd,ordertime=1):
     #        uncomment for ch from 1 to 64
         # Adata[:,3] = Adata[:,3]+np.float64(1) ## ch is from 1 to 64
         
-        GTime  = np.unique(Adata[:,0]) 
+        # GTime  = np.unique(Adata[:,0]) 
+        # Ntoffi = len(GTime)
+        
+        # #plt.plot(GTime)
+        
+        # tofChange = np.diff(Adata[:,0])
+        # tofChange = np.append([np.float64(1)], tofChange)
+        # ###tofChange[tofChange != 0] = 1
+        # # index = np.flatnonzero(tofChange)
+        # index = np.argwhere(tofChange > 0.1)
+        # index = np.append(index,[np.int64(len(tofChange))])
+        
+        GTime, index  = np.unique(Adata[:,0], return_index=True) 
         Ntoffi = len(GTime)
         
-        #plt.plot(GTime)
+        tofChange = np.zeros((len(Adata))) 
+        tempt      = np.diff(Adata[:,0])
+        tempt      = np.append([np.float64(1)], tempt)
+        tofChange[index] = tempt[index]
         
-        tofChange = np.diff(Adata[:,0])
-        tofChange = np.append([np.float64(1)], tofChange)
-        ###tofChange[tofChange != 0] = 1
-        index = np.flatnonzero(tofChange)
         index = np.append(index,[np.int64(len(tofChange))])
         
         Bdata  = np.float64(Adata[:,2:5]) 
@@ -93,10 +104,11 @@ def readHDFefu (datapathinput,filename,digitID,Clockd,ordertime=1):
         
         if ordertime == 1:
             for k in range(0,Ntoffi,1):
-            #    print(index[k])
+                # print(k,index2[k],index2[k+1])
                 temp = Bdata[index[k]:index[k+1],:]
-                temp = temp[temp[:,0].argsort(),:]
-                Bdata[index[k]:index[k+1],:] = temp
+                temp2 = temp[:,0].argsort()
+                temp3 = temp[temp2,:]
+                Bdata[index[k]:index[k+1],:] = temp3
                 
         Bdata[:,0] = Bdata[:,0]*Clockd       # time in s 
         
