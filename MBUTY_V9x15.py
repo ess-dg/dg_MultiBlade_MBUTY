@@ -61,7 +61,7 @@ plt.close("all")
 ###############################################################################
 ###############################################################################
 
-sync = 0   #ON/OFF if you want to rsync the data 
+sync = 1   #ON/OFF if you want to rsync the data 
 
 ###############################################################################
 
@@ -71,7 +71,7 @@ pathsourceEFU      = 'efu@192.168.0.58:/home/efu/data/MB18-setup/'
 pathsourceJDQ      = 'jadaq@192.168.0.57:/home/jadaq/data/MB18/'
 
 # desitnationpath     = '/Users/francescopiscitelli/Documents/DOC/DATA/2018_11/DATA_PSI/DATAraw/C_Masks/'
-desitnationpath  = '/Users/francescopiscitelli/Desktop/dataPSI/MB18-Masks/'
+desitnationpath  = '/Users/francescopiscitelli/Desktop/dataPSItests/'
 
 datapath            = desitnationpath 
 # datapath            = os.path.abspath('.')+'/data/' 
@@ -104,9 +104,7 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 
 ###############################################################################
 
-digitID = [34,33,137,142,143,31]
-
-colorrp = ['r','g','b','k','m','c']
+digitID = [34,33,142,143,137]
 
 # digitID = [137]
 
@@ -215,9 +213,9 @@ positionRecon = 0
 if positionRecon == 0:
    posBins = [32,32]     # w x s max max
 elif positionRecon == 1:
-   posBins = [65,65]     # w x s CoG CoG
+   posBins = [64,64]     # w x s CoG CoG
 elif positionRecon == 2:
-   posBins = [32,65]     # w x s max CoG
+   posBins = [32,64]     # w x s max CoG
    
 ###############################################################################
 # close the gaps, remove wires hidden; only works with posreconn 0 or 2, i.e. 32 bins on wires
@@ -230,23 +228,25 @@ plotIMGinLogScale = 0
    
 ###############################################################################
 # LAMBDA: calcualates lambda and plot hist 
-calculateLambda  = 0    # ON/OFF  
+calculateLambda  = 1    # ON/OFF  
 
 plotLambdaHist   = 0    # ON/OFF hist per digitiser (all ch summed togheter)
                         # (calculateLambda has to be ON to plot this)
    
 inclination     = 5       #deg
 wirepitch       = 4e-3    #m 
-DistanceWindow1stWire = (36+2)*1e-3    #m distance between vessel window and first wire
-DistanceAtWindow      = 9.288          #m
+DistanceWindow1stWire = 38*1e-3    #m distance between vessel window and first wire
+DistanceAtWindow      = 19         #m
 Distance        = DistanceWindow1stWire + DistanceAtWindow    #m  flight path at 1st wire
-lambdaBins      = 191   
-lambdaRange     = [1,18]    #A
+lambdaBins      = 127   
+lambdaRange     = [2.8,9.2]    #A
+
+PickUpTimeShift = -0.002 #s
 
 #if chopper has two openings or more per reset of ToF
 MultipleFramePerReset = 1  #ON/OFF (this only affects the lambda calculation)
 NumOfBunchesPerPulse  = 2
-lambdaMIN             = 2.5     #A
+lambdaMIN             = 2.9     #A
 
 ###############################################################################
 # MONITOR (if present)
@@ -262,7 +262,7 @@ MONThreshold = 0   #threshold on MON, th is OFF if 0, any other value is ON
  
 plotMONtofPH = 0   #ON/OFF plotting (MON ToF and Pulse Height) 
 
-MONDistance  = 3   #m distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
+MONDistance  = 0   #m distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
 
 ###############################################################################
 ###############################################################################
@@ -276,6 +276,10 @@ MONDistance  = 3   #m distance of MON from chopper if plotMONtofPH == 1 (needed 
 ###############################################################################
 ###############################################################################
 ###############################################################################
+
+colorrp = ['r','g','b','k','m','c']
+
+
 ###############################################################################
 #  syncing the data from remote computer where files are written
 
@@ -765,7 +769,7 @@ for dd in range(len(digitID)):
            if MultipleFramePerReset == 1:
               #ToF shifted and corrected by number of bunches
               ToFstart = tcl.lambda2ToF(Dist,lambdaMIN)
-              temptof  = ( (POPH[:,2]-ToFstart) % (ToFduration/NumOfBunchesPerPulse) ) + ToFstart
+              temptof  = ( (POPH[:,2]-ToFstart-PickUpTimeShift) % (ToFduration/NumOfBunchesPerPulse) ) + ToFstart
            else:
               temptof  = POPH[:,2]
           
@@ -1060,7 +1064,7 @@ if closeGaps == 0 or closeGaps == 2:
     # 2D image of detector X,Y
     fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
     # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
-    pos1  = ax1.imshow(XYglob,aspect='auto',norm=normColors,interpolation='none',extent=[XXg[0],XXg[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
+    pos1  = ax1.imshow(XYglob,aspect='auto',norm=normColors,interpolation='nearest',extent=[XXg[0],XXg[-1],YYg[-1],YYg[0]], origin='upper',cmap='jet')
     fig2D.colorbar(pos1, ax=ax1)
     # cbar1 =fig2D.colorbar(pos1,ax=ax1)
     # cbar2.minorticks_on()
@@ -1086,7 +1090,7 @@ if closeGaps == 0 or closeGaps == 2:
     ToFxgms = ToFxg*1e3 # in ms 
     
     fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
-    pos2  = ax2.imshow(XToFglob,aspect='auto',norm=normColors,interpolation='none',extent=[ToFxgms[0],ToFxgms[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
+    pos2  = ax2.imshow(XToFglob,aspect='auto',norm=normColors,interpolation='nearest',extent=[ToFxgms[0],ToFxgms[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
     fig2.colorbar(pos2, ax=ax2)
     ax2.set_ylabel('Wire ch.')
     ax2.set_xlabel('ToF (ms)')
@@ -1095,7 +1099,7 @@ if closeGaps == 0 or closeGaps == 2:
     # 2D image of detector Lambda vs Wires
     if calculateLambda == 1:
        figl, axl = plt.subplots(num=103,figsize=(6,6), nrows=1, ncols=1) 
-       posl1  = axl.imshow(XLamGlob,aspect='auto',norm=normColors,interpolation='none',extent=[xlambdag[0],xlambdag[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
+       posl1  = axl.imshow(XLamGlob,aspect='auto',norm=normColors,interpolation='nearest',extent=[xlambdag[0],xlambdag[-1],XXg[0],XXg[-1]], origin='lower',cmap='jet')
        figl.colorbar(posl1, ax=axl)
        axl.set_ylabel('Wire ch.')
        axl.set_xlabel('lambda (A)')
@@ -1132,7 +1136,7 @@ if closeGaps == 1 or closeGaps == 2:
     ########
     # 2D image of detector ToF vs Wires 
     fig2C, ax2C = plt.subplots(num=202,figsize=(6,6), nrows=1, ncols=1) 
-    pos2C  = ax2C.imshow(XToFglobc,aspect='auto',norm=normColors,interpolation='none',extent=[ToFxgms[0],ToFxgms[-1],XXgc[0],XXgc[-1]], origin='lower',cmap='jet')
+    pos2C  = ax2C.imshow(XToFglobc,aspect='auto',norm=normColors,interpolation='nearest',extent=[ToFxgms[0],ToFxgms[-1],XXgc[0],XXgc[-1]], origin='lower',cmap='jet')
     fig2C.colorbar(pos2C, ax=ax2C)
     ax2C.set_ylabel('Wire ch.')
     ax2C.set_xlabel('ToF (ms)')
@@ -1141,7 +1145,7 @@ if closeGaps == 1 or closeGaps == 2:
     # 2D image of detector Lambda vs Wires
     if calculateLambda == 1:
        figlC, axlC = plt.subplots(num=203,figsize=(6,6), nrows=1, ncols=1) 
-       posl1C  = axlC.imshow(XLamGlobc,aspect='auto',norm=normColors,interpolation='none',extent=[xlambdag[0],xlambdag[-1],XXgc[0],XXgc[-1]], origin='lower',cmap='jet')
+       posl1C  = axlC.imshow(XLamGlobc,aspect='auto',norm=normColors,interpolation='nearest',extent=[xlambdag[0],xlambdag[-1],XXgc[0],XXgc[-1]], origin='lower',cmap='jet')
        figlC.colorbar(posl1C, ax=axlC)
        axlC.set_ylabel('Wire ch.')
        axlC.set_xlabel('lambda (A)')
