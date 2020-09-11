@@ -151,7 +151,7 @@ softthreshold = 1   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines
 
 # sthpath =  '/Users/francescopiscitelli/Documents/PYTHON/MBUTY/'
 sthpath =  os.path.abspath('.')+'/tables/'
-sthfile =  'MB18_thresholds_sw36.xlsx'
+sthfile =  'MB18_thresholds_5D.xlsx'
   
 #####  
 #  if 2 here you can define your thresholds  
