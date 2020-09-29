@@ -364,17 +364,21 @@ def readHDFreducedFile (datapathinput,filename,digitID):
     
     try:
         rtemp = ff['run']
-        duration = rtemp['duration'][()]
+        duration = rtemp['TotalDuration'][()]
+        durationAll = rtemp['Durations'][()]
     except:
         print('--> no run info')
         duration = 0
-        
+        durationAll = 0
+  
     try:
         mtemp   = ff['monitor']
         MONdata = mtemp['data'][()]  #
+        MONcounts = mtemp['counts'][()]  #
     except:
         print('--> no monitor')
         MONdata = np.ones((1,2),dtype=float)*np.inf
+        MONcounts = 0
     
     try:
         dtemp = ff['detector']
@@ -419,4 +423,4 @@ def readHDFreducedFile (datapathinput,filename,digitID):
         
     f.close() 
        
-    return data, MONdata, duration 
+    return data, MONdata, MONcounts, duration, durationAll
