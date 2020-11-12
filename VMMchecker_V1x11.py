@@ -48,7 +48,7 @@ desitnationpath   = '/Users/francescopiscitelli/Desktop/temp/dataVMMutgard2/'
 datapath = '/Users/francescopiscitelli/Desktop/reducedFile/'
 
 # datapath          = desitnationpath 
-# datapath          = os.path.abspath('.')+'/data/' 
+datapath          = os.path.abspath('.')+'/data/' 
 
 # datapath = '/Users/francescopiscitelli/Documents/DOC/DATA/2020_04/04_VMM_2hybr_ClusteringTestFunctGen/'
 

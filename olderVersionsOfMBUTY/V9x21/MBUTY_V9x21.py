@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V9.20 2020/09/21      francescopiscitelli    ######################
+########    V9.21 2020/09/21      francescopiscitelli    ######################
 ########    (this version uses an excel file for mapping channels into geometry)
 ########    (and can load either EFU files or JADAQ files)
 ########    After AMOR beam time, bug fixed on load file h5 and X,Y,Z in mm
@@ -18,14 +18,14 @@ import h5py
 import os
 import glob
 import sys
-# from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog
 
 # import the library with all specific functions that this code uses 
 from lib import libSyncUtil as syu 
 from lib import libLoadFile as lof 
 from lib import libHistog as hh
 from lib import libToFconverter as tcl
-from lib import libMBUTY_V9x15 as mbl 
+from lib import libMBUTY_V9x21 as mbl
 
 ###############################################################################
 ###############################################################################
@@ -46,8 +46,8 @@ if sys.version_info < (3,5):
    print(' ---> Exiting ... \n')
    print('------------------------------------------------------------- \n')
    sys.exit()
-if len(sys.argv) not in [3,4]:
-    exit('usage: MBUTY_V9x20.py {path} {fname} [indices (optional)]')
+# if len(sys.argv) not in [3,4]:
+#    exit('usage: MBUTY_V9x20.py {path} {fname} [indices (optional)]')
 
 currentLoc = os.path.abspath(os.path.dirname(__file__))
 
@@ -74,35 +74,37 @@ pathsourceJDQ      = 'jadaq@192.168.0.57:/home/jadaq/data/MB18/'
 desitnationpath    = '/Users/francescopiscitelli/Desktop/dataPSItests/'
 
 # datapath         = desitnationpath 
-# datapath         = os.path.abspath('.')+'/data/' 
-datapath           = os.path.join('/home/efu/data', sys.argv[1], '')
+datapath         = os.path.abspath('.')+'/data/' 
+# datapath           = os.path.join('/home/efu/data', sys.argv[1], '')
 
-# filename = '13827-C-ESSmask-20181116-120805_00000.h5'
+filename = '13827-C-ESSmask-20181116-120805_00000.h5'
 
-# acqnum = [0]
+# filename = 'day2-20200908-102203_00000.h5'
 
-filename = sys.argv[2]
+acqnum = [0]
 
-def get_acqnums(fname):
+# filename = sys.argv[2]
+
+# def get_acqnums(fname):
     
-    #print(fname.rsplit('_',1)[1]+'_*.h5')
+#     #print(fname.rsplit('_',1)[1]+'_*.h5')
 
-    fs = os.path.join(datapath, fname.rsplit('_',1)[0]+'_*.h5')
+#     fs = os.path.join(datapath, fname.rsplit('_',1)[0]+'_*.h5')
     
-    listOfFiles = glob(fs)
+#     listOfFiles = glob(fs)
     
-    out=[]
-    for fi in listOfFiles:
-        out.append(int(fi.rsplit('_',1)[1].split('.')[0]))
-    return out
+#     out=[]
+#     for fi in listOfFiles:
+#         out.append(int(fi.rsplit('_',1)[1].split('.')[0]))
+#     return out
 
-if len(sys.argv)<4:
-    acqnum   = get_acqnums(filename) #[]    #do not need to be sequential
-else:
-    try:
-        acqnum   = list(eval(sys.argv[3]))
-    except TypeError:
-        acqnum = [int(sys.argv[3])]
+# if len(sys.argv)<4:
+#     acqnum   = get_acqnums(filename) #[]    #do not need to be sequential
+# else:
+#     try:
+#         acqnum   = list(eval(sys.argv[3]))
+#     except TypeError:
+#         acqnum = [int(sys.argv[3])]
 
 openWindowToSelectFiles = 0
      #  0 = filename and acqnum is loaded, no window opens
@@ -111,17 +113,18 @@ openWindowToSelectFiles = 0
      #      serial is the only one selected 
      #  3 = filename is ignored, window opens and serial is acqnum  
 
-SingleFileDuration       = None #5   #s to check if h5 file has all the resets
+SingleFileDuration       = 60 #5   #s to check if h5 file has all the resets
 
 ###############################################################################
 # variable POPH will be saved in a new h5 file
-saveReducedData = 1 #ON/OFF
+saveReducedData = 0 #ON/OFF
 
-savereducedpath = os.path.join('/home/efu/data/reduced', sys.argv[1], '')
-if not os.path.exists(savereducedpath):
-    os.makedirs(savereducedpath)
+# savereducedpath = os.path.join('/home/efu/data/reduced', sys.argv[1], '')
+
     
-# savereducedpath = '/Users/francescopiscitelli/Desktop/reducedFile/'
+savereducedpath = '/Users/francescopiscitelli/Desktop/reducedFile/'
+# if not os.path.exists(savereducedpath):
+#     os.makedirs(savereducedpath)
 
 nameMainFolder  = 'entry1'
 
@@ -130,7 +133,9 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 
 ###############################################################################
 
-digitID = [34,33,142,143,137]
+digitID = [34,33,31,142,143,137]
+
+digitID = [34]
 
 ###############################################################################
 # mapping channels into geometry 
@@ -152,7 +157,7 @@ Timewindow        = 2e-6    #s to create clusters
 
 plotChRaw         = 0   #ON/OFF plot of raw ch in the file (not flipped, not swapped) no thresholds (only for 1st serial)
 
-plottimestamp     = 0   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
+plottimestamp     = 1   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
 
 plottimeTofs      = 0   #ON/OFF for debugging, plot the time duration of ToFs (after thresholds)
 
@@ -171,7 +176,7 @@ softthreshold = 1   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines
 #  if 1 the file containing the threhsolds is loaded: 
 
 sthpath =   os.path.join(currentLoc,'tables/')
-sthfile =  'MB18_thresholds_5D.xlsx'
+sthfile =  'MB18_thresholds.xlsx'
   
 #####  
 #  if 2 here you can define your thresholds, ch from 0-31 wires, ch 32 to 63 strips  
@@ -207,7 +212,7 @@ CorrelationPHSws = 0              # ON/OFF
 numWires  = 32    # num of wire channels alweays from 0 to 31
 numStrips = 32    # num of strip channels, either 0 to 31 or 0 to 63
   
-positionRecon = 0
+positionRecon = 2
 
 # binning position 
 if positionRecon == 0:
@@ -224,12 +229,13 @@ gaps      = [0, 3, 4, 4, 3, 2]   # (first must be always 0)
 
 ###############################################################################
 #detector geometry
+
+# declare distnaces with .0 to force them to be float not int 
    
 inclination             = 5.0       #deg
 wirepitch               = 4.0       #mm 
 strippitch              = 4.0       #mm 
-
-# declare distnaces with .0 to force them to be float not int 
+OffsetOf1stWires        = 11.0      #mm
 
 DistanceWindow1stWire = 38.0        #mm distance between vessel window and first wire
 DistanceAtWindow      = 19000.0     #mm from chopper to detector window
@@ -237,6 +243,7 @@ Distance              = DistanceWindow1stWire + DistanceAtWindow    #mm  flight 
 DistanceSampleWindow  = 4000.0      #mm
 DistanceSample1stWire = DistanceWindow1stWire + DistanceSampleWindow #mm
 BladeAngularOffset    = 0.15      #deg
+
 
 ###############################################################################
 # plot the 2D image of the detector, lambda and ToF in linear =0 or log scale =1
@@ -250,7 +257,7 @@ plotLambdaHist   = 0    # ON/OFF hist per digitiser (all ch summed togheter)
                         # (calculateLambda has to be ON to plot this)
    
 lambdaBins      = 127   
-lambdaRange     = [2.5,None]    #A
+lambdaRange     = [2.5, 10]    #A
 
 #if chopper has two openings or more per reset of ToF
 MultipleFramePerReset = 1  #ON/OFF (this only affects the lambda calculation)
@@ -299,8 +306,8 @@ if EFU_JADAQ_fileType == 0:
 elif EFU_JADAQ_fileType == 1: 
     pathsource = pathsourceEFU
     
-# if sync == 1:
-#    syu.syncData(pathsource,desitnationpath)
+if sync == 1:
+    syu.syncData(pathsource,desitnationpath)
 ###############################################################################
 ###############################################################################
 #opening files 
@@ -313,30 +320,30 @@ elif EFU_JADAQ_fileType == 1:
    
 if openWindowToSelectFiles == 0:
     fname = filename
-# elif openWindowToSelectFiles == 1:
+elif openWindowToSelectFiles == 1:
     
-#     listOfFiles = glob.glob(datapath+'/*.h5') 
-#     if not len(listOfFiles):
-#         print('\n \033[1;31mNo file exists in directory \033[1;37m\n')
-#         print(' ---> Exiting ... \n')
-#         print('------------------------------------------------------------- \n')
-#         sys.exit()
+    listOfFiles = glob.glob(datapath+'/*.h5') 
+    if not len(listOfFiles):
+        print('\n \033[1;31mNo file exists in directory \033[1;37m\n')
+        print(' ---> Exiting ... \n')
+        print('------------------------------------------------------------- \n')
+        sys.exit()
         
-#     latestFile  = max(listOfFiles, key=os.path.getmtime)
-#     temp        = os.path.split(latestFile)
-#     datapath    = temp[0]+'/'
-#     fname       = temp[1]
+    latestFile  = max(listOfFiles, key=os.path.getmtime)
+    temp        = os.path.split(latestFile)
+    datapath    = temp[0]+'/'
+    fname       = temp[1]
 
-# elif openWindowToSelectFiles >= 2:
-#     temp = QFileDialog.getOpenFileName(None, "Select Files", datapath, "hdf files (*.h5)")
-#     temp = os.path.split(temp[0])
-#     datapath = temp[0]+'/'
-#     fname    = temp[1]
-#     if fname == "":
-#         print('\n \033[1;31mNothing selected! \033[1;37m\n')
-#         print(' ---> Exiting ... \n')
-#         print('------------------------------------------------------------- \n')
-#         sys.exit()
+elif openWindowToSelectFiles >= 2:
+    temp = QFileDialog.getOpenFileName(None, "Select Files", datapath, "hdf files (*.h5)")
+    temp = os.path.split(temp[0])
+    datapath = temp[0]+'/'
+    fname    = temp[1]
+    if fname == "":
+        print('\n \033[1;31mNothing selected! \033[1;37m\n')
+        print(' ---> Exiting ... \n')
+        print('------------------------------------------------------------- \n')
+        sys.exit()
 else:
     print('\n \033[1;31mPlease select a correct open file mode! \033[1;37m\n')
     print(' ---> Exiting ... \n')
@@ -462,6 +469,7 @@ if saveReducedData == 1:
                 'DistanceSample1stWire mm)' : DistanceSample1stWire,
                 'PickUpTimeShift (s)': PickUpTimeShift,
                 'BladeAngularOffset (deg)': BladeAngularOffset,
+                'OffsetOf1stWires (mm)': OffsetOf1stWires,
                 }.items():
         ginstr.attrs.create(key, value)
     
@@ -655,12 +663,12 @@ for dd in range(len(digitID)):
            
            Durations[ac,dd] = SingleFileDurationFromFile
           
-           # if abs(SingleFileDurationFromFile-SingleFileDuration) > 1: #if they differ for more then 1s then warning
-           #    print('\n     \033[1;33mWARNING: check file duration ... found %.2f s, expected %.2f s \033[1;37m' % (SingleFileDurationFromFile,SingleFileDuration))
-           #    time.sleep(2)
-           # Ntoffiapriori = round(SingleFileDuration/ToFduration)   
-           # if abs(Ntoffiapriori-Ntoffi) >= 2: 
-           #    print('\n     \033[1;33mWARNING: check Num of ToFs ... found %d, expected %d \033[1;37m' % (Ntoffi, Ntoffiapriori))
+           if abs(SingleFileDurationFromFile-SingleFileDuration) > 1: #if they differ for more then 1s then warning
+               print('\n     \033[1;33mWARNING: check file duration ... found %.2f s, expected %.2f s \033[1;37m' % (SingleFileDurationFromFile,SingleFileDuration))
+               time.sleep(2)
+           Ntoffiapriori = round(SingleFileDuration/ToFduration)   
+           if abs(Ntoffiapriori-Ntoffi) >= 2: 
+               print('\n     \033[1;33mWARNING: check Num of ToFs ... found %d, expected %d \033[1;37m' % (Ntoffi, Ntoffiapriori))
         elif flag == -1:
            SingleFileDurationFromFile = 0
            print('\n \t \033[1;33m---> No Data for Digitizer '+str(digitID[dd])+', serial '+str(acqnum[ac])+', to display ... skipped!\033[1;37m')
@@ -994,10 +1002,13 @@ for dd in range(len(digitID)):
     if saveReducedData == 1:
            
        sinne = np.sin(np.deg2rad(inclination)) 
-       POPHcum[:,0] = np.round( (POPHcum[:,0]*(wirepitch*sinne) ), decimals=2 )  #mm
+       
+       # ucomment this line if you want to include the offset of blades at 1st wire in the reduced data 
+       # POPHcum[:,0] = np.round( (POPHcum[:,0]*(wirepitch*sinne) + OffsetOf1stWires*dd), decimals=2 )  #mm
+       
+       POPHcum[:,0] = np.round( (POPHcum[:,0]*(wirepitch*sinne)), decimals=2 )  #mm
             
        POPHcum[:,1] = np.round((POPHcum[:,1]*strippitch), decimals=2 )  #mm
-       
        POPHcum[POPHcum[:,1]<0,1] = -1
         
        gdetdigit = gdet.create_group('digit'+ str(digitID[dd]))

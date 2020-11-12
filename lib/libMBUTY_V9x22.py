@@ -174,7 +174,7 @@ def clusterPOPH (data,Timewindow):
     rej2 = 100*(rejCounter/NumClusters);
     rej3 = 100*(rejCounter/NumeventNoRej);
         
-    print("\t N of events: %d -> not rejected (2D and 1D) %d " % (NumClusters,NumeventNoRej))
+    print("\t N of events: %d -> not rejected %d (2D: %d, 1D: %d)" % (NumClusters,NumeventNoRej,rejCounter[0],rejCounter[2]))
     print("\t not rej (2D) %.1f%%, only w (1D) %.1f%%, rejected (2D or 1D) %.1f%%, rejected >32 %.1f%%, rejected other reasons (only strips - noise)  %.1f%% " % (rej2[0],rej2[2],rej2[1],rej2[3],rej2[4]));
     print("\t not rej (2D) %.1f%%, only w (1D) %.1f%% \n " % (rej3[0],rej3[2]))
         

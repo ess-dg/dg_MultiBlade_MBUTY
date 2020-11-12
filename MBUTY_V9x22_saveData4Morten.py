@@ -25,7 +25,7 @@ from lib import libSyncUtil as syu
 from lib import libLoadFile as lof 
 from lib import libHistog as hh
 from lib import libToFconverter as tcl
-from lib import libMBUTY_V9x15 as mbl 
+from lib import libMBUTY_V9x22 as mbl 
 
 ###############################################################################
 ###############################################################################
@@ -77,7 +77,43 @@ desitnationpath    = '/Users/francescopiscitelli/Desktop/dataPSItests/'
 datapath         = os.path.abspath('.')+'/data/' 
 # datapath           = os.path.join('/home/efu/data', sys.argv[1], '')
 
-filename = '13827-C-ESSmask-20181116-120805_00000.h5'
+#######################
+
+# # file 1 small 
+# filename      = '13827-C-ESSmask-20181116-120805_00000.h5'
+# nameToSave    = 'dataset1_small'
+# selectedData  = range(48,97)
+# orderTime     = False
+# softthreshold = False 
+
+# file 1 large 
+filename      = '13827-C-ESSmask-20181116-120805_00000.h5'
+nameToSave    = 'dataset1_large'
+selectedData  = None
+orderTime     = True
+softthreshold = True 
+
+# file 2 small
+# datapath  = '/Users/francescopiscitelli/Documents/DOC/DATA/2020_09/DATA_PSI/RawData/L-MB18-Masks/'
+# filename  = 'ESSMask-20200910-103702_00000.h5'
+# nameToSave    = 'dataset2_small'
+# selectedData  = range(158,187)
+# orderTime     = False
+# softthreshold = False 
+
+# file 2 large
+# datapath  = '/Users/francescopiscitelli/Documents/DOC/DATA/2020_09/DATA_PSI/RawData/L-MB18-Masks/'
+# filename  = 'ESSMask-20200910-103702_00000.h5'
+# nameToSave    = 'dataset2_large'
+# selectedData  = None
+# orderTime     = True
+# softthreshold = False 
+
+#######################
+
+SAVE4MORTEN = False
+
+#######################
 
 acqnum = [0]
 
@@ -133,7 +169,7 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 
 digitID = [34,33,31,142,143,137]
 
-digitID = [34,137]
+digitID = [34]
 
 ###############################################################################
 # mapping channels into geometry 
@@ -155,7 +191,7 @@ Timewindow        = 2e-6    #s to create clusters
 
 plotChRaw         = 0   #ON/OFF plot of raw ch in the file (not flipped, not swapped) no thresholds (only for 1st serial)
 
-plottimestamp     = 0   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
+plottimestamp     = 1   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
 
 plottimeTofs      = 0   #ON/OFF for debugging, plot the time duration of ToFs (after thresholds)
 
@@ -168,7 +204,7 @@ plotMultiplicity  = 0   #ON/OFF
 # software thresholds
 # NOTE: they are applied to the flipped or swpadded odd/even order of ch!
 # th on ch number: 32 w and 32 s, one row per cassette 
-softthreshold = 1   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines the Thresholds in an array sth 
+# softthreshold = False   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines the Thresholds in an array sth 
 
 #####
 #  if 1 the file containing the threhsolds is loaded: 
@@ -193,7 +229,7 @@ plotToFhist  = 0    #ON/OFF
                                                    
 ###############################################################################
 # PHS image of all wires and strips for all digitizers             
-EnerHistIMG   = 0              # ON/OFF
+EnerHistIMG   = 1              # ON/OFF
 
 plotEnerHistIMGinLogScale = 0   # ON/OFF
 
@@ -620,8 +656,8 @@ for dd in range(len(digitID)):
         if EFU_JADAQ_fileType == 0: 
             
             try:
-                ordertime = 1
-                [data, Ntoffi, GTime, _, flag] = lof.readHDFjadaq(datapath,filenamefull,digitID[dd],Clockd,ordertime)
+
+                [data, Ntoffi, GTime, _, flag] = lof.readHDFjadaq(datapath,filenamefull,digitID[dd],Clockd,orderTime)
             except: 
                 print('\n \033[1;31m---> this looks like a file created with the EFU file writer, change mode with EFU_JADAQ_fileType set to 1!\033[1;37m')
                 print(' ---> Exiting ... \n')
@@ -632,8 +668,8 @@ for dd in range(len(digitID)):
         elif EFU_JADAQ_fileType == 1:
             
             try:
-               ordertime = 1
-               [data, Ntoffi, GTime, _, flag] = lof.readHDFefu(datapath,filenamefull,digitID[dd],Clockd,ordertime)
+         
+               [data, Ntoffi, GTime, _, flag] = lof.readHDFefu(datapath,filenamefull,digitID[dd],Clockd,orderTime)
                     # data here is 3 cols: time stamp in s, ch 0to63, ADC, 
                     # Ntoffi num of resets
                     # GTime is time of the resets in ms, absolute time, make diff to see delta time betwen resets
@@ -646,7 +682,9 @@ for dd in range(len(digitID)):
                 print(' ---> Exiting ... \n')
                 print('------------------------------------------------------------- \n')
                 sys.exit()
-                
+          
+        # data = data[158:187,:]  
+        
         # check if the duration of the file is correct, expected number of resets and ToFs
         if flag == 0:
            tsec   = GTime*1e-3 #s
@@ -768,10 +806,29 @@ for dd in range(len(digitID)):
             plt.grid(axis='y', alpha=0.75)
             
         #####################################
-        # clustering
-        
-        # np.save('data4cluster.npy',data)
+        if selectedData != None:
+            data = data[selectedData,:] 
             
+            # data = data[37:70,:] 
+        
+        #####################################
+        
+        stringa1 = 'Sorting='+str(orderTime)+'_Filtering='+str(softthreshold)
+                
+        nameToSave1 = nameToSave+'_'+stringa1+'_Input'
+        
+        nameToSave2 = nameToSave+'_'+stringa1+'_Clustered'
+
+        #####################################
+        
+        # data = data[395:398,:]
+        
+        # data = data[380:407,:]
+        
+        if SAVE4MORTEN == True:
+            np.savetxt(savereducedpath+nameToSave1+'.txt',data,fmt='%.10e')
+            
+        # clustering  
         # data input is col 0: time stamp in s, col 1: ch number (FROM 0 TO 63 or 95), col2: ADC value
         # IT MUST BE 3 columns 
         # it works either if strips are 32 or 64
@@ -780,6 +837,13 @@ for dd in range(len(digitID)):
         # wires in output are always from 0 to 31 and strips either from 0 to 31 or 0 to 63
         # NOTE: in both cases of clusters with more than 32 wires or 32 strips are anyhow rejected
         [POPH, Nevents, NumeventNoRej] = mbl.clusterPOPH(data,Timewindow)
+                
+        
+        # POPH = POPH[POPH[:,1]>=0,:]
+        
+        
+        if SAVE4MORTEN == True:
+            np.savetxt(savereducedpath+nameToSave2+'.txt',POPH,fmt='%.10e')
         
         #  POPH output has 7 cols:X,Y,ToF,PHwires,PHstrips,multW,multS
         #  units:pix(0.350mm),pix(4mm),seconds,a.u.,a.u.,int,int
