@@ -19,7 +19,7 @@ import h5py
 #[DATA,Ntoffi,GTime] = readHDFEFUfile(datapathinput,filename,digitID,ordertime)
 # output data 4 columns, col 0 time stamp, col 1 ch num from 0 to 63, col 2 ADC value, col 3 reset of ToF in ms
 
-def readHDFefu (datapathinput,filename,digitID,Clockd,ordertime=True):
+def readHDFefu (datapathinput,filename,digitID,Clockd,ordertime=1):
     
     ########################################
     
@@ -102,7 +102,7 @@ def readHDFefu (datapathinput,filename,digitID,Clockd,ordertime=True):
         
         #Bdata[2:10,0] = range(444008,444000,-1)
         
-        if ordertime is True:
+        if ordertime == 1:
             for k in range(0,Ntoffi,1):
                 # print(k,index2[k],index2[k+1])
                 temp = Bdata[index[k]:index[k+1],:]
@@ -121,7 +121,7 @@ def readHDFefu (datapathinput,filename,digitID,Clockd,ordertime=True):
 ###############################################################################
 ###############################################################################
     
-def readHDFjadaq (datapathinput,filename,digitID,Clockd,ordertime=True):
+def readHDFjadaq (datapathinput,filename,digitID,Clockd,ordertime=1):
 
     f = h5py.File(datapathinput+filename, "r")
     
@@ -170,7 +170,7 @@ def readHDFjadaq (datapathinput,filename,digitID,Clockd,ordertime=True):
                 dataTemp[:,1] = dsetsel['channel']
                 dataTemp[:,2] = dsetsel['charge']
                 
-                if ordertime is True:
+                if ordertime == 1:
                     dataTemp = dataTemp[dataTemp[:,0].argsort(),]
                 
                 if k == 0:
@@ -190,7 +190,7 @@ def readHDFjadaq (datapathinput,filename,digitID,Clockd,ordertime=True):
 ###############################################################################
 ###############################################################################
 
-def readHDFjadaqTraces (datapathinput,filename,digitID,Clockd,ordertime=True):
+def readHDFjadaqTraces (datapathinput,filename,digitID,Clockd,ordertime=1):
 
     f = h5py.File(datapathinput+filename, "r")
     
@@ -282,7 +282,7 @@ def readHDFjadaqTraces (datapathinput,filename,digitID,Clockd,ordertime=True):
                         overTh       = 0
                         traceData    = 0
                     
-                    if ordertime is True:
+                    if ordertime == 1:
                         dataTemp  = dataTemp[dataTemp[:,0].argsort(),]
                         
                     if k == 0:
@@ -308,7 +308,7 @@ def readHDFjadaqTraces (datapathinput,filename,digitID,Clockd,ordertime=True):
                    
                     # traceTemp = dsetsel['samples']
                 
-                    if ordertime is True:
+                    if ordertime == 1:
                         
                         reoder         = dataTemp[:,0].argsort()
                         

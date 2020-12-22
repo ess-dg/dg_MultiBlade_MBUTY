@@ -25,7 +25,7 @@ from lib import libSyncUtil as syu
 from lib import libLoadFile as lof 
 from lib import libHistog as hh
 from lib import libToFconverter as tcl
-from lib import libMBUTY_V9x23 as mbl 
+from lib import libMBUTY_V9x22 as mbl
 
 ###############################################################################
 ###############################################################################
@@ -71,49 +71,19 @@ EFU_JADAQ_fileType = 1  # 0 = JADAQ, 1 = EFU file loading
 pathsourceEFU      = 'efu@192.168.0.58:/home/efu/data/MB18-setup/'
 pathsourceJDQ      = 'jadaq@192.168.0.57:/home/jadaq/data/MB18/'
 
-desitnationpath    = '/Users/francescopiscitelli/Desktop/dataPSItests/'
+pathsourceJDQ = 'mb@130.235.185.122:/data/MB300LSTF18Nov/'
 
-# datapath         = desitnationpath 
-datapath         = os.path.abspath('.')+'/data/' 
+desitnationpath    = '/Users/francescopiscitelli/Desktop/dataSTFMB300L/'
+
+datapath         = desitnationpath 
+# datapath         = os.path.abspath('.')+'/data/' 
 # datapath           = os.path.join('/home/efu/data', sys.argv[1], '')
 
-#######################
+datapath         = '/Users/francescopiscitelli/ownCloud/DATA/Stability/'
 
-# # file 1 small 
-# filename      = '13827-C-ESSmask-20181116-120805_00000.h5'
-# nameToSave    = 'dataset1_small'
-# selectedData  = range(48,97)
-# orderTime     = False
-# softthreshold = False 
+filename = '13827-C-ESSmask-20181116-120805_00000.h5'
 
-# file 1 large 
-filename      = '13827-C-ESSmask-20181116-120805_00000.h5'
-nameToSave    = 'dataset1_large'
-selectedData  = None
-orderTime     = True
-softthreshold = True 
-
-# file 2 small
-# datapath  = '/Users/francescopiscitelli/Documents/DOC/DATA/2020_09/DATA_PSI/RawData/L-MB18-Masks/'
-# filename  = 'ESSMask-20200910-103702_00000.h5'
-# nameToSave    = 'dataset2_small'
-# selectedData  = range(158,187)
-# orderTime     = False
-# softthreshold = False 
-
-# file 2 large
-# datapath  = '/Users/francescopiscitelli/Documents/DOC/DATA/2020_09/DATA_PSI/RawData/L-MB18-Masks/'
-# filename  = 'ESSMask-20200910-103702_00000.h5'
-# nameToSave    = 'dataset2_large'
-# selectedData  = None
-# orderTime     = True
-# softthreshold = False 
-
-#######################
-
-SAVE4MORTEN = False
-
-#######################
+# filename = 'day2-20200908-102203_00000.h5'
 
 acqnum = [0]
 
@@ -140,7 +110,7 @@ acqnum = [0]
 #     except TypeError:
 #         acqnum = [int(sys.argv[3])]
 
-openWindowToSelectFiles = 0
+openWindowToSelectFiles = 2
      #  0 = filename and acqnum is loaded, no window opens
      #  1 = latest file created in folder is loaded with its serial
      #  2 = filename and acqnum are both ignored, window opens and 
@@ -169,12 +139,12 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 
 digitID = [34,33,31,142,143,137]
 
-digitID = [34]
+# digitID = [137]
 
 ###############################################################################
 # mapping channels into geometry 
 
-MAPPING =    1     # ON/OFF, if OFF channels are used as in the file
+MAPPING =    0     # ON/OFF, if OFF channels are used as in the file
 
 mappath = os.path.join(currentLoc,'tables/')
 mapfile = 'MB18_mapping.xlsx'
@@ -191,11 +161,11 @@ Timewindow        = 2e-6    #s to create clusters
 
 plotChRaw         = 0   #ON/OFF plot of raw ch in the file (not flipped, not swapped) no thresholds (only for 1st serial)
 
-plottimestamp     = 1   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
+plottimestamp     = 0   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
 
 plottimeTofs      = 0   #ON/OFF for debugging, plot the time duration of ToFs (after thresholds)
 
-ToFduration       = 0.10     #s
+ToFduration       = 0.20     #s
 ToFbinning        = 100e-6   #s
 
 plotMultiplicity  = 0   #ON/OFF
@@ -204,7 +174,7 @@ plotMultiplicity  = 0   #ON/OFF
 # software thresholds
 # NOTE: they are applied to the flipped or swpadded odd/even order of ch!
 # th on ch number: 32 w and 32 s, one row per cassette 
-# softthreshold = False   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines the Thresholds in an array sth 
+softthreshold = 0   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines the Thresholds in an array sth 
 
 #####
 #  if 1 the file containing the threhsolds is loaded: 
@@ -285,7 +255,7 @@ plotIMGinLogScale = 0
    
 ###############################################################################
 # LAMBDA: calcualates lambda and plot hist 
-calculateLambda  = 1    # ON/OFF  
+calculateLambda  = 0    # ON/OFF  
 
 plotLambdaHist   = 0    # ON/OFF hist per digitiser (all ch summed togheter)
                         # (calculateLambda has to be ON to plot this)
@@ -313,7 +283,7 @@ MONch    = 63      #ch after reorganization of channels (from 0 to 63)
 
 MONThreshold = 0   #threshold on MON, th is OFF if 0, any other value is ON
  
-plotMONtofPH = 0   #ON/OFF plotting (MON ToF and Pulse Height) 
+plotMONtofPH = 1   #ON/OFF plotting (MON ToF and Pulse Height) 
 
 MONDistance  = 0   #m distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
 
@@ -656,20 +626,22 @@ for dd in range(len(digitID)):
         if EFU_JADAQ_fileType == 0: 
             
             try:
-
-                [data, Ntoffi, GTime, _, flag] = lof.readHDFjadaq(datapath,filenamefull,digitID[dd],Clockd,orderTime)
+                ordertime = 1
+                [data, Ntoffi, GTime, _, flag] = lof.readHDFjadaq(datapath,filenamefull,digitID[dd],Clockd,ordertime)
             except: 
-                print('\n \033[1;31m---> this looks like a file created with the EFU file writer, change mode with EFU_JADAQ_fileType set to 1!\033[1;37m')
-                print(' ---> Exiting ... \n')
-                print('------------------------------------------------------------- \n')
-                sys.exit()
+                print('\n \033[1;31m---> this looks like either a file created with the EFU file writer, change mode with EFU_JADAQ_fileType set to 1! Or JADAQ file maybe empty! \033[1;37m')
+                flag = 2
+                continue
+                # print(' ---> Exiting ... \n')
+                # print('------------------------------------------------------------- \n')
+                # sys.exit()
                 
         
         elif EFU_JADAQ_fileType == 1:
             
             try:
-         
-               [data, Ntoffi, GTime, _, flag] = lof.readHDFefu(datapath,filenamefull,digitID[dd],Clockd,orderTime)
+               ordertime = 1
+               [data, Ntoffi, GTime, _, flag] = lof.readHDFefu(datapath,filenamefull,digitID[dd],Clockd,ordertime)
                     # data here is 3 cols: time stamp in s, ch 0to63, ADC, 
                     # Ntoffi num of resets
                     # GTime is time of the resets in ms, absolute time, make diff to see delta time betwen resets
@@ -682,29 +654,33 @@ for dd in range(len(digitID)):
                 print(' ---> Exiting ... \n')
                 print('------------------------------------------------------------- \n')
                 sys.exit()
-          
-        # data = data[158:187,:]  
-        
+                
         # check if the duration of the file is correct, expected number of resets and ToFs
         if flag == 0:
            tsec   = GTime*1e-3 #s
            
-           if tsec[0] != 0: 
-               tsecn  = tsec-tsec[0]
-           else:
-               tsecn  = tsec-tsec[1]
+           if np.shape(tsec)[0] > 1:
+               if tsec[0] != 0: 
+                   tsecn  = tsec-tsec[0]
+               else:
+                   tsecn  = tsec-tsec[1]
                
-           SingleFileDurationFromFile = tsecn[-1] 
-           ratePerDigit[1,dd] =  ratePerDigit[1,dd] + SingleFileDurationFromFile
-           
-           Durations[ac,dd] = SingleFileDurationFromFile
+               SingleFileDurationFromFile = tsecn[-1] 
+               ratePerDigit[1,dd] =  ratePerDigit[1,dd] + SingleFileDurationFromFile
+               
+               Durations[ac,dd] = SingleFileDurationFromFile
           
-           if abs(SingleFileDurationFromFile-SingleFileDuration) > 1: #if they differ for more then 1s then warning
-               print('\n     \033[1;33mWARNING: check file duration ... found %.2f s, expected %.2f s \033[1;37m' % (SingleFileDurationFromFile,SingleFileDuration))
-               time.sleep(2)
-           Ntoffiapriori = round(SingleFileDuration/ToFduration)   
-           if abs(Ntoffiapriori-Ntoffi) >= 2: 
-               print('\n     \033[1;33mWARNING: check Num of ToFs ... found %d, expected %d \033[1;37m' % (Ntoffi, Ntoffiapriori))
+               if abs(SingleFileDurationFromFile-SingleFileDuration) > 1: #if they differ for more then 1s then warning
+                   print('\n     \033[1;33mWARNING: check file duration ... found %.2f s, expected %.2f s \033[1;37m' % (SingleFileDurationFromFile,SingleFileDuration))
+                   time.sleep(2)
+               Ntoffiapriori = round(SingleFileDuration/ToFduration)   
+               if abs(Ntoffiapriori-Ntoffi) >= 2: 
+                   print('\n     \033[1;33mWARNING: check Num of ToFs ... found %d, expected %d \033[1;37m' % (Ntoffi, Ntoffiapriori))
+                   
+           else:
+               SingleFileDurationFromFile = 0
+               tsecn = np.zeros((2,1))
+               
         elif flag == -1:
            SingleFileDurationFromFile = 0
            print('\n \t \033[1;33m---> No Data for Digitizer '+str(digitID[dd])+', serial '+str(acqnum[ac])+', to display ... skipped!\033[1;37m')
@@ -738,12 +714,13 @@ for dd in range(len(digitID)):
         # MONITOR
         if MONfound == 1 and MONdigit == digitID[dd]:
            selMON  = data[:,1] == MONch
-           temp    = data[:,[0,2]] #selct only col with time stamp and charge
+           temp    = data[:,[0,2]] #select only col with time stamp and charge
            MONdata = temp[selMON,:]
            MONdata[:,0] = np.around((MONdata[:,0]),decimals=6)     #  time stamp in s and round at 1us
            data    = data[np.logical_not(selMON),:] # remove MON data from data 
            rateMON[0,0] = rateMON[0,0]+len(MONdata)
            rateMON[1,0] = rateMON[1,0]+SingleFileDurationFromFile
+
                       
            print('\n \t \033[1;35mMonitor found ... splitting MONITOR data (%d ev.) from Data \033[1;37m' % (len(MONdata)))
            
@@ -772,7 +749,7 @@ for dd in range(len(digitID)):
             deltat = np.diff(tsecn,1,axis=0)
             xax1   = np.arange(1,len(tsecn)+1,1)
             xax2   = np.arange(1,len(tsecn),1)
-            xax3   = np.arange(0,0.1,0.0005) #in s
+            xax3   = np.arange(0,0.2,0.0005) #in s
             
             fig = plt.figure(num=902, figsize=(9,6))
             ax1  = fig.add_subplot(131)
@@ -806,29 +783,10 @@ for dd in range(len(digitID)):
             plt.grid(axis='y', alpha=0.75)
             
         #####################################
-        if selectedData != None:
-            data = data[selectedData,:] 
+        # clustering
+        
+        # np.save('data4cluster.npy',data)
             
-            # data = data[37:70,:] 
-        
-        #####################################
-        
-        stringa1 = 'Sorting='+str(orderTime)+'_Filtering='+str(softthreshold)
-                
-        nameToSave1 = nameToSave+'_'+stringa1+'_Input'
-        
-        nameToSave2 = nameToSave+'_'+stringa1+'_Clustered'
-
-        #####################################
-        
-        # data = data[395:398,:]
-        
-        # data = data[380:407,:]
-        
-        if SAVE4MORTEN == True:
-            np.savetxt(savereducedpath+nameToSave1+'.txt',data,fmt='%.10e')
-            
-        # clustering  
         # data input is col 0: time stamp in s, col 1: ch number (FROM 0 TO 63 or 95), col2: ADC value
         # IT MUST BE 3 columns 
         # it works either if strips are 32 or 64
@@ -837,13 +795,6 @@ for dd in range(len(digitID)):
         # wires in output are always from 0 to 31 and strips either from 0 to 31 or 0 to 63
         # NOTE: in both cases of clusters with more than 32 wires or 32 strips are anyhow rejected
         [POPH, Nevents, NumeventNoRej] = mbl.clusterPOPH(data,Timewindow)
-                
-        
-        # POPH = POPH[POPH[:,1]>=0,:]
-        
-        
-        if SAVE4MORTEN == True:
-            np.savetxt(savereducedpath+nameToSave2+'.txt',POPH,fmt='%.10e')
         
         #  POPH output has 7 cols:X,Y,ToF,PHwires,PHstrips,multW,multS
         #  units:pix(0.350mm),pix(4mm),seconds,a.u.,a.u.,int,int
