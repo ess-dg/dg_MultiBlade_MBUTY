@@ -25,7 +25,7 @@ from lib import libSyncUtil as syu
 from lib import libLoadFile as lof 
 from lib import libHistog as hh
 from lib import libToFconverter as tcl
-from lib import libMBUTY_V9x22 as mbl
+from lib import libMBUTY_V9x23 as mbl
 
 ###############################################################################
 ###############################################################################
@@ -240,7 +240,7 @@ plotIMGinLogScale = False
    
 ###############################################################################
 # LAMBDA: calcualates lambda and plot hist 
-calculateLambda  = False    # ON/OFF  
+calculateLambda  = True    # ON/OFF  
 
 plotLambdaHist   = False    # ON/OFF hist per digitiser (all ch summed togheter)
                         # (calculateLambda has to be ON to plot this)
