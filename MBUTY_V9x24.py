@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V9.24 2021/04/09      francescopiscitelli     #####################
+########    V9.24 2021/04/09      francescopiscitelli    ######################
 ########    (this version uses an excel file for mapping channels into geometry)
 ########    (and can load either EFU files or JADAQ files)
 ########    After AMOR beam time, bug fixed on load file h5 and X,Y,Z in mm option
