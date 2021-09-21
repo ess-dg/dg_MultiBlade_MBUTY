@@ -123,6 +123,53 @@ class checkInstrumentID():
               
         self.printa = False
         
+#################################################  
+
+class  checkWhich_RingFenHybrid_InFile():
+    def __init__(self, filePathAndFileName):
+        
+        pcap = pcapng_reader(filePathAndFileName, timeResolutionType='fine', sortByTimeStampsONOFF = True)
+        self.readouts = pcap.readouts
+        
+        temp = os.path.split(filePathAndFileName)
+        # filePath = temp[0]+'/'
+        self.fileName = temp[1]
+
+    def check(self):
+        
+        print("\nRings, Fens and Hybrids in file: {}".format(self.fileName))
+        
+        RingsInFile = np.unique(self.readouts.Ring)
+        
+        cont = 0 
+        
+        for RR in RingsInFile:
+            
+            # self.RFH['Ring'] = RR
+            
+            selectRING = self.readouts.Ring == RR
+            
+            Fens4Ring    = self.readouts.Fen[selectRING]
+            Hybrids4Ring = self.readouts.hybrid[selectRING]
+            
+            FensInRing = np.unique(Fens4Ring)
+            
+            for FF in FensInRing:
+                
+                selectFEN = Fens4Ring == FF
+                
+                Hybrids4Fen = Hybrids4Ring[selectFEN]
+                
+                HybridsInFen = np.unique(Hybrids4Fen)
+                
+                for HH in HybridsInFen:
+                    
+                    cont += 1
+                
+                    print("\tNo. {}:     Ring {}, Fen {}, Hybrid {}".format(cont,int(RR),int(FF),int(HH)))
+
+        
+        
 #################################################        
         
 class VMM3A():
@@ -194,7 +241,6 @@ class pcapng_reader():
         
         self.readouts = readouts()
         
-        
         try:
             # print('PRE-ALLOC method to load data ...')
             self.pcapng = pcapng_reader_PreAlloc(filePathAndFileName)
@@ -205,7 +251,7 @@ class pcapng_reader():
         except:
             print('\n... PRE-ALLOC method failed, trying APPEND method to load data ...')
             
-            #  HEREIS FUTURE DEVEL IF NEEDED 
+            #  HERE IS FUTURE DEVEL IF NEEDED 
             # self.pcapng = pcapng_reader_slowAppend(filePathAndFileName)
             # self.pcapng.read(timeResolutionType)
             # self.readouts = self.pcapng.readouts    
@@ -675,11 +721,11 @@ if __name__ == '__main__':
    
    path = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
    
-   filePath = path+'pcap_for_fra.pcapng'
-   filePath = path+'pcap_for_fra_ch2test.pcapng'
+   # filePath = path+'pcap_for_fra.pcapng'
+   # filePath = path+'pcap_for_fra_ch2test.pcapng'
    # filePath = path+'pcap_for_fra_ch2test_take2.pcapng'
    # filePath = path+'pcap_for_fra_coinc.pcapng'
-   # filePath = path+'freiatest.pcapng'
+   filePath = path+'freiatest.pcapng'
 
    # pr = pcapng_reader(filePath,timeResolutionType='fine')
    # # pr.debug = True
@@ -687,25 +733,33 @@ if __name__ == '__main__':
    # # data = pr.data
    # 
    
-   pr = pcapng_reader_PreAlloc(filePath)
+   # pr = pcapng_reader_PreAlloc(filePath)
 
-   # pr.debug = True
+   # # pr.debug = True
    
-   pr.allocateMemory()
+   # pr.allocateMemory()
    
-   pr.read(timeResolutionType='fine')
+   # pr.read(timeResolutionType='fine')
    
-    
-   readouts = pr.readouts
+   # pcap = pcapng_reader(filePath,timeResolutionType='fine', sortByTimeStampsONOFF = True)
+   # readouts = pcap.readouts
    
    # readouts.sortByTimeStamps()
    
-   readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
-   
+   # readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+   # 
    # ppp = plo.plottingReadouts(vmm3, config)
    # ppp.plotChRaw(parameters.cassettes.cassettes)
    # ppp.plotTimeStamps(parameters.cassettes.cassettes)
-
+   
+   # cc= checkWhich_RingFenHybrid_InFile(filePath)
+   
+   # aa = cc.check()
+   
+   # readouts = cc.readouts
+   # readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+   
+   cc= checkWhich_RingFenHybrid_InFile(filePath).check()
 
    # aa = pr.d
    # bb = pr.e
