@@ -86,6 +86,8 @@ class configJsonFile():
           self.detectorName = config.DETparameters.name
           
           self.numOfCassettes = config.DETparameters.numOfCassettes
+          
+          self.orientation = config.DETparameters.orientation
                     
           #  by default the cassettes are the ones present in the json file 
           self.cassInConfig = config.DETparameters.cassInConfig
@@ -177,8 +179,8 @@ class plotting():
           
           self.plotABSunits = False
                     
-          #  0 is max max, 1 is cog cog, 2 is w max and s cog 
-          self.positionReconstruction = 2
+          # 'W.max-S.max' is max max,  'W.cog-S.cog' is CoG CoG, 'W.max-S.cog' is wires max and strips CoG 
+          self.positionReconstruction = 'W.max-S.cog'
                
           self.plotIMGlog = False
           
@@ -188,13 +190,13 @@ class plotting():
           
       def calculateDerivedParam(self):
              
-           if self.positionReconstruction == 0: # w x s max max
+           if self.positionReconstruction == 'W.max-S.max': # w x s max max
                  self.posWbins = int(self.configJsonFile.numOfWires)
                  self.posSbins = int(self.configJsonFile.numOfStrips)
-           elif self.positionReconstruction == 1: # w x s CoG CoG
+           elif self.positionReconstruction == 'W.cog-S.cog': # w x s CoG CoG
                  self.posWbins = int(self.configJsonFile.numOfWires*2)
                  self.posSbins = int(self.configJsonFile.numOfStrips*2) 
-           elif self.positionReconstruction == 2: # w x s max CoG
+           elif self.positionReconstruction == 'W.max-S.cog': # w x s max CoG
                  self.posWbins = int(self.configJsonFile.numOfWires)
                  self.posSbins = int(self.configJsonFile.numOfStrips*2)
              
@@ -326,6 +328,6 @@ if __name__ == '__main__' :
     config = maps.read_json_config(configFilePath+configFileName)
     parameters.loadConfigParameters(config)
     
-    parameters.dataReduction.softThArray.ThW[:,1] = 5000
+    # parameters.dataReduction.softThArray.ThW[:,1] = 5000
     
     

@@ -52,9 +52,10 @@ parameters  = para.parameters(currentPath)
 # read json and create parameters for plotting and analisys 
 
 configFilePath  = currentPath+'config/'
-# configFileName  = "MB300_AMOR_config.json"
-# configFileName  = "MB300_FREIA_config.json"
-configFileName  = "Utgard_test.json"
+configFileName  = "MB300_AMOR_config.json"
+configFileName  = "MB300_FREIA_config.json"
+# configFileName  = "MB300_FREIA_config_inverted.json"
+# configFileName  = "Utgard_test.json"
 
 ###############################################################################
 ###############################################################################
@@ -90,7 +91,7 @@ parameters.fileManagement.fileName = ['freiatest.pcapng']
 ## window opens tos elcet file, filename speficified  earlier, last or sencond last file crearted in folder, 
 ## entire  folder  opend  and analized and cumulated  all togheter 
 parameters.fileManagement.openMode = 'window'
-
+parameters.fileManagement.openMode = 'fileName'
 
 ###############
 ## path to threshold  file
@@ -119,7 +120,7 @@ parameters.fileManagement.reducedCompressionHDFL  = 9
 
 ## cassettes to clusterize and to plot, if empty the cassettes in the config file are taken as default
 # parameters.cassettes.cassettes = [1,2,3,4,5,6]
-# parameters.cassettes.cassettes = [1,2,3]
+# parameters.cassettes.cassettes = np.arange(32,0,-1)
 
 ## timeWindow to search for clusters, timeWindow is max time between events in candidate cluster 
 ## and timeWindow/2 is the recursive time distance between adjacent hits
@@ -185,14 +186,15 @@ parameters.MONitor.MONDistance  = 0
 # show stat during clustering, option  'globalStat'  stat for all cassettes together, 
 # 'individualStat' stat per cassette or None for no stat
 parameters.plotting.showStat = 'globalStat'
+# parameters.plotting.showStat = 'individualStat'
 
 ###############     
 # raw plots
-parameters.plotting.plotRawReadouts         = True
-parameters.plotting.plotReadoutsTimeStamps  = True
+parameters.plotting.plotRawReadouts         = False
+parameters.plotting.plotReadoutsTimeStamps  = False
 parameters.plotting.plotRawHits             = True
-parameters.plotting.plotHitsTimeStamps      = True
-parameters.plotting.plotHitsTimeStampsVSChannels = True
+parameters.plotting.plotHitsTimeStamps      = False
+parameters.plotting.plotHitsTimeStampsVSChannels = False
 
 
 parameters.plotting.plotInstRate    = False
@@ -208,8 +210,11 @@ parameters.plotting.ToFbinning      = 100e-6 # s
           
 parameters.plotting.plotMultiplicity = False 
 
-#  0 is max max, 1 is cog cog, 2 is w max and s cog 
-parameters.plotting.positionReconstruction = 2
+# parameters.configJsonFile.orientation = 'vertical'
+
+# 'W.max-S.max' is max max,  'W.cog-S.cog' is CoG CoG, 'W.max-S.cog' is wires max and strips CoG 
+parameters.plotting.positionReconstruction = 'W.max-S.cog'
+parameters.plotting.positionReconstruction = 'W.max-S.max'
 
 # if True plot XY and XtoF plot in absolute unit (mm), if False plot in wire and strip ch no.
 parameters.plotting.plotABSunits = False
@@ -337,8 +342,13 @@ if parameters.MONitor.MONOnOff is True:
 # # # # hitsArray = bb.hits.concatenateHitsInArrayForDebug()
 # hits = bb.hits   
 # # hits2 = maps.extractHitsPortion.extract(hits,182,300)
-# # hitsArray = hits2.concatenateHitsInArrayForDebug()
+# hitsArray = hits.concatenateHitsInArrayForDebug()
 ######################
+
+# bb = sdat.sampleHitsMultipleCassettes_2()
+# bb.generateGlob()
+# hits = bb.hits  
+# hitsArray = hits.concatenateHitsInArrayForDebug()
 
 ###############################################################################
 ### clusterize
@@ -416,7 +426,7 @@ if (parameters.plotting.plotRawHits or parameters.plotting.plotHitsTimeStamps or
 
 # XY and XToF
 plev = plo.plottingEvents(events,allAxis,parameters.plotting.coincidenceWS_ONOFF)
-plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits)
+plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits, orientation = parameters.configJsonFile.orientation)
 
 # # ToF per cassette 
 # if parameters.plotting.plotToFDistr is True:

@@ -117,6 +117,8 @@ class DETparameters():
         
         self.name     = None
         
+        self.orientation = 'vertical'
+        
         self.numOfWires  = 0
         self.numOfStrips = 0
         
@@ -196,6 +198,7 @@ class read_json_config():
         self.DETparameters.bladesInclination  = float(self.conf.get('bladesInclination_deg'))
         self.DETparameters.offset1stWires  = float(self.conf.get('offset1stWires_mm'))
         self.DETparameters.numOfCassettes  = self.conf.get('cassettes')
+        self.DETparameters.orientation     = self.conf.get('orientation')
         
     def get_DETmap(self):  
         self.DETmap.cassettesMap = self.conf.get('Cassette2ElectronicsConfig')
@@ -368,7 +371,13 @@ class mapDetector():
                   # in this case the order is the arrangemtn in the json file 
         for k, cass in enumerate(self.config.DETparameters.cassInConfig): 
             selection = np.logical_and( self.hits.Cassette == cass , self.hits.WorS == 0 ) #  wires is WorS = 0
-            self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + k*self.config.DETparameters.numOfWires
+            
+            #  if just add +32 every cassette in config does not matter the  ID
+            index = k
+            #  if the cassette ID drives the position in the  space, 1 is the bottom cassette orthe most left 
+            # index = cass-1
+                
+            self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
         
     
     def mappAllCassAndChannels(self):
@@ -412,7 +421,7 @@ class mapMonitor():
 
 if __name__ == '__main__':
 
-   filePath  = './'+"MB300_AMOR_config.json"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MB300_AMOR_config.json"
    filePathD = './'+"VMM3a_Freia.pcapng"
 
    config = read_json_config(filePath)
@@ -472,3 +481,5 @@ if __name__ == '__main__':
    # # aa = config.get_monitor()
    
    bb = mapMonitor(vmm2, config)
+   
+   # ori = getALl

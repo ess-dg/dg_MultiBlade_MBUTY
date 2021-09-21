@@ -2,6 +2,8 @@
 	"Detector": "MB300.FREIA",
 
 	"cassettes" : 32,
+	
+	"orientation" : "horizontal",
 
 	"Cassette2ElectronicsConfig" : [
 	 	{"ID" : 1, "Ring" : 0, "Fen" : 1, "Hybrid" : 0},

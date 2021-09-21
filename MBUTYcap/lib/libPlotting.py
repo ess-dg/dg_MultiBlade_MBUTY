@@ -289,34 +289,43 @@ class plottingEvents():
         # self.sharex='col'
         # self.sharey='row' 
             
-    def plotXYToF(self, logScale = False, absUnits = False):
+    def plotXYToF(self, logScale = False, absUnits = False, orientation = 'vertical'):
         
         normColors = logScaleMap(logScale).normColors
      
         if absUnits == False:
-            
-            
+ 
             h2D, _, hToF = hh.histog().histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc])
     
             hProjAll = hh.histog().hist1D(self.allAxis.axWires.axis, self.events.positionW)
             
             hProj2D  = np.sum(h2D,axis=0)
             
-            fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
-            # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
-            pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires.start,self.allAxis.axWires.stop,self.allAxis.axStrips.stop,self.allAxis.axStrips.start], origin='upper',cmap='viridis')
-            fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
-            # cbar1 =fig2D.colorbar(pos1,ax=ax1)
-            # cbar2.minorticks_on()
-            # ax1.set_aspect('tight')
-            ax1.set_xlabel('Wire ch.')
-            ax1.set_ylabel('Strip ch.')
-            fig2D.suptitle('DET image')
+            if orientation == 'vertical':
             
-            ########
-            # 1D image of detector, opnly wires, in coincidence with strips (2D) and not (1D)
-            # XYprojGlobCoinc = np.sum(XYglob,axis=0) 
-        
+                fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
+                # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
+                pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires.start,self.allAxis.axWires.stop,self.allAxis.axStrips.stop,self.allAxis.axStrips.start], origin='upper',cmap='viridis')
+                fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                # cbar1 =fig2D.colorbar(pos1,ax=ax1)
+                # cbar2.minorticks_on()
+                # ax1.set_aspect('tight')
+                ax1.set_xlabel('Wire ch.')
+                ax1.set_ylabel('Strip ch.')
+                fig2D.suptitle('DET image')
+                
+                
+            elif orientation == 'horizontal':     
+    
+                fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(12,6), nrows=1, ncols=2)    
+                pos1  = ax1.imshow(np.rot90(h2D,1),aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axStrips.start,self.allAxis.axStrips.stop,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='upper',cmap='viridis')
+                fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                ax1.set_ylabel('Wire ch.')
+                ax1.set_xlabel('Strip ch.')
+                fig2D.suptitle('DET image')
+                
+
+            
             pos2 = ax2.step(self.allAxis.axWires.axis,hProjAll,'r',where='mid',label='1D')
             ax2.step(self.allAxis.axWires.axis,hProj2D,'b',where='mid',label='2D')
             if logScale is True:
@@ -325,8 +334,7 @@ class plottingEvents():
             ax2.set_ylabel('counts')
             ax2.set_xlim(self.allAxis.axWires.start,self.allAxis.axWires.stop)
             legend = ax2.legend(loc='upper right', shadow=False, fontsize='large')
-    
-    
+
             ########
             # 2D image of detector ToF vs Wires 
             # ToFxgms = ToFxg*1e3 # in ms 
@@ -346,21 +354,31 @@ class plottingEvents():
             
             hProj2D  = np.sum(h2D,axis=0)
             
-            fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
-            # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
-            pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop,self.allAxis.axStrips_mm.stop,self.allAxis.axStrips_mm.start], origin='upper',cmap='viridis')
-            fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
-            # cbar1 =fig2D.colorbar(pos1,ax=ax1)
-            # cbar2.minorticks_on()
-            # ax1.set_aspect('tight')
-            ax1.set_xlabel('Wire coord. (mm)')
-            ax1.set_ylabel('Strip (mm)')
-            fig2D.suptitle('DET image')
+            if orientation == 'vertical':
             
-            ########
-            # 1D image of detector, opnly wires, in coincidence with strips (2D) and not (1D)
-            # XYprojGlobCoinc = np.sum(XYglob,axis=0) 
-        
+                fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
+                # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
+                pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop,self.allAxis.axStrips_mm.stop,self.allAxis.axStrips_mm.start], origin='upper',cmap='viridis')
+                fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                # cbar1 =fig2D.colorbar(pos1,ax=ax1)
+                # cbar2.minorticks_on()
+                # ax1.set_aspect('tight')
+                ax1.set_xlabel('Wire coord. (mm)')
+                ax1.set_ylabel('Strip (mm)')
+                fig2D.suptitle('DET image')
+ 
+               
+            elif orientation == 'horizontal':  
+                
+                fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
+                # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
+                pos1  = ax1.imshow(np.rot90(h2D,1),aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axStrips_mm.start,self.allAxis.axStrips_mm.stop,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='upper',cmap='viridis')
+                fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                ax1.set_ylabel('Wire coord. (mm)')
+                ax1.set_xlabel('Strip (mm)')
+                fig2D.suptitle('DET image')
+    
+    
             pos2 = ax2.step(self.allAxis.axWires_mm.axis,hProjAll,'r',where='mid',label='1D')
             ax2.step(self.allAxis.axWires_mm.axis,hProj2D,'b',where='mid',label='2D')
             if logScale is True:
@@ -369,11 +387,7 @@ class plottingEvents():
             ax2.set_ylabel('counts')
             ax2.set_xlim(self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop)
             legend = ax2.legend(loc='upper right', shadow=False, fontsize='large')
-    
-    
-            ########
-            # 2D image of detector ToF vs Wires 
-            # ToFxgms = ToFxg*1e3 # in ms 
+        
         
             fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
             pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start,self.allAxis.axToF.stop,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
@@ -381,6 +395,8 @@ class plottingEvents():
             ax2.set_ylabel('Wire coord. (mm)')
             ax2.set_xlabel('ToF (s)')
             fig2.suptitle('DET ToF')
+            
+        # return h2D
             
 
     def plotXLambda(self, logScale=False, absUnits = False):
@@ -590,30 +606,46 @@ if __name__ == '__main__' :
     
     plt.close("all")
     
-    configFilePath = './'+"MB300_AMOR_config.json"
+    configFilePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MB300_AMOR_config.json"
+    
+    
+    parameters  = para.parameters('./')
+    
+    
+    
     
     config = maps.read_json_config(configFilePath)
+    parameters.loadConfigParameters(config)
+
+
+    parameters.plotting.positionReconstruction = 'W.max-S.max'
     
-    parameters = para.parameters(config)
+    parameters.cassettes.cassettes = [1,2,3]
     
-    parameters.cassettes.cassettes = [1,2,3,4,5]
-    
-    parameters.wavelength.distance = 19000
+    # parameters.wavelength.distance = 19000
     
     parameters.configJsonFile.offset1stWires = 10
 
     #  generate sample hits 
-    Nhits = 1e4
-    cassettes1 = [1,2,4]
-      
-    hits2 = sdat.sampleHitsMultipleCassettes(cassettes1)
-    hits2.generateGlob(Nhits)
     
-    cassettes = [1,2,3]
+    # Nhits = 1e4
+    # bb = sdat.sampleHitsMultipleCassettes()
+    # bb.generateGlob(Nhits)
+    
+    bb = sdat.sampleHitsMultipleCassettes_2()
+    bb.generateGlob()
+    
+    
+    
+    hits = bb.hits 
+    
+    hitsArray = hits.concatenateHitsInArrayForDebug()
+
+    
     
     timeWindow = 2e-6
     
-    cc = clu.clusterHits(hits2,0)
+    cc = clu.clusterHits(hits,0)
     cc.clusterizeManyCassettes(parameters.cassettes.cassettes, timeWindow)
     
     vv = absu.calculateAbsUnits(cc.events, parameters)
@@ -623,6 +655,8 @@ if __name__ == '__main__' :
     vv.calculateToFandWavelength(0)
    
     events = vv.events
+    
+    # events = cc.events
     
     # # # 
     
@@ -679,16 +713,19 @@ if __name__ == '__main__' :
     # dd = plottingHits(hits2, parameters)
     # dd.plotChRaw(parameters.cassettes.cassettes)
     
-    pp = plottingEvents(events,allAxis)
+    pp = plottingEvents(events,allAxis,coincidenceWS_ONOFF=True)
     # pp.plotXYToF(logScale=True, absUnits = True)
     
     # pp.plotXLambda(logScale=False, absUnits = False)
     
     # aa = pp.plotMultiplicity([1,2,3])
     
-    aa = pp.plotPHS([1,2,3],parameters)
+    # aa = pp.plotPHS([1,2,3],parameters)
     
-    pp.plotPHScorrelation([1,2,3])
+    # pp.plotPHScorrelation([1,2,3])
+    
+    h2D = pp.plotXYToF(logScale = False, absUnits = False, orientation='vertical')
+
         
     ##################
 

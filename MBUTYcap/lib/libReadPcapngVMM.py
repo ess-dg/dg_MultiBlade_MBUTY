@@ -146,6 +146,7 @@ class VMM3A():
         #######################
         #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
         self.Ring = np.floor(PhysicalRing/2)
+        # self.Ring = PhysicalRing
         #######################
 
         self.ADC = OTADC & 0x3FF  #extract only 10 LSB
@@ -166,7 +167,8 @@ class VMM3A():
         if self.timeResolutionType == 'coarse':
             self.timeStamp =  TimeHI + TimeLO * timeResolution # coarse time resolution
         elif self.timeResolutionType == 'fine':
-            self.timeStamp =  TimeHI + TimeLO*timeResolution + ( timeResolution*2 - (self.TDC*(60/255))*1e-9 )  #fine time resolution
+            # self.timeStamp =  TimeHI + TimeLO*timeResolution + ( timeResolution*2 - (self.TDC*(60/255))*1e-9 )  #fine time resolution
+            self.timeStamp =  TimeHI + TimeLO*timeResolution + ( timeResolution*2*1.5 - (self.TDC*(60/255))*1e-9 )  #fine time resolution
             
 ###############################################################################
 ###############################################################################

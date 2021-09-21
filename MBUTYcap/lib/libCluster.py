@@ -255,6 +255,8 @@ class clusterHits():
 
             # add a line at top [0,0,0,0] not to lose the 1st event
             data = np.concatenate( ( np.zeros((1,np.shape(data)[1]), dtype = 'float64'), data ), axis=0)  #add a line at top not to lose the 1st event
+            data[0,0] = -np.inf
+ 
 
             data[:,0] = np.around(data[:,0],decimals=self.resolution) #time rounded at 1us precision is 6 decimals, 7 is 100ns, etc...
 

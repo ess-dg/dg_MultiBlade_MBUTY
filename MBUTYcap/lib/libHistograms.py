@@ -60,7 +60,7 @@ class allAxis():
         
     def createAllAxis(self,param): 
         
-        param.update()
+        # param.update()
         
         sine = np.sin(np.deg2rad(param.configJsonFile.bladesInclination)) 
         

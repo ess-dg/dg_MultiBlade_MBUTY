@@ -202,7 +202,9 @@ class sampleHits1Cass():
          
          
 class sampleHitsMultipleCassettes(): 
-    def __init__(self, cassetteIDs=[1,2,3,4,5,6], dataPath='./data/'):
+    def __init__(self, cassetteIDs=[1,2,3,4,5,6], dataPath='./data/' ,  whichDataset='ESSmask'):
+        
+        self.whichDataset = whichDataset
         
         self.cassetteIDs = cassetteIDs
         
@@ -212,9 +214,12 @@ class sampleHitsMultipleCassettes():
         
         self.Channel   = np.zeros((0), dtype = 'float64')
         
-        self.fileName1    = 'ESSmask_dataset1_large_cass'
+        if self.whichDataset == 'ESSmask':
+            self.fileName1    = 'ESSmask_cass'
+        elif  self.whichDataset == 'DirectBeam': 
+            self.fileName1    = 'DirectBeam_cass'
+            
         self.fileName2    =  '_Sorting=True_Filtering=False_Input.txt'
-        
         
     def append(self, hit):
         
@@ -223,7 +228,7 @@ class sampleHitsMultipleCassettes():
 
     def generate(self,Nhits):
         
-        print('generating sample hits ...')
+        print('generating sample hits ... dataset: ',self.whichDataset)
         
         Nhits = int(Nhits)
         
@@ -240,7 +245,7 @@ class sampleHitsMultipleCassettes():
             
     def generateGlob(self,Nhits):
         
-        print('generating sample hits ...')
+        print('generating sample hits ... dataset: ',self.whichDataset)
         
         Nhits = int(Nhits)
         
@@ -259,7 +264,102 @@ class sampleHitsMultipleCassettes():
             
             self.append(aa)
                      
+ ############################################
+           
+class sampleHitsMultipleCassettes_2(): 
+     def __init__(self):
     
+          # self.cassetteIDs = cassetteIDs
+        
+          self.hits = maps.hits()
+          
+     def generateGlob(self):
+        
+        print('generating sample hits 2 ...')
+        
+        # Nhits = int(Nhits)
+        
+        # C2 ######################
+        self.hits.Cassette    = float(2)
+        self.hits.ADC         = float(1000)
+        self.hits.WiresStrips = float(18+32)
+        self.hits.WorS        = float(0)
+        self.hits.timeStamp   = float(0.000001)
+        
+        self.hits.Cassette    = np.append(self.hits.Cassette,2)
+        self.hits.ADC         = np.append(self.hits.ADC,800)
+        self.hits.WiresStrips = np.append(self.hits.WiresStrips,63)
+        self.hits.WorS        = np.append(self.hits.WorS,1)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,2e-6)
+        
+        # C2 ######################
+        
+        self.hits.Cassette    = np.append(self.hits.Cassette,2)
+        self.hits.ADC         = np.append(self.hits.ADC,5006)
+        self.hits.WiresStrips = np.append(self.hits.WiresStrips,20+32)
+        self.hits.WorS        = np.append(self.hits.WorS,0)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,7e-6)
+        
+        self.hits.Cassette    = np.append(self.hits.Cassette,2)
+        self.hits.ADC         = np.append(self.hits.ADC,5004)
+        self.hits.WiresStrips = np.append(self.hits.WiresStrips,3)
+        self.hits.WorS        = np.append(self.hits.WorS,1)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,7.5e-6)
+        
+        # C1 ######################
+        
+        self.hits.Cassette    = np.append(self.hits.Cassette,1)
+        self.hits.ADC         = np.append(self.hits.ADC,501)
+        self.hits.WiresStrips = np.append(self.hits.WiresStrips,0)
+        self.hits.WorS        = np.append(self.hits.WorS,0)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,15.5e-6)
+        
+        self.hits.Cassette    = np.append(self.hits.Cassette,1)
+        self.hits.ADC         = np.append(self.hits.ADC,502)
+        self.hits.WiresStrips = np.append(self.hits.WiresStrips,0)
+        self.hits.WorS        = np.append(self.hits.WorS,1)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,15.7e-6)
+        
+        # C1 ######################
+        
+        self.hits.Cassette    = np.append(self.hits.Cassette,1)
+        self.hits.ADC         = np.append(self.hits.ADC,506)
+        self.hits.WiresStrips = np.append(self.hits.WiresStrips,9)
+        self.hits.WorS        = np.append(self.hits.WorS,0)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,20e-6)
+        
+        self.hits.Cassette    = np.append(self.hits.Cassette,1)
+        self.hits.ADC         = np.append(self.hits.ADC,507)
+        self.hits.WiresStrips = np.append(self.hits.WiresStrips,31)
+        self.hits.WorS        = np.append(self.hits.WorS,1)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,21e-6)
+        
+        self.hits.Cassette    = np.append(self.hits.Cassette,1)
+        self.hits.ADC         = np.append(self.hits.ADC,509)
+        self.hits.WiresStrips = np.append(self.hits.WiresStrips,2)
+        self.hits.WorS        = np.append(self.hits.WorS,0)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,100e-6)
+        
+        self.hits.Cassette    = np.append(self.hits.Cassette,1)
+        self.hits.ADC         = np.append(self.hits.ADC,509)
+        self.hits.WiresStrips = np.append(self.hits.WiresStrips,3)
+        self.hits.WorS        = np.append(self.hits.WorS,1)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,100e-6)
+        
+        for k in range(20):
+            self.hits.Cassette    = np.append(self.hits.Cassette,3)
+            self.hits.ADC         = np.append(self.hits.ADC,1000)
+            self.hits.WiresStrips = np.append(self.hits.WiresStrips,32*2+5+k)
+            self.hits.WorS        = np.append(self.hits.WorS,0)
+            self.hits.timeStamp   = np.append(self.hits.timeStamp,30e-6+k*4e-6)
+            
+            self.hits.Cassette    = np.append(self.hits.Cassette,3)
+            self.hits.ADC         = np.append(self.hits.ADC,1203)
+            self.hits.WiresStrips = np.append(self.hits.WiresStrips,10+2*k)
+            self.hits.WorS        = np.append(self.hits.WorS,1)
+            self.hits.timeStamp   = np.append(self.hits.timeStamp,30e-6+k*4e-6)
+       
+        
 ###############################################################################
 ###############################################################################
 # sample data from hdf5 old files
@@ -303,7 +403,9 @@ class sampleEvents1Cass():
          
 class sampleEventsMultipleCassettes():        
             
-      def __init__(self, cassetteIDs=[1,2,3,4,5,6], dataPath='./data/'):
+      def __init__(self, cassetteIDs=[1,2,3,4,5,6], dataPath='./data/', whichDataset='ESSmask'):
+          
+          self.whichDataset = whichDataset
           
           self.cassetteIDs = cassetteIDs
         
@@ -311,12 +413,16 @@ class sampleEventsMultipleCassettes():
         
           self.dataPath = dataPath+'dataJadaqConverted/'
 
-          self.fileName1    = 'ESSmask_dataset1_large_cass'
+          if self.whichDataset == 'ESSmask':
+            self.fileName1    = 'ESSmask_cass'
+          elif  self.whichDataset == 'DirectBeam': 
+            self.fileName1    = 'DirectBeam_cass'
+         
           self.fileName2    =  '_Sorting=True_Filtering=False_Clustered.txt'
           
       def generateGlob(self,Nevents):
         
-        print('generating sample events ...')
+        print('generating sample events ... dataset: ',self.whichDataset)
         
         Nevents = int(Nevents)
         
@@ -359,14 +465,24 @@ if __name__ == '__main__':
         
         # hitsArray = bb.hits.concatenateHitsInArrayForDebug()
         
-        Nevents = 10
+        # Nevents = 10
         
-        # cc = sampleEvents(cassettes, './data/dataJadaqConverted/ESSmask_dataset1_large_cass1_Sorting=True_Filtering=False_Clustered.txt')
-        # data = cc.read(Nevents)
+        # # cc = sampleEvents(cassettes, './data/dataJadaqConverted/ESSmask_dataset1_large_cass1_Sorting=True_Filtering=False_Clustered.txt')
+        # # data = cc.read(Nevents)
    
-        dd = sampleEventsMultipleCassettes(cassettes,'./data/')
-        dd.generateGlob(Nevents)
+        # dd = sampleEventsMultipleCassettes(cassettes,'./data/')
+        # dd.generateGlob(Nevents)
         
-        events  = dd.events
+        # events  = dd.events
         
-        evetnsArray = events.concatenateEventsInArrayForDebug()
+        # evetnsArray = events.concatenateEventsInArrayForDebug()
+        
+        # hiit = sampleHitsMultipleCassettes_2()
+        # hiit.generateGlob()
+        # hits = hiit.hits
+        
+        hiit = sampleHitsMultipleCassettes(whichDataset='DirectBeam')
+        hiit.generateGlob(1e9)
+        hits = hiit.hits
+        
+        hitsArray = hits.concatenateHitsInArrayForDebug()

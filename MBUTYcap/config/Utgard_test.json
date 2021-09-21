@@ -2,6 +2,8 @@
 	"Detector": "test",
 
 	"cassettes" : 32,
+	
+	"orientation" : "vertical",
 
 	"Cassette2ElectronicsConfig" : [
 	 	{"ID" : 1, "Ring" : 2, "Fen" : 1, "Hybrid" : 0},
