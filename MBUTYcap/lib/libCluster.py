@@ -34,6 +34,9 @@ class events():
         
         self.timeStamp = np.zeros((0), dtype = 'float64')
         
+        self.PulseT = np.zeros((0), dtype = 'float64')
+        self.PrevPT = np.zeros((0), dtype = 'float64')
+        
         self.PHW = np.zeros((0), dtype = 'float64') 
         self.PHS = np.zeros((0), dtype = 'float64') 
         
@@ -51,6 +54,14 @@ class events():
         self.NeventsNotRej2D  = np.zeros((0), dtype = 'float64') 
         self.NeventsNotRejAfterTh  = np.zeros((0), dtype = 'float64') 
         
+        self.Durations   = np.zeros((0), dtype = 'float64')
+        self.Duration    = np.zeros((1), dtype = 'float64')
+        
+    def importDurations(self,hits):
+        
+        self.Durations = hits.Durations
+        self.Duration  = hits.Duration
+        
     def append(self, eve):
         
         self.CassetteIDs = np.append(self.CassetteIDs, eve.CassetteIDs)
@@ -62,6 +73,8 @@ class events():
         self.PHS         = np.concatenate((self.PHS, eve.PHS), axis=0)
         self.multW       = np.concatenate((self.multW, eve.multW), axis=0)
         self.multS       = np.concatenate((self.multS, eve.multS), axis=0)
+        self.PulseT      = np.concatenate((self.PulseT, eve.PulseT), axis=0)
+        self.PrevPT      = np.concatenate((self.PrevPT, eve.PrevPT), axis=0)
         
         self.Nevents     = np.append(self.Nevents, eve.Nevents)
         self.NeventsNotRejAll = np.append(self.NeventsNotRejAll, eve.NeventsNotRejAll)
@@ -73,6 +86,9 @@ class events():
         self.positionZmm  = np.concatenate((self.positionZmm, eve.positionZmm), axis=0)
         self.ToF          = np.concatenate((self.ToF, eve.ToF), axis=0)
         self.wavelength   = np.concatenate((self.wavelength, eve.wavelength), axis=0)
+        
+        self.Durations   = np.append(self.Durations, eve.Durations)
+        self.Duration    = self.Duration+eve.Duration
         
     def appendSelection(self, eve, boolArray):
         
@@ -89,6 +105,8 @@ class events():
         self.positionZmm = np.concatenate((self.positionZmm, eve.positionZmm[boolArray]), axis=0)
         self.ToF         = np.concatenate((self.ToF, eve.ToF[boolArray]), axis=0)
         self.wavelength  = np.concatenate((self.wavelength, eve.wavelength[boolArray]), axis=0)
+        self.PulseT      = np.concatenate((self.PulseT, eve.PulseT[boolArray]), axis=0)
+        self.PrevPT      = np.concatenate((self.PrevPT, eve.PrevPT[boolArray]), axis=0)
         
         
         # self.CassetteIDs = np.unique(self.Cassette)
@@ -123,6 +141,8 @@ class events():
         self.PHS       = POPH[:,4]
         self.multW     = POPH[:,5]
         self.multS     = POPH[:,6]
+        self.PulseT    = POPH[:,7]
+        self.PrevPT    = POPH[:,8]
         
         
     def createAbsUnitsArrays(self):
@@ -139,7 +159,7 @@ class events():
         
         leng = len(self.Cassette)
         
-        eventsArray = np.zeros((leng,8),dtype = 'float64')
+        eventsArray = np.zeros((leng,12),dtype = 'float64')
         
         eventsArray[:,0] = self.timeStamp
         eventsArray[:,1] = self.Cassette
@@ -149,6 +169,14 @@ class events():
         eventsArray[:,5] = self.PHS
         eventsArray[:,6] = self.multW
         eventsArray[:,7] = self.multS
+        eventsArray[:,8] = self.PulseT
+        eventsArray[:,9] = self.PrevPT
+        
+        if np.shape(self.ToF)[0]>0:
+           eventsArray[:,10] = self.ToF
+        if np.shape(self.wavelength)[0]>0:
+           eventsArray[:,11] = self.wavelength
+        
                         
         return eventsArray
     
@@ -205,9 +233,11 @@ class clusterHits():
          self.intervals = 4
          
          # number of decimals after comma in seconds, to round the serach for clusters: 6 means 1us rounding 
-         self.resolution = 7
+         self.resolution = 9
          
          self.events = events()
+         
+         self.events.importDurations(self.hits)
        
          
      def clusterize1cassette(self, cassette1ID, timeWindow):
@@ -247,17 +277,18 @@ class clusterHits():
          
             # for speed the hits are inserted in an array
             # add a line at top [0,0,0,0] not to lose the 1st event
-            data =  np.zeros((np.shape(self.hits.timeStamp[selectCassette])[0],4), dtype = 'float64') 
+            data = np.zeros((np.shape(self.hits.timeStamp[selectCassette])[0],6), dtype = 'float64') 
             data[:,0] = self.hits.timeStamp[selectCassette]
             data[:,1] = self.hits.WiresStrips[selectCassette]
             data[:,2] = self.hits.ADC[selectCassette]
             data[:,3] = self.hits.WorS[selectCassette]
+            data[:,4] = self.hits.PulseT[selectCassette]
+            data[:,5] = self.hits.PrevPT[selectCassette]
 
             # add a line at top [0,0,0,0] not to lose the 1st event
             data = np.concatenate( ( np.zeros((1,np.shape(data)[1]), dtype = 'float64'), data ), axis=0)  #add a line at top not to lose the 1st event
             data[0,0] = -np.inf
  
-
             data[:,0] = np.around(data[:,0],decimals=self.resolution) #time rounded at 1us precision is 6 decimals, 7 is 100ns, etc...
 
             deltaTime = np.diff(data[:,0])                    #1st derivative of time 
@@ -287,18 +318,19 @@ class clusterHits():
     
             ADCCH[:,10]  =  ADCCH[:,4]*ADCCH[:,6]*ADCCH[:,8]    # weighted position on wires
             ADCCH[:,11]  =  ADCCH[:,5]*ADCCH[:,7]*ADCCH[:,9]    # weighted position on strips
-            
+
             #################################
  
             NumClusters = np.shape(index)[0]
             
             self.events1Cass.Nevents = NumClusters
         
-            self.POPH = np.zeros((NumClusters,7))  #output data with col0 position wires, col1 poisiton strips, col2 tof, col3 pulse height wires, col4 pulse height strips, col 5 multiplicity w, col 6 muiltiplicity strips
+            self.POPH = np.zeros((NumClusters,9))  #output data with col0 position wires, col1 poisiton strips, col2 tof, col3 pulse height wires, col4 pulse height strips, col 5 multiplicity w, col 6 muiltiplicity strips
     
-            # filling ToF column
-            tempTof   = data[index,0]
-            self.POPH[:,2] = tempTof[:,0]     #tof
+            # filling timeStamp column
+            self.POPH[:,2]  = data[index[:,0],0]   # timeStamp      
+            self.POPH[:,7]  = data[index[:,0],4]   # PulseT   
+            self.POPH[:,8]  = data[index[:,0],5]   # PrevPT
      
             #################################
             
@@ -364,7 +396,7 @@ class clusterHits():
                             if (neigw == 1):    #if they are neighbour then...
                     
                                 self.rejCounter[2] = self.rejCounter[2]+1;                #counter 1D
-                    
+
                                 self.POPH[kk,5]   = ww     #multiuplicity wires
                                 self.POPH[kk,3]   = np.sum(clusterq[:,8],axis=0)   #PH wires
                                 self.POPH[kk,0]   = round((np.sum(clusterq[:,10],axis=0))/(self.POPH[kk,3]),2)         #position wires

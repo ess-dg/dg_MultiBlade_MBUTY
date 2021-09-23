@@ -53,7 +53,10 @@ class fileDialogue():
         if self.openMode == 'wholeFolder' :
             print('\033[1;36mAll Files selected in folder '+self.filePath+' \033[1;37m') 
         else:
-            print('\033[1;36mFile selected: '+self.fileName[0]+' \033[1;37m') 
+            print('\033[1;36mFile selected: ',end='')
+            for ff in self.fileName:
+                print(ff,', ',end='')
+            print('\033[1;37m') 
                      
     def checkIfExists(self):
         

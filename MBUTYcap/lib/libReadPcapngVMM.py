@@ -34,6 +34,9 @@ class readouts():
         self.OTh     = np.zeros((0), dtype = 'float64')
         self.TDC     = np.zeros((0), dtype = 'float64')
         self.GEO     = np.zeros((0), dtype = 'float64')
+        self.PulseT    = np.zeros((0), dtype = 'float64')
+        self.PrevPT    = np.zeros((0), dtype = 'float64')
+        self.Durations = np.zeros((0), dtype = 'float64')
                
     def transformInReadouts(self, data):
         self.Ring     = data[:,0]
@@ -44,10 +47,12 @@ class readouts():
         self.Channel  = data[:,5]
         self.ADC      = data[:,6]
         self.timeStamp  = data[:,7]
-        self.BC   = data[:,8]
-        self.OTh  = data[:,9]
-        self.TDC  = data[:,10]
-        self.GEO  = data[:,11]
+        self.BC       = data[:,8]
+        self.OTh      = data[:,9]
+        self.TDC      = data[:,10]
+        self.GEO      = data[:,11]
+        self.PulseT   = data[:,12]
+        self.PrevPT   = data[:,13]
                 
     # def list(self):
     #     print("Rings {}".format(self.Ring))
@@ -67,12 +72,15 @@ class readouts():
         self.OTh  = np.concatenate((self.OTh, reado.OTh), axis=0)
         self.TDC  = np.concatenate((self.TDC, reado.TDC), axis=0)
         self.GEO  = np.concatenate((self.GEO, reado.GEO), axis=0)
+        self.PulseT  = np.concatenate((self.PulseT, reado.PulseT), axis=0)
+        self.PrevPT  = np.concatenate((self.PrevPT, reado.PrevPT), axis=0)
+        self.Durations  = np.append(self.Durations, reado.Durations)
               
     def concatenateReadoutsInArrayForDebug(self):
         
         leng = len(self.timeStamp)
         
-        readoutsArray = np.zeros((leng,7),dtype = 'float64')
+        readoutsArray = np.zeros((leng,9),dtype = 'float64')
         
         readoutsArray[:,0] = self.timeStamp
         readoutsArray[:,1] = self.Ring
@@ -81,6 +89,8 @@ class readouts():
         readoutsArray[:,4] = self.ASIC
         readoutsArray[:,5] = self.Channel
         readoutsArray[:,6] = self.ADC
+        readoutsArray[:,7] = self.PulseT
+        readoutsArray[:,8] = self.PrevPT
         
         return readoutsArray
     
@@ -100,6 +110,16 @@ class readouts():
         self.OTh     =  self.OTh[indexes]
         self.TDC     =  self.TDC[indexes]
         self.GEO     =  self.GEO[indexes]
+        self.PulseT  =  self.PulseT[indexes]
+        self.PrevPT  =  self.PrevPT[indexes]
+        
+    def calculateDuration(self):
+         
+         Tstart = np.min(self.timeStamp)
+         Tstop  = np.max(self.timeStamp)
+         self.Durations = np.round(Tstop-Tstart, decimals = 3)
+         
+         
         
 
 ###############################################################################
@@ -196,7 +216,7 @@ class VMM3A():
         # self.Ring = PhysicalRing
         #######################
 
-        self.ADC = OTADC & 0x3FF  #extract only 10 LSB
+        self.ADC      = OTADC & 0x3FF  #extract only 10 LSB
         self.OTh      = OTADC >> 15    #extract only 1 MSB
 
         self.G0       = G0GEO >> 7
@@ -263,24 +283,31 @@ class pcapng_reader():
                  print('Readouts are sorted by TimeStamp')
                  
                  self.readouts.sortByTimeStamps()
+                 
             
              else:
                 
                 print('Readouts are NOT sorted by TimeStamp')
                 
-                
+             self.readouts.calculateDuration()     
                         
 ##################################################  
 
 class pcapng_reader_PreAlloc():
     def __init__(self, filePathAndFileName):
         
+        # number of decimals after comma in seconds, to round the PulseT and PRevPT: 6 means 1us rounding, etc...
+        self.resolution = 9
+        
         self.filePathAndFileName = filePathAndFileName
         
         checkIfFileExistInFolder(self.filePathAndFileName)
         
+        temp2 = os.path.split(filePathAndFileName)
+        fileName = temp2[1]
+        
         self.fileSize   = os.path.getsize(self.filePathAndFileName) #bytes
-        print('data is {} kbytes'.format(self.fileSize/1e3))
+        print('{} is {} kbytes'.format(fileName,self.fileSize/1e3))
     
         self.readouts = readouts()
           
@@ -368,7 +395,7 @@ class pcapng_reader_PreAlloc():
         
         self.timeResolutionType = timeResolutionType
         
-        self.data = np.zeros((self.preallocLength,12), dtype='float64') 
+        self.data = np.zeros((self.preallocLength,14), dtype='float64') 
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
@@ -398,20 +425,28 @@ class pcapng_reader_PreAlloc():
                     self.counterNonESSpackets += 1
                     
                  else: 
-                     # there is an ESS packet but i can still be ampty, i.e.72 bytes only
+                     # there is an ESS packet but i can still be empty, i.e. 72 bytes only
                     self.counterValidESSpackets += 1
                     
                     if self.counterValidESSpackets == 1:
                         checkInstrumentID(packetData[indexESS+3])
                      
-                    indexDataStart = indexESS + 2 + self.offset + 1    #  this is 72 = 42+30
+                    indexDataStart = indexESS + self.offset + 3    #  this is 72 = 44+25+3
                     
                     #   give a warning if not 72,  check that ESS cookie is always in the same place
                     if indexDataStart != self.headerSize:
                         print('\n \033[1;31mWARNING ---> ESS cookie is not in position 72! \033[1;37m')
                         
-                    ESSlength = int.from_bytes(packetData[indexESS+4:indexESS+6], byteorder='little') # bytes    
-                        
+                    ESSlength  = int.from_bytes(packetData[indexESS+4:indexESS+6], byteorder='little') # bytes    
+                    
+                    PulseThigh = int.from_bytes(packetData[indexESS+8:indexESS+12], byteorder='little') # s
+                    PulseTlow  = int.from_bytes(packetData[indexESS+12:indexESS+16], byteorder='little')*self.timeResolution # s
+                    PrevPThigh = int.from_bytes(packetData[indexESS+16:indexESS+20], byteorder='little') # s
+                    PrevPTlow  = int.from_bytes(packetData[indexESS+20:indexESS+24], byteorder='little')*self.timeResolution # s
+                    
+                    PulseT = np.round((PulseThigh + PulseTlow),decimals=self.resolution) #time rounded at 1us precision is 6 decimals, 7 is 100ns, etc...
+                    PrevPT = np.round((PrevPThigh + PrevPTlow),decimals=self.resolution)
+                    
                     readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
                     # or alternatively
                     # readoutsInPacket = (ESSlength - self.ESSheaderSize) / self.singleReadoutSize
@@ -457,6 +492,8 @@ class pcapng_reader_PreAlloc():
                                 self.data[index, 9] = vmm3.OTh
                                 self.data[index, 10] = vmm3.TDC
                                 self.data[index, 11] = vmm3.GEO
+                                self.data[index, 12] = PulseT
+                                self.data[index, 13] = PrevPT
 
                                 self.dprint(" \t Packet: {} ({} bytes), Readout: {}, Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time {} s, BC {}, OverTh {}, ADC {}, TDC {}, GEO {} " \
                                             .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeStamp,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.GEO))
@@ -757,9 +794,18 @@ if __name__ == '__main__':
    # aa = cc.check()
    
    # readouts = cc.readouts
-   # readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+   # r
    
-   cc= checkWhich_RingFenHybrid_InFile(filePath).check()
+   # cc= checkWhich_RingFenHybrid_InFile(filePath).check()
+   
+   # pcapng = pcapng_reader_PreAlloc(filePath)
+   # pcapng.allocateMemory()
+   # pcapng.read(timeResolutionType='fine')
+   
+   pcap = pcapng_reader(filePath,timeResolutionType='fine', sortByTimeStampsONOFF = True)
+   readouts = pcap.readouts 
+   readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+   
 
    # aa = pr.d
    # bb = pr.e

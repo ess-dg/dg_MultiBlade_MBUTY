@@ -30,16 +30,22 @@ class hits():
         self.timeStamp   = np.zeros((0), dtype = 'float64')
         self.WorS        = np.zeros((0), dtype = 'float64')
         self.WiresStrips = np.zeros((0), dtype = 'float64')
+        self.PulseT      = np.zeros((0), dtype = 'float64')
+        self.PrevPT      = np.zeros((0), dtype = 'float64')
+        self.Durations   = np.zeros((0), dtype = 'float64')
+        self.Duration    = np.zeros((1), dtype = 'float64')
         
     def importReadouts(self,readouts):    
         
-        # self.__Channel = readouts.Channel
         self.ADC       = readouts.ADC
         self.timeStamp = readouts.timeStamp
+        self.PulseT    = readouts.PulseT
+        self.PrevPT    = readouts.PrevPT
+        
+        self.Durations = readouts.Durations
+        self.Duration  = np.sum(readouts.Durations)
         
         leng = len(readouts.Channel)
-        
-        # self.WorS     = np.zeros((leng), dtype = 'float64') 
         
         # 0 if wire, 1 if strip 
         self.WorS = np.copy(readouts.ASIC)
@@ -47,7 +53,6 @@ class hits():
         self.Cassette = np.nan*np.ones((leng), dtype = 'float64')        
 
         self.WiresStrips        = np.zeros((leng), dtype = 'float64')
-        # self.WiresStripsGlob  = np.zeros((leng), dtype = 'float64')
         
     def append(self, hit):
         
@@ -56,18 +61,25 @@ class hits():
         self.WorS        = np.concatenate((self.WorS, hit.WorS), axis=0)
         self.timeStamp   = np.concatenate((self.timeStamp, hit.timeStamp), axis=0)
         self.WiresStrips = np.concatenate((self.WiresStrips, hit.WiresStrips), axis=0)
+        self.PulseT      = np.concatenate((self.PulseT, hit.PulseT), axis=0)
+        self.PrevPT      = np.concatenate((self.PrevPT, hit.PrevPT), axis=0)
+        
+        self.Durations   = np.append(self.Durations, hit.Durations)
+        self.Duration    = self.Duration+hit.Duration
              
     def concatenateHitsInArrayForDebug(self):
         
         leng = len(self.WiresStrips)
         
-        hitsArray = np.zeros((leng,5),dtype = 'float64')
+        hitsArray = np.zeros((leng,7),dtype = 'float64')
         
         hitsArray[:,0] = self.timeStamp
         hitsArray[:,1] = self.Cassette
         hitsArray[:,2] = self.WorS
         hitsArray[:,3] = self.WiresStrips
         hitsArray[:,4] = self.ADC
+        hitsArray[:,5] = self.PulseT
+        hitsArray[:,6] = self.PrevPT
 
         return hitsArray
    
@@ -83,6 +95,8 @@ class extractHitsPortion():
         hitsEx.WorS      = hits.WorS[start:stop]
         hitsEx.timeStamp = hits.timeStamp[start:stop]
         hitsEx.WiresStrips = hits.WiresStrips[start:stop]
+        hitsEx.PulseT    = hits.PulseT[start:stop]
+        hitsEx.PrevPT    = hits.PrevPT[start:stop]
         
         return hitsEx
 
@@ -373,9 +387,9 @@ class mapDetector():
             selection = np.logical_and( self.hits.Cassette == cass , self.hits.WorS == 0 ) #  wires is WorS = 0
             
             #  if just add +32 every cassette in config does not matter the  ID
-            index = k
+            # index = k
             #  if the cassette ID drives the position in the  space, 1 is the bottom cassette orthe most left 
-            # index = cass-1
+            index = cass-1
                 
             self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
         

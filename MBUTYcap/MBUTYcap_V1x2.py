@@ -32,9 +32,8 @@ from lib import libEventsSoftThresholds as thre
 # STILL TO IMPLEMENT:
 #     - save reduced data
 #     - monitor analisys and plots
-#     - quantify duration time  from files, 
-#     - calculate ToF right
-
+#     - ignore extra threhsolds row in file if num of strips is 32 
+#     - lambda plot summed over single cass 
  
 
 ###############################################################################
@@ -203,8 +202,11 @@ parameters.plotting.instRateBin     = 1e-6  # s
 ### ToF plot integrated over individual cassette, one per cassette
 parameters.plotting.plotToFDistr    = False
 
-parameters.plotting.ToFrange        = 0.1   # s
-parameters.plotting.ToFbinning      = 100e-6 # s
+# parameters.plotting.ToFrange        = 0.1    # s
+# parameters.plotting.ToFbinning      = 100e-6 # s
+
+parameters.plotting.ToFrange        = 0.001   # s
+parameters.plotting.ToFbinning      = 10e-6 # s
      
 parameters.plotting.plotMultiplicity = False 
 
@@ -290,6 +292,10 @@ fileDialogue.openFile()
 ### init readouts cumulated over file list
 readouts = pcapr.readouts()
 
+# hits = maps.hits()
+
+# eve = clu.events()
+
 for fileName in fileDialogue.fileName:
     
     ### check if a file is pcapng otherwise pcap is converted into pcapng
@@ -304,6 +310,16 @@ for fileName in fileDialogue.fileName:
     ### load data  
     pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName,timeResolutionType='fine', sortByTimeStampsONOFF = True)
     readouts.append(pcap.readouts)
+    
+    # md  = maps.mapDetector(pcap.readouts, config)
+    # md.mappAllCassAndChannelsGlob()
+    # # hits = md.hits
+    
+    # # hits.append(md.hits)
+    # cc = clu.clusterHits(md.hits,parameters.plotting.showStat)
+    # cc.clusterizeManyCassettes(parameters.cassettes.cassettes, parameters.dataReduction.timeWindow)
+    # eve.append(cc.events)
+    
       
 ####################    
 ### for debug, generate sample readouts
@@ -331,13 +347,11 @@ if parameters.MONitor.MONOnOff is True:
  
 ####################    
 ### for debug, generate sample hits 
-# Nhits = 1e4
+# Nhits = 1e7
 # bb = sdat.sampleHitsMultipleCassettes()
 # bb.generateGlob(Nhits)
-# # # # hitsArray = bb.hits.concatenateHitsInArrayForDebug()
 # hits = bb.hits   
-# # hits2 = maps.extractHitsPortion.extract(hits,182,300)
-# hitsArray = hits.concatenateHitsInArrayForDebug()
+
 # bb = sdat.sampleHitsMultipleCassettes_2()
 # bb.generateGlob()
 # hits = bb.hits  
@@ -345,7 +359,7 @@ if parameters.MONitor.MONOnOff is True:
 
 ####################    
 ### for debug, hits in single array 
-# hitsArray = hits.concatenateHitsInArrayForDebug()
+hitsArray = hits.concatenateHitsInArrayForDebug()
 ####################
 
 ###############################################################################
@@ -356,12 +370,11 @@ events = cc.events
 
 ####################    
 ### for debug, events in single array 
-# eventsArray = cumulatedEvents.concatenateEventsInArrayForDebug() 
+eventsArray = events.concatenateEventsInArrayForDebug() 
 ####################
    
 ####################    
-### for debug, generate sample events 
-# Nevents = 100
+### for debug, generate sample events 2
 # dd = sdat.sampleEventsMultipleCassettes(parameters.cassettes.cassettes,'./data/')
 # dd.generateGlob(Nevents)
 # events  = dd.events
@@ -376,13 +389,14 @@ events = cc.events
 ab = absu.calculateAbsUnits(events, parameters)
 ab.calculatePositionAbsUnit()
 
-T0 = 0
-ab.calculateToF(T0)
+ab.calculateToF()
 
 if parameters.wavelength.calculateLambda is True:
     ab.calculateWavelength()
 
 eventsBTh = ab.events 
+
+eventsArray2 = eventsBTh.concatenateEventsInArrayForDebug() 
 
 ###############################################################################
 ###############################################################################

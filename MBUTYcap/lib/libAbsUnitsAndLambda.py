@@ -81,12 +81,22 @@ class calculateAbsUnits():
          #mm Z is 0 at first wire here 
          self.events.positionZmm = np.round((wireCh0to31 * (self.parameters.configJsonFile.wirePitch*cosi)), decimals = 2) #mm 
              
-     def calculateToF(self,T0):
+     def calculateToF(self):
 
-          # HERE DEVEL A FUNCT THAT CALACULTES TOF FOR NOW TIME STAMP IS NOT TOF 
-          # FOR NOW JUST A T0 BUT IT NEEDS TO TAKE all the resets of T0 
+          self.events.ToF = self.events.timeStamp - self.events.PulseT
           
-           self.events.ToF = self.events.timeStamp - T0
+          invalidToFs = self.events.ToF < 0.0
+          
+          self.events.ToF[invalidToFs] = self.events.timeStamp[invalidToFs] - self.events.PrevPT[invalidToFs]
+          
+          invalidToFsAgain = self.events.ToF < 0.0
+          
+          self.events.ToF[invalidToFsAgain] = np.nan
+          
+          if np.sum(invalidToFsAgain) > 0:
+              
+              print('\n \033[1;31mWARNING ---> some ToF are invalid, set as Nan! \033[1;37m')
+
           
           # self.events.ToF = np.mod(self.events.timeStamp - T0, self.parameters.plotting.ToFduration)
           
@@ -115,9 +125,9 @@ class calculateAbsUnits():
          
          self.events.wavelength = np.round(wavel, decimals=2)
            
-     def calculateToFandWavelength(self, T0):
+     def calculateToFandWavelength(self):
             
-            self.calculateToF(T0)
+            self.calculateToF()
             self.calculateWavelength()
                 
 ###############################################################################

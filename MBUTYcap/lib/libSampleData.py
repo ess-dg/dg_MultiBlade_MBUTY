@@ -22,6 +22,10 @@ class sampleReadouts_1():
             self.readouts = pcapr.readouts()                
             
       def fill(self):
+          
+            self.readouts.PulseT[0:10] = 0
+            self.readouts.PrevPT[0:10] = 0
+            
             # ring 0
             self.readouts.Ring[0:10] = 0
             
@@ -99,6 +103,8 @@ class sampleReadouts_2():
             self.readouts.OTh     = rando*np.ones((Nreadouts), dtype = 'float64')
             self.readouts.TDC     = rando*np.ones((Nreadouts), dtype = 'float64')
             self.readouts.GEO     = rando*np.ones((Nreadouts), dtype = 'float64')
+            self.readouts.PulseT  = np.zeros((Nreadouts), dtype = 'float64')
+            self.readouts.PrevPT  = np.zeros((Nreadouts), dtype = 'float64')
         
         def fill(self):
             # ring 0
@@ -160,7 +166,7 @@ class sampleHits1Cass():
         self.cassette1ID = cassette1ID
         
         self.Channel   = np.zeros((0), dtype = 'float64')
-            
+        
     def read(self,Nhits):
         
          Nhits = int(Nhits)
@@ -184,7 +190,10 @@ class sampleHits1Cass():
          
          self.hits.WiresStrips = 9999*np.ones((leng), dtype = 'float64')
          # self.WiresStripsGlob = 9999*np.ones((leng), dtype = 'float64')
-       
+         
+         self.PulseT = np.zeros((leng), dtype = 'float64')
+         self.PrevPT = np.zeros((leng), dtype = 'float64')
+        
     def transform(self):
          
          self.Channel = self.data[:,1]
@@ -204,6 +213,8 @@ class sampleHits1Cass():
 class sampleHitsMultipleCassettes(): 
     def __init__(self, cassetteIDs=[1,2,3,4,5,6], dataPath='./data/' ,  whichDataset='ESSmask'):
         
+        # possible datasets 'ESSmask', 'DirectBeam', 'Mask1', 'Mask3', 'Mask4', 'Mask5'
+        
         self.whichDataset = whichDataset
         
         self.cassetteIDs = cassetteIDs
@@ -213,12 +224,8 @@ class sampleHitsMultipleCassettes():
         self.dataPath = dataPath+'dataJadaqConverted/'
         
         self.Channel   = np.zeros((0), dtype = 'float64')
-        
-        if self.whichDataset == 'ESSmask':
-            self.fileName1    = 'ESSmask_cass'
-        elif  self.whichDataset == 'DirectBeam': 
-            self.fileName1    = 'DirectBeam_cass'
-            
+                   
+        self.fileName1 = self.whichDataset+'_cass'
         self.fileName2    =  '_Sorting=True_Filtering=False_Input.txt'
         
     def append(self, hit):
@@ -358,7 +365,10 @@ class sampleHitsMultipleCassettes_2():
             self.hits.WiresStrips = np.append(self.hits.WiresStrips,10+2*k)
             self.hits.WorS        = np.append(self.hits.WorS,1)
             self.hits.timeStamp   = np.append(self.hits.timeStamp,30e-6+k*4e-6)
-       
+            
+        leng = np.shape(self.hits.timeStamp)[0]      
+        self.PulseT = np.zeros((leng), dtype = 'float64')
+        self.PrevPT = np.zeros((leng), dtype = 'float64')
         
 ###############################################################################
 ###############################################################################
@@ -397,6 +407,10 @@ class sampleEvents1Cass():
          self.events.multS     = self.data[:,6]
 
          self.events.NeventsNotRejAll = Nevents
+         
+         leng = np.shape(self.hits.timeStamp)[0]      
+         self.PulseT = np.zeros((leng), dtype = 'float64')
+         self.PrevPT = np.zeros((leng), dtype = 'float64')
          
          self.events.Cassette = self.cassette1ID*np.ones(len(self.events.positionW),dtype='float64')
                
