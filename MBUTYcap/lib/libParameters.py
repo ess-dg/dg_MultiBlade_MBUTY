@@ -211,7 +211,9 @@ class wavelength():
 
           self.calculateLambda = False  
 
-          self.plotLambda      = False     
+          self.plotXLambda      = False   
+          
+          self.plotLambdaDistr   = False
 
           self.lambdaBins  = 127
           self.lambdaRange = [1, 16]   #A

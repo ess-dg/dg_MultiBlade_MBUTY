@@ -32,9 +32,7 @@ from lib import libEventsSoftThresholds as thre
 # STILL TO IMPLEMENT:
 #     - save reduced data
 #     - monitor analisys and plots
-#     - ignore extra threhsolds row in file if num of strips is 32 
-#     - lambda plot summed over single cass 
- 
+#     - ignore extra threhsolds row in file if num of strips is 32  
 
 ###############################################################################
 ###############################################################################
@@ -143,8 +141,10 @@ parameters.wavelength.distance = 8000
 ##ON/OFF
 parameters.wavelength.calculateLambda = False
 
-### ON/OFF
-parameters.wavelength.plotLambda = False
+### ON/OFF plot X vs Lambda 2D plot
+parameters.wavelength.plotXLambda   = False
+### ON/OFF integrated over single cassettes
+parameters.wavelength.plotLambdaDistr = False
 
 parameters.wavelength.lambdaBins  = 128
 parameters.wavelength.lambdaRange = [1, 16]   #A
@@ -261,6 +261,10 @@ parameters.pulseHeigthSpect.plotPHScorrelation = False
 if parameters.fileManagement.saveReducedFileONOFF is True:       
     parameters.wavelength.calculateLambda = True
     print('\n \t Lambda calculation turned ON to save reduced DATA')
+    
+if parameters.wavelength.plotXLambda or parameters.wavelength.plotLambdaDistr is True:
+    parameters.wavelength.calculateLambda = True
+    print('\n \t Lambda calculation turned ON to plot Lambda')
 ###############################################################################
 ###############################################################################
 parameters.update()
@@ -347,7 +351,7 @@ if parameters.MONitor.MONOnOff is True:
  
 ####################    
 ### for debug, generate sample hits 
-# Nhits = 1e7
+# Nhits = 1e4
 # bb = sdat.sampleHitsMultipleCassettes()
 # bb.generateGlob(Nhits)
 # hits = bb.hits   
@@ -446,9 +450,12 @@ if parameters.plotting.plotToFDistr is True:
     plev.plotToF(parameters.cassettes.cassettes)
 
 ### lambda
-if parameters.wavelength.plotLambda is True:
+if parameters.wavelength.plotXLambda is True:
     plev.plotXLambda(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits)
-
+### lambda per cassette
+if parameters.wavelength.plotLambdaDistr is True:
+    plev.plotLambda(parameters.cassettes.cassettes)
+    
 ### multiplicity 
 if parameters.plotting.plotMultiplicity is True:
     plev.plotMultiplicity(parameters.cassettes.cassettes)

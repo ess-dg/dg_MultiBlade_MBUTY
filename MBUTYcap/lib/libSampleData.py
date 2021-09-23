@@ -191,8 +191,8 @@ class sampleHits1Cass():
          self.hits.WiresStrips = 9999*np.ones((leng), dtype = 'float64')
          # self.WiresStripsGlob = 9999*np.ones((leng), dtype = 'float64')
          
-         self.PulseT = np.zeros((leng), dtype = 'float64')
-         self.PrevPT = np.zeros((leng), dtype = 'float64')
+         self.hits.PulseT = np.zeros((leng), dtype = 'float64')
+         self.hits.PrevPT = np.zeros((leng), dtype = 'float64')
         
     def transform(self):
          
@@ -207,8 +207,7 @@ class sampleHits1Cass():
          sels = self.data[:,1] >= 32
          self.hits.WorS[sels] = 1
          self.hits.WiresStrips[sels] = self.data[sels,1] - 32
-         
-         
+                 
          
 class sampleHitsMultipleCassettes(): 
     def __init__(self, cassetteIDs=[1,2,3,4,5,6], dataPath='./data/' ,  whichDataset='ESSmask'):
@@ -409,8 +408,8 @@ class sampleEvents1Cass():
          self.events.NeventsNotRejAll = Nevents
          
          leng = np.shape(self.hits.timeStamp)[0]      
-         self.PulseT = np.zeros((leng), dtype = 'float64')
-         self.PrevPT = np.zeros((leng), dtype = 'float64')
+         self.events.PulseT = np.zeros((leng), dtype = 'float64')
+         self.events.PrevPT = np.zeros((leng), dtype = 'float64')
          
          self.events.Cassette = self.cassette1ID*np.ones(len(self.events.positionW),dtype='float64')
                

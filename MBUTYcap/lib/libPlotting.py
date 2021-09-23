@@ -590,7 +590,7 @@ class plottingEvents():
                histTT1 = hh.histog().hist1D(self.allAxis.axToF.axis,self.events.ToF[selc])
                
                self.plotTT.axHandle[0][k].step(self.allAxis.axToF.axis*1e3,histTT1,'r',where='mid',label='all')
-               self.plotTT.axHandle[0][k].step(self.allAxis.axToF.axis*1e3,histTT1,'b',where='mid',label='2D')
+               self.plotTT.axHandle[0][k].step(self.allAxis.axToF.axis*1e3,histTT,'b',where='mid',label='2D')
                self.plotTT.axHandle[0][k].set_xlabel('ToF (ms)')
                self.plotTT.axHandle[0][k].set_title('cass ID '+str(cass))
                if k == 0:
@@ -598,6 +598,31 @@ class plottingEvents():
                    
               
                legend = self.plotTT.axHandle[0][k].legend(loc='upper right', shadow=False, fontsize='large')
+               
+    def plotLambda(self, cassettes):
+           
+          self.plotWA = preparePlotMatrix(339, 1, len(cassettes))
+          
+          self.plotWA.figHandle.suptitle('Wavelength distr per cassette')
+          
+          for k, cass in enumerate(cassettes):
+               
+               selc  = self.events.Cassette  == cass
+               sel2D = self.events.positionS >= 0
+               
+               histWA  = hh.histog().hist1D(self.allAxis.axLambda.axis,self.events.wavelength[selc & sel2D]) 
+               
+               histWA1 = hh.histog().hist1D(self.allAxis.axLambda.axis,self.events.wavelength[selc])
+               
+               self.plotWA.axHandle[0][k].step(self.allAxis.axLambda.axis,histWA1,'r',where='mid',label='all')
+               self.plotWA.axHandle[0][k].step(self.allAxis.axLambda.axis,histWA,'b',where='mid',label='2D')
+               self.plotWA.axHandle[0][k].set_xlabel('wavelength (A)')
+               self.plotWA.axHandle[0][k].set_title('cass ID '+str(cass))
+               if k == 0:
+                   self.plotWA.axHandle[0][k].set_ylabel('counts')
+                   
+              
+               legend = self.plotWA.axHandle[0][k].legend(loc='upper right', shadow=False, fontsize='large')
           
 ###############################################################################
 ###############################################################################
