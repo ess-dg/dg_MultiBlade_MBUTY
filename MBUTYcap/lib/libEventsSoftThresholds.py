@@ -115,7 +115,7 @@ class thresholdDef():
             
         return ThW, ThS    
                 
-###############################
+##############################################################
 
 class applyThresholdsToEvents():
     
@@ -175,6 +175,9 @@ class applyThresholdsToEvents():
             
             pass
             
+        else:
+            
+           print('\n \033[1;31msoftware thresholds -> no valid method selected, check spelling ... \033[1;37m')
             
     def thresholdizeAllCassettes(self):
         
@@ -202,6 +205,10 @@ class applyThresholdsToEvents():
            
             self.events = self.eventsBT
  
+        else:
+            
+            print('\n \033[1;31msoftware thresholds -> no valid method selected, check spelling ... \033[1;37m')
+            
             
     def someGlobStat(self, events):
         
@@ -274,7 +281,7 @@ if __name__ == '__main__':
 
     #  generate sample hits 
     Nhits = 1e4
-    cassettes1 = [1,2,3,4]
+    cassettes1 = [1,2]
       
     bb = sdat.sampleHitsMultipleCassettes(cassettes1)
     bb.generateGlob(Nhits)
@@ -284,38 +291,43 @@ if __name__ == '__main__':
     cc.clusterizeManyCassettes(parameters.cassettes.cassettes, parameters.dataReduction.timeWindow)
     events = cc.events
     
+    # vv = absu.calculateAbsUnits(events, parameters)
+    # vv.calculatePositionAbsUnit()
+    # vv.calculateToF()
+    # vv.calculateWavelength()
+    
     vv = absu.calculateAbsUnits(events, parameters)
     vv.calculatePositionAbsUnit()
-    vv.calculateToFandWavelength(0)
+    vv.calculateToFandWavelength()
     events = vv.events
+    eventsArray = events.concatenateEventsInArrayForDebug()
     
-    print(parameters.dataReduction.softThresholdType)
+    # print(parameters.dataReduction.softThresholdType)
     
     thre = applyThresholdsToEvents(events, parameters.cassettes.cassettes, parameters, 'globalStat')
     
-    # aa = thre.thresholdize1Cass(1)
-    print(parameters.dataReduction.softThresholdType)
+    # thre.thresholdize1Cass(1)
+    
+    # print(parameters.dataReduction.softThresholdType)
     
     thre.thresholdizeAllCassettes()
     
-    print(parameters.dataReduction.softThresholdType)
+    # print(parameters.dataReduction.softThresholdType)
     
-    eventsBT  = thre.eventsBT
-    eventsAT  = thre.events 
+    eventsAT  = thre.events
     
-    eventsArrayBT = eventsBT.concatenateEventsInArrayForDebug()
     eventsArrayAT = eventsAT.concatenateEventsInArrayForDebug()
     
-    allAxis = hh.allAxis()
-    allAxis.createAllAxis(parameters)
+    # allAxis = hh.allAxis()
+    # allAxis.createAllAxis(parameters)
     
-    pp = plo.plottingEvents(eventsAT,allAxis)
-    # pp.plotXYToF(logScale=True, absUnits = True)
+    # pp = plo.plottingEvents(eventsAT,allAxis,True)
+    # # pp.plotXYToF(logScale=True, absUnits = True)
     
-    # pp.plotXLambda(logScale=False, absUnits = False)
+    # # pp.plotXLambda(logScale=False, absUnits = False)
     
-    # aa = pp.plotMultiplicity([1,2,3])
+    # # aa = pp.plotMultiplicity([1,2,3])
     
-    pp.plotPHS(parameters.cassettes.cassettes,parameters)
+    # pp.plotPHS(parameters.cassettes.cassettes,parameters)
     
     # pp.plotPHScorrelation([1,2,3])

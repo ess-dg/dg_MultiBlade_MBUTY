@@ -72,16 +72,16 @@ class sampleReadouts_1():
             # self.readouts.timeStamp[8]= 14.0e-6
             # self.readouts.timeStamp[9]= 15.0e-6
             
-            self.readouts.timeStamp[0]= 2.0e-6
-            self.readouts.timeStamp[1]= 2.5e-6
-            self.readouts.timeStamp[2]= 3.5e-6
-            self.readouts.timeStamp[3]= 4.0e-6
-            self.readouts.timeStamp[4]= 5.0e-6
-            self.readouts.timeStamp[5]= 5.9e-6
-            self.readouts.timeStamp[6]= 8.0e-6
-            self.readouts.timeStamp[7]= 8.6e-6
-            self.readouts.timeStamp[8]= 9.7e-6
-            self.readouts.timeStamp[9]= 10e-6
+            self.readouts.timeStamp[0]= 20000
+            self.readouts.timeStamp[1]= 25000
+            self.readouts.timeStamp[2]= 35000
+            self.readouts.timeStamp[3]= 40000
+            self.readouts.timeStamp[4]= 50000
+            self.readouts.timeStamp[5]= 50000
+            self.readouts.timeStamp[6]= 80000
+            self.readouts.timeStamp[7]= 86000
+            self.readouts.timeStamp[8]= 97000
+            self.readouts.timeStamp[9]= 100000
 
 class sampleReadouts_2():
         def __init__(self): 
@@ -91,20 +91,20 @@ class sampleReadouts_2():
             rando = 999
             Nreadouts = 1500
             
-            self.readouts.Ring  = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.Fen   = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.VMM   = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.hybrid  = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.ASIC    = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.Channel = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.ADC     = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.timeStamp  = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.BC      = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.OTh     = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.TDC     = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.GEO     = rando*np.ones((Nreadouts), dtype = 'float64')
-            self.readouts.PulseT  = np.zeros((Nreadouts), dtype = 'float64')
-            self.readouts.PrevPT  = np.zeros((Nreadouts), dtype = 'float64')
+            self.readouts.Ring  = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.Fen   = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.VMM   = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.hybrid  = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.ASIC    = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.Channel = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.ADC     = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.timeStamp  = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.BC      = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.OTh     = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.TDC     = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.GEO     = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.PulseT  = np.zeros((Nreadouts), dtype = 'int64')
+            self.readouts.PrevPT  = np.zeros((Nreadouts), dtype = 'int64')
         
         def fill(self):
             # ring 0
@@ -165,7 +165,7 @@ class sampleHits1Cass():
         
         self.cassette1ID = cassette1ID
         
-        self.Channel   = np.zeros((0), dtype = 'float64')
+        self.Channel   = np.zeros((0), dtype = 'int64')
         
     def read(self,Nhits):
         
@@ -179,20 +179,20 @@ class sampleHits1Cass():
          
          self.data = dataTemp[:Nhits,:]
        
-         self.hits.timeStamp = self.data[:,0]
-         self.hits.ADC       = self.data[:,2]
+         self.hits.timeStamp = (np.around(self.data[:,0]*1e9)).astype(int)
+         self.hits.ADC       = (np.around(self.data[:,2])).astype(int)
          
          leng = self.data[:,0].shape[0] 
          
-         self.hits.WorS    = 99*np.ones((leng), dtype = 'float64')
+         self.hits.WorS    = 99*np.ones((leng), dtype = 'int64')
          # self.Channel = 999*np.ones((leng), dtype = 'float64')
-         self.hits.Cassette = self.cassette1ID*np.ones((leng), dtype = 'float64')  
+         self.hits.Cassette = self.cassette1ID*np.ones((leng), dtype = 'int64')  
          
-         self.hits.WiresStrips = 9999*np.ones((leng), dtype = 'float64')
+         self.hits.WiresStrips = 9999*np.ones((leng), dtype = 'int64')
          # self.WiresStripsGlob = 9999*np.ones((leng), dtype = 'float64')
          
-         self.hits.PulseT = np.zeros((leng), dtype = 'float64')
-         self.hits.PrevPT = np.zeros((leng), dtype = 'float64')
+         self.hits.PulseT = np.zeros((leng), dtype = 'int64')
+         self.hits.PrevPT = np.zeros((leng), dtype = 'int64')
         
     def transform(self):
          
@@ -222,7 +222,7 @@ class sampleHitsMultipleCassettes():
         
         self.dataPath = dataPath+'dataJadaqConverted/'
         
-        self.Channel   = np.zeros((0), dtype = 'float64')
+        self.Channel   = np.zeros((0), dtype = 'int64')
                    
         self.fileName1 = self.whichDataset+'_cass'
         self.fileName2    =  '_Sorting=True_Filtering=False_Input.txt'
@@ -286,17 +286,17 @@ class sampleHitsMultipleCassettes_2():
         # Nhits = int(Nhits)
         
         # C2 ######################
-        self.hits.Cassette    = float(2)
-        self.hits.ADC         = float(1000)
-        self.hits.WiresStrips = float(18+32)
-        self.hits.WorS        = float(0)
-        self.hits.timeStamp   = float(0.000001)
+        self.hits.Cassette    = int(2)
+        self.hits.ADC         = int(1000)
+        self.hits.WiresStrips = int(18+32)
+        self.hits.WorS        = int(0)
+        self.hits.timeStamp   = int(1000)
         
         self.hits.Cassette    = np.append(self.hits.Cassette,2)
         self.hits.ADC         = np.append(self.hits.ADC,800)
         self.hits.WiresStrips = np.append(self.hits.WiresStrips,63)
         self.hits.WorS        = np.append(self.hits.WorS,1)
-        self.hits.timeStamp   = np.append(self.hits.timeStamp,2e-6)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,2000)
         
         # C2 ######################
         
@@ -304,13 +304,13 @@ class sampleHitsMultipleCassettes_2():
         self.hits.ADC         = np.append(self.hits.ADC,5006)
         self.hits.WiresStrips = np.append(self.hits.WiresStrips,20+32)
         self.hits.WorS        = np.append(self.hits.WorS,0)
-        self.hits.timeStamp   = np.append(self.hits.timeStamp,7e-6)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,7000)
         
         self.hits.Cassette    = np.append(self.hits.Cassette,2)
         self.hits.ADC         = np.append(self.hits.ADC,5004)
         self.hits.WiresStrips = np.append(self.hits.WiresStrips,3)
         self.hits.WorS        = np.append(self.hits.WorS,1)
-        self.hits.timeStamp   = np.append(self.hits.timeStamp,7.5e-6)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,7500)
         
         # C1 ######################
         
@@ -318,13 +318,13 @@ class sampleHitsMultipleCassettes_2():
         self.hits.ADC         = np.append(self.hits.ADC,501)
         self.hits.WiresStrips = np.append(self.hits.WiresStrips,0)
         self.hits.WorS        = np.append(self.hits.WorS,0)
-        self.hits.timeStamp   = np.append(self.hits.timeStamp,15.5e-6)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,15500)
         
         self.hits.Cassette    = np.append(self.hits.Cassette,1)
         self.hits.ADC         = np.append(self.hits.ADC,502)
         self.hits.WiresStrips = np.append(self.hits.WiresStrips,0)
         self.hits.WorS        = np.append(self.hits.WorS,1)
-        self.hits.timeStamp   = np.append(self.hits.timeStamp,15.7e-6)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,15700)
         
         # C1 ######################
         
@@ -332,42 +332,42 @@ class sampleHitsMultipleCassettes_2():
         self.hits.ADC         = np.append(self.hits.ADC,506)
         self.hits.WiresStrips = np.append(self.hits.WiresStrips,9)
         self.hits.WorS        = np.append(self.hits.WorS,0)
-        self.hits.timeStamp   = np.append(self.hits.timeStamp,20e-6)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,20000)
         
         self.hits.Cassette    = np.append(self.hits.Cassette,1)
         self.hits.ADC         = np.append(self.hits.ADC,507)
         self.hits.WiresStrips = np.append(self.hits.WiresStrips,31)
         self.hits.WorS        = np.append(self.hits.WorS,1)
-        self.hits.timeStamp   = np.append(self.hits.timeStamp,21e-6)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,21000)
         
         self.hits.Cassette    = np.append(self.hits.Cassette,1)
         self.hits.ADC         = np.append(self.hits.ADC,509)
         self.hits.WiresStrips = np.append(self.hits.WiresStrips,2)
         self.hits.WorS        = np.append(self.hits.WorS,0)
-        self.hits.timeStamp   = np.append(self.hits.timeStamp,100e-6)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,100000)
         
         self.hits.Cassette    = np.append(self.hits.Cassette,1)
         self.hits.ADC         = np.append(self.hits.ADC,509)
         self.hits.WiresStrips = np.append(self.hits.WiresStrips,3)
         self.hits.WorS        = np.append(self.hits.WorS,1)
-        self.hits.timeStamp   = np.append(self.hits.timeStamp,100e-6)
+        self.hits.timeStamp   = np.append(self.hits.timeStamp,100000)
         
         for k in range(20):
             self.hits.Cassette    = np.append(self.hits.Cassette,3)
             self.hits.ADC         = np.append(self.hits.ADC,1000)
             self.hits.WiresStrips = np.append(self.hits.WiresStrips,32*2+5+k)
             self.hits.WorS        = np.append(self.hits.WorS,0)
-            self.hits.timeStamp   = np.append(self.hits.timeStamp,30e-6+k*4e-6)
+            self.hits.timeStamp   = np.append(self.hits.timeStamp,30000+k*4000)
             
             self.hits.Cassette    = np.append(self.hits.Cassette,3)
             self.hits.ADC         = np.append(self.hits.ADC,1203)
             self.hits.WiresStrips = np.append(self.hits.WiresStrips,10+2*k)
             self.hits.WorS        = np.append(self.hits.WorS,1)
-            self.hits.timeStamp   = np.append(self.hits.timeStamp,30e-6+k*4e-6)
+            self.hits.timeStamp   = np.append(self.hits.timeStamp,30000+k*4000)
             
         leng = np.shape(self.hits.timeStamp)[0]      
-        self.PulseT = np.zeros((leng), dtype = 'float64')
-        self.PrevPT = np.zeros((leng), dtype = 'float64')
+        self.PulseT = np.zeros((leng), dtype = 'int64')
+        self.PrevPT = np.zeros((leng), dtype = 'int64')
         
 ###############################################################################
 ###############################################################################
@@ -397,21 +397,21 @@ class sampleEvents1Cass():
          
          # return self.data
        
-         self.events.positionW = self.data[:,0]
-         self.events.positionS = self.data[:,1]
-         self.events.timeStamp = self.data[:,2]
-         self.events.PHW       = self.data[:,3]
-         self.events.PHS       = self.data[:,4]
-         self.events.multW     = self.data[:,5]
-         self.events.multS     = self.data[:,6]
+         self.events.positionW = (self.data[:,0])
+         self.events.positionS = (self.data[:,1])
+         self.events.timeStamp = (np.around(self.data[:,2]*1e9)).astype(int)
+         self.events.PHW       = (self.data[:,3]).astype(int)
+         self.events.PHS       = (self.data[:,4]).astype(int)
+         self.events.multW     = (self.data[:,5]).astype(int)
+         self.events.multS     = (self.data[:,6]).astype(int)
 
          self.events.NeventsNotRejAll = Nevents
          
-         leng = np.shape(self.hits.timeStamp)[0]      
-         self.events.PulseT = np.zeros((leng), dtype = 'float64')
-         self.events.PrevPT = np.zeros((leng), dtype = 'float64')
+         leng = np.shape(self.events.timeStamp)[0]      
+         self.events.PulseT = np.zeros((leng), dtype = 'int64')
+         self.events.PrevPT = np.zeros((leng), dtype = 'int64')
          
-         self.events.Cassette = self.cassette1ID*np.ones(len(self.events.positionW),dtype='float64')
+         self.events.Cassette = self.cassette1ID*np.ones(len(self.events.positionW),dtype='int64')
                
          
 class sampleEventsMultipleCassettes():        

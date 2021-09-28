@@ -25,15 +25,17 @@ from lib import libSampleData as sdat
 class hits():            
     def __init__(self): 
         
-        self.Cassette    = np.zeros((0), dtype = 'float64')
-        self.ADC         = np.zeros((0), dtype = 'float64')
-        self.timeStamp   = np.zeros((0), dtype = 'float64')
-        self.WorS        = np.zeros((0), dtype = 'float64')
-        self.WiresStrips = np.zeros((0), dtype = 'float64')
-        self.PulseT      = np.zeros((0), dtype = 'float64')
-        self.PrevPT      = np.zeros((0), dtype = 'float64')
-        self.Durations   = np.zeros((0), dtype = 'float64')
-        self.Duration    = np.zeros((1), dtype = 'float64')
+        datype = 'int64'
+        
+        self.Cassette    = np.zeros((0), dtype = datype)
+        self.ADC         = np.zeros((0), dtype = datype)
+        self.timeStamp   = np.zeros((0), dtype = datype)
+        self.WorS        = np.zeros((0), dtype = datype)
+        self.WiresStrips = np.zeros((0), dtype = datype)
+        self.PulseT      = np.zeros((0), dtype = datype)
+        self.PrevPT      = np.zeros((0), dtype = datype)
+        self.Durations   = np.zeros((0), dtype = datype)
+        self.Duration    = np.zeros((1), dtype = datype)
         
     def importReadouts(self,readouts):    
         
@@ -50,9 +52,9 @@ class hits():
         # 0 if wire, 1 if strip 
         self.WorS = np.copy(readouts.ASIC)
         
-        self.Cassette = np.nan*np.ones((leng), dtype = 'float64')        
+        self.Cassette    = -1*np.ones((leng), dtype = 'int64')        
 
-        self.WiresStrips        = np.zeros((leng), dtype = 'float64')
+        self.WiresStrips = -1*np.ones((leng), dtype = 'int64')
         
     def append(self, hit):
         
@@ -71,7 +73,7 @@ class hits():
         
         leng = len(self.WiresStrips)
         
-        hitsArray = np.zeros((leng,7),dtype = 'float64')
+        hitsArray = np.zeros((leng,7),dtype = 'int64')
         
         hitsArray[:,0] = self.timeStamp
         hitsArray[:,1] = self.Cassette
@@ -106,7 +108,7 @@ class extractHitsPortion():
 class MONmap():
     def __init__(self):
   
-        self.ID = None
+        self.ID       = None
         self.RingID   = None
         self.FenID    = None
         self.hybridID = None
@@ -282,7 +284,7 @@ class mapDetector():
                 
     def initCatData(self):    # debug
         if self.debug:
-            self.catData = np.zeros((len(self.readouts.Ring),9), dtype = 'float64')
+            self.catData = np.zeros((len(self.readouts.Ring),9), dtype = 'int64')
             self.catData[:,0] = self.hits.Cassette
             self.catData[:,1] = self.readouts.Ring
             self.catData[:,2] = self.readouts.Fen
@@ -356,7 +358,7 @@ class mapDetector():
 
         self.hits.WiresStrips[selectionWires] = 31 - (self.readouts.Channel[selectionWires] - 16)
         
-        self.hits.WiresStrips[~selectionWires] = np.nan
+        self.hits.WiresStrips[~selectionWires] = np.ma.masked # same as np.nan for int64 instead of floats
         
         # strips
         selectionStrips = self.readouts.ASIC == 1
@@ -364,7 +366,7 @@ class mapDetector():
         self.hits.WiresStrips[selectionStrips] = self.readouts.Channel[selectionStrips]
         
         # if some ch of vmm are not used then nan, it is not a wire or strip 
-        self.hits.WorS[~selectionWires & ~selectionStrips] = np.nan
+        self.hits.WorS[~selectionWires & ~selectionStrips] = np.ma.masked # same as np.nan for int64 instead of floats
         
     def mapChannelsGlob(self):
         

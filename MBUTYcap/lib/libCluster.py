@@ -27,35 +27,35 @@ from lib import libParameters as para
 class events():
     def __init__(self): 
         
-        self.Cassette     = np.zeros((0), dtype = 'float64') 
-        self.CassetteIDs  = np.zeros((0), dtype = 'float64') 
+        self.Cassette     = np.zeros((0), dtype = 'int64') 
+        self.CassetteIDs  = np.zeros((0), dtype = 'int64') 
         self.positionW    = np.zeros((0), dtype = 'float64') 
         self.positionS    = np.zeros((0), dtype = 'float64') 
         
-        self.timeStamp = np.zeros((0), dtype = 'float64')
+        self.timeStamp = np.zeros((0), dtype = 'int64')
         
-        self.PulseT = np.zeros((0), dtype = 'float64')
-        self.PrevPT = np.zeros((0), dtype = 'float64')
+        self.PulseT = np.zeros((0), dtype = 'int64')
+        self.PrevPT = np.zeros((0), dtype = 'int64')
         
-        self.PHW = np.zeros((0), dtype = 'float64') 
-        self.PHS = np.zeros((0), dtype = 'float64') 
+        self.PHW = np.zeros((0), dtype = 'int64') 
+        self.PHS = np.zeros((0), dtype = 'int64') 
         
-        self.multW = np.zeros((0), dtype = 'float64') 
-        self.multS = np.zeros((0), dtype = 'float64') 
+        self.multW = np.zeros((0), dtype = 'int64') 
+        self.multS = np.zeros((0), dtype = 'int64') 
         
         self.positionWmm  = np.zeros((0), dtype = 'float64')
         self.positionSmm  = np.zeros((0), dtype = 'float64')
         self.positionZmm  = np.zeros((0), dtype = 'float64')
         self.wavelength   = np.zeros((0), dtype = 'float64')
-        self.ToF          = np.zeros((0), dtype = 'float64')
+        self.ToF          = np.zeros((0), dtype = 'int64')
         
-        self.Nevents          = np.zeros((0), dtype = 'float64') 
-        self.NeventsNotRejAll = np.zeros((0), dtype = 'float64') 
-        self.NeventsNotRej2D  = np.zeros((0), dtype = 'float64') 
-        self.NeventsNotRejAfterTh  = np.zeros((0), dtype = 'float64') 
+        self.Nevents          = np.zeros((0), dtype = 'int64') 
+        self.NeventsNotRejAll = np.zeros((0), dtype = 'int64') 
+        self.NeventsNotRej2D  = np.zeros((0), dtype = 'int64') 
+        self.NeventsNotRejAfterTh  = np.zeros((0), dtype = 'int64') 
         
-        self.Durations   = np.zeros((0), dtype = 'float64')
-        self.Duration    = np.zeros((1), dtype = 'float64')
+        self.Durations   = np.zeros((0), dtype = 'int64')
+        self.Duration    = np.zeros((1), dtype = 'int64')
         
     def importDurations(self,hits):
         
@@ -130,21 +130,21 @@ class events():
         self.NeventsNotRejAfterTh  = np.append(self.NeventsNotRejAfterTh, np.sum(boolArray))
 
         
-    def transform(self, cassette1ID, POPH):
+    def transform(self, cassette1ID, TPHM, PO):
      
         self.CassetteIDs = cassette1ID
-        self.Cassette  = cassette1ID*np.ones(np.shape(POPH)[0])
-        self.positionW = POPH[:,0]
-        self.positionS = POPH[:,1]
-        self.timeStamp = POPH[:,2]
-        self.PHW       = POPH[:,3]
-        self.PHS       = POPH[:,4]
-        self.multW     = POPH[:,5]
-        self.multS     = POPH[:,6]
-        self.PulseT    = POPH[:,7]
-        self.PrevPT    = POPH[:,8]
-        
-        
+        self.Cassette  = cassette1ID*np.ones(np.shape(TPHM)[0],dtype='int64')
+        self.positionW = PO[:,0]
+        self.positionS = PO[:,1]
+        self.timeStamp = TPHM[:,0]
+        self.PulseT    = TPHM[:,1]
+        self.PrevPT    = TPHM[:,2]
+        self.multW     = TPHM[:,3]
+        self.multS     = TPHM[:,4]
+        self.PHW       = TPHM[:,5]
+        self.PHS       = TPHM[:,6]
+
+            
     def createAbsUnitsArrays(self):
          
         leng = len(self.positionW)
@@ -153,13 +153,13 @@ class events():
         self.positionSmm  = np.zeros((leng), dtype = 'float64')
         self.positionZmm  = np.zeros((leng), dtype = 'float64')
         self.wavelength   = np.zeros((leng), dtype = 'float64')
-        self.ToF          = np.zeros((leng), dtype = 'float64')
+        self.ToF          = np.zeros((leng), dtype = 'int64')
         
     def concatenateEventsInArrayForDebug(self):
         
         leng = len(self.Cassette)
         
-        eventsArray = np.zeros((leng,12),dtype = 'float64')
+        eventsArray = np.zeros((leng,12), dtype = 'float64')
         
         eventsArray[:,0] = self.timeStamp
         eventsArray[:,1] = self.Cassette
@@ -233,7 +233,7 @@ class clusterHits():
          self.intervals = 4
          
          # number of decimals after comma in seconds, to round the serach for clusters: 6 means 1us rounding 
-         self.resolution = 9
+         # self.resolution = 9
          
          self.events = events()
          
@@ -247,7 +247,7 @@ class clusterHits():
          # init an empty event obj
          self.events1Cass  = events()
          
-         self.rejCounter = np.zeros(5)
+         self.rejCounter = np.zeros((5),dtype='int64')
          
          if present:
  
@@ -266,9 +266,13 @@ class clusterHits():
             # and also add 1% to avoid rounding issues *1.01
             # timeWindow    = timeWindow*1.01
             # TimewindowRecursive = timeWindow/2
-                    
-            TimeWindowMax          = timeWindow*1.01
-            TimeWindowRecursive    = TimeWindowMax/2
+            
+            # Time window is in s but we all do here in ns int64
+            # timeWindow converted in ns
+            timeWindow_ns = int(round(timeWindow*1e9))
+        
+            TimeWindowMax          = int(round(timeWindow_ns*1.01))
+            TimeWindowRecursive    = int(round(TimeWindowMax/2))
         
             ##########
          
@@ -277,7 +281,7 @@ class clusterHits():
          
             # for speed the hits are inserted in an array
             # add a line at top [0,0,0,0] not to lose the 1st event
-            data = np.zeros((np.shape(self.hits.timeStamp[selectCassette])[0],6), dtype = 'float64') 
+            data = np.zeros((np.shape(self.hits.timeStamp[selectCassette])[0],6), dtype = 'int64') 
             data[:,0] = self.hits.timeStamp[selectCassette]
             data[:,1] = self.hits.WiresStrips[selectCassette]
             data[:,2] = self.hits.ADC[selectCassette]
@@ -286,10 +290,10 @@ class clusterHits():
             data[:,5] = self.hits.PrevPT[selectCassette]
 
             # add a line at top [0,0,0,0] not to lose the 1st event
-            data = np.concatenate( ( np.zeros((1,np.shape(data)[1]), dtype = 'float64'), data ), axis=0)  #add a line at top not to lose the 1st event
-            data[0,0] = -np.inf
+            data = np.concatenate( ( np.zeros((1,np.shape(data)[1]), dtype = 'int64'), data ), axis=0)  #add a line at top not to lose the 1st event
+            data[0,0] = -2*TimeWindowMax
  
-            data[:,0] = np.around(data[:,0],decimals=self.resolution) #time rounded at 1us precision is 6 decimals, 7 is 100ns, etc...
+            # data[:,0] = np.around(data[:,0],decimals=self.resolution) #time rounded at 1us precision is 6 decimals, 7 is 100ns, etc...
 
             deltaTime = np.diff(data[:,0])                    #1st derivative of time 
             deltaTime = np.concatenate(([0],deltaTime),axis=0) #add a zero at top to restore length of vector
@@ -298,17 +302,17 @@ class clusterHits():
         
             # data1 = np.concatenate((data,clusterlogic[:,None]),axis=1) #this is for debugging 
         
-            index = np.argwhere(clusterlogic == 0) #find the index where a new cluster may start 
+            index = np.argwhere(clusterlogic == False) #find the index where a new cluster may start 
             
             #################################
     
-            ADCCH = np.zeros((np.shape(data)[0],12))
+            ADCCH = np.zeros((np.shape(data)[0],12),dtype='int64')
     
             ADCCH[:,0:3] = data[:,0:3]  # first 3 columns as data
-            ADCCH[:,3]   = clusterlogic # col 3 is 0 where a new cluster may start
+            ADCCH[:,3]   = clusterlogic.astype(int) # col 3 is 0 where a new cluster may start
     
-            ADCCH[:,4]   = data[:,3] == 0   # wire  
-            ADCCH[:,5]   = data[:,3] == 1   # strip 
+            ADCCH[:,4]   = (data[:,3] == 0).astype(int)   # wire  
+            ADCCH[:,5]   = (data[:,3] == 1).astype(int)   # strip 
     
             ADCCH[:,6]   = data[:,1]*ADCCH[:,4]   # wire ch
             ADCCH[:,7]   = data[:,1]*ADCCH[:,5]   # strip ch
@@ -318,26 +322,27 @@ class clusterHits():
     
             ADCCH[:,10]  =  ADCCH[:,4]*ADCCH[:,6]*ADCCH[:,8]    # weighted position on wires
             ADCCH[:,11]  =  ADCCH[:,5]*ADCCH[:,7]*ADCCH[:,9]    # weighted position on strips
-
+            
             #################################
  
             NumClusters = np.shape(index)[0]
             
             self.events1Cass.Nevents = NumClusters
         
-            self.POPH = np.zeros((NumClusters,9))  #output data with col0 position wires, col1 poisiton strips, col2 tof, col3 pulse height wires, col4 pulse height strips, col 5 multiplicity w, col 6 muiltiplicity strips
-    
+            self.TPHM = np.zeros((NumClusters,9),dtype='int64')  #output data with col0 position wires, col1 poisiton strips, col2 tof, col3 pulse height wires, col4 pulse height strips, col 5 multiplicity w, col 6 muiltiplicity strips
+            self.PO   = np.zeros((NumClusters,9),dtype='float64')
+            
             # filling timeStamp column
-            self.POPH[:,2]  = data[index[:,0],0]   # timeStamp      
-            self.POPH[:,7]  = data[index[:,0],4]   # PulseT   
-            self.POPH[:,8]  = data[index[:,0],5]   # PrevPT
+            self.TPHM[:,0]  = data[index[:,0],0]   # timeStamp      
+            self.TPHM[:,1]  = data[index[:,0],4]   # PulseT   
+            self.TPHM[:,2]  = data[index[:,0],5]   # PrevPT
      
             #################################
             
             # add a fake last cluster to make loop up to the very last true cluster
             index = np.concatenate((index,[[np.shape(data)[0]]]),axis=0)
             ADCCH = np.concatenate((ADCCH,np.zeros((1,12))),axis=0) 
-    
+
              #################################
             if  NumClusters >= 0:
                 
@@ -374,15 +379,15 @@ class clusterHits():
                             
                             if (neigw == 1 and neigs == 1):    #if they are neighbour then...
                                 
-                                self.rejCounter[0] = self.rejCounter[0]+1;   #counter 2D
+                                self.rejCounter[0] = self.rejCounter[0]+1   #counter 2D
                                 
-                                self.POPH[kk,5]   = ww     #multiuplicity wires
-                                self.POPH[kk,6]   = ss     #multiuplicity strips
-                                self.POPH[kk,3]   = np.sum(clusterq[:,8],axis=0)   #PH wires
-                                self.POPH[kk,4]   = np.sum(clusterq[:,9],axis=0)   #PH strips
-                                self.POPH[kk,0]   = round((np.sum(clusterq[:,10],axis=0))/(self.POPH[kk,3]),2)         #position wires 0 to 31
-                                self.POPH[kk,1]   = round((((np.sum(clusterq[:,11],axis=0))/(self.POPH[kk,4]))),2)     #position strips from 0 to 31 or up to 63
-                
+                                self.TPHM[kk,3]   = ww     #multiuplicity wires
+                                self.TPHM[kk,4]   = ss     #multiuplicity strips
+                                self.TPHM[kk,5]   = np.sum(clusterq[:,8],axis=0)   #PH wires
+                                self.TPHM[kk,6]   = np.sum(clusterq[:,9],axis=0)   #PH strips
+                                self.PO[kk,0]     = round((np.sum(clusterq[:,10],axis=0))/(self.TPHM[kk,5]),2)       #position wires 0 to 31
+                                self.PO[kk,1]     = round((((np.sum(clusterq[:,11],axis=0))/(self.TPHM[kk,6]))),2)   #position strips from 0 to 31 or up to 63
+                                       
                             else:
                                 self.rejCounter[1] = self.rejCounter[1]+1;                #counter if they are no neighbour 
                                 
@@ -395,12 +400,12 @@ class clusterHits():
                            
                             if (neigw == 1):    #if they are neighbour then...
                     
-                                self.rejCounter[2] = self.rejCounter[2]+1;                #counter 1D
+                                self.rejCounter[2] = self.rejCounter[2]+1                #counter 1D
 
-                                self.POPH[kk,5]   = ww     #multiuplicity wires
-                                self.POPH[kk,3]   = np.sum(clusterq[:,8],axis=0)   #PH wires
-                                self.POPH[kk,0]   = round((np.sum(clusterq[:,10],axis=0))/(self.POPH[kk,3]),2)         #position wires
-                                self.POPH[kk,1]   = -1 #position strips if absent
+                                self.TPHM[kk,3]   = ww     #multiuplicity wires
+                                self.TPHM[kk,5]   = np.sum(clusterq[:,8],axis=0)   #PH wires
+                                self.PO[kk,0]     = round((np.sum(clusterq[:,10],axis=0))/(self.TPHM[kk,5]),2)     #position wires
+                                self.PO[kk,1]     = -1 #position strips if absent
                                    
                             else:
                                 self.rejCounter[1] = self.rejCounter[1]+1              #counter if they are no neighbour 
@@ -415,9 +420,10 @@ class clusterHits():
                 
                 # print('\n')        
                    
-                rejected = np.logical_and((self.POPH[:,5] == 0),(self.POPH[:,6] == 0))    #remove rejected from data in rejCoiunter[4] it is when only strips and wire and sgtrip mult is 0, whole row in POPH is 0 actually 
+                rejected = np.logical_and((self.TPHM[:,3] == 0),(self.TPHM[:,4] == 0))    #remove rejected from data in rejCoiunter[4] it is when only strips and wire and sgtrip mult is 0, whole row in POPH is 0 actually 
                     
-                self.POPH     = self.POPH[np.logical_not(rejected),:]    #remove rejected from data
+                self.TPHM     = self.TPHM[np.logical_not(rejected),:]    #remove rejected from data
+                self.PO       = self.PO[np.logical_not(rejected),:]      #remove rejected from data
                 
                 # self.events.NeventsNotRejAll = self.events.Nevents - (self.rejCounter[1]+self.rejCounter[3]+self.rejCounter[4]);
                 # self.events.NeventsNotRej2D   = np.sum(self.POPH[:,1] >= 0)
@@ -425,14 +431,15 @@ class clusterHits():
                 self.events1Cass.NeventsNotRejAll = self.rejCounter[0] + self.rejCounter[2]
                 self.events1Cass.NeventsNotRej2D  = self.rejCounter[0]
                 
-                self.events1Cass.transform(cassette1ID, self.POPH)
+                self.events1Cass.transform(cassette1ID, self.TPHM, self.PO)
         
         ################################
                 if self.showStat == 'individualStat':
                     self.someStat(self.events1Cass,self.rejCounter)
         ################################
         
-                del self.POPH
+                del self.TPHM
+                del self.PO
                 
                 if NumClusters == len(self.hits.timeStamp[selectCassette]):
                     print('--> \033[1;33mWARNING: time window for clustering might be too small!\033[1;37m',end='')
@@ -469,16 +476,13 @@ class clusterHits():
                     print("\t N of candidates: %d -> not rejected events %d (2D: %d, 1D: %d)" % (Ncandidates,NeventsNotRejAll,rejCounter[0],rejCounter[2]))
                     
                 
-            
 
-
-                
 
      def clusterizeManyCassettes(self, cassettesIDs, timeWindow):
             
              checkCassIDs.checkIfRepeatedIDs(cassettesIDs)
              
-             self.rejCounterAll = np.zeros((5))
+             self.rejCounterAll = np.zeros((5),dtype='int64')
              
              for cc in cassettesIDs:
                  
@@ -493,6 +497,7 @@ class clusterHits():
              
              if self.showStat == 'globalStat':
                  self.someStat(self.events,self.rejCounterAll)
+                 # print(1)
   
     
 ####################################################
@@ -548,14 +553,16 @@ class checkCassIDs():
 
 if __name__ == '__main__':
 
-   filePath  = './config/'+"MB300_FREIA_config.json"
-   filePathD = './data/'+'freia_1k_pkts_ng.pcapng'
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MB300_FREIA_config.json"
+   filePathD = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'+'freia_1k_pkts_ng.pcapng'
    
    tProfilingStart = time.time()
 
-   config = maps.read_json_config(filePath)
+   parameters = para.parameters('./')
    
-   parameters = para.parameters(config)
+   config = maps.read_json_config(filePath)
+   parameters.loadConfigParameters(config)
+
    parameters.cassettes.cassettes = [1]
    
    # name = config.get_DetectorName()
@@ -631,7 +638,7 @@ if __name__ == '__main__':
    
    # cc.clusterize1cassette(1,2e-6)
    
-   cc.clusterizeManyCassettes([1], 2e-6)
+   cc.clusterizeManyCassettes([1], 3e-6)
    
    
    
@@ -642,9 +649,9 @@ if __name__ == '__main__':
    allAxis = hh.allAxis()
    allAxis.createAllAxis(parameters)
    
-   pp = plo.plottingEvents(events,allAxis)
+   # pp = plo.plottingEvents(events,allAxis)
     
-   pp.plotXYToF(logScale = False, absUnits = False)
+   # pp.plotXYToF(logScale = False, absUnits = False)
    
    
    tElapsedProfiling = time.time() - tProfilingStart

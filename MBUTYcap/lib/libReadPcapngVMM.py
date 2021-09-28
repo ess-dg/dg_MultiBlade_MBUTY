@@ -22,38 +22,44 @@ import sys
             
 class readouts():            
     def __init__(self): 
-        self.Ring    = np.zeros((0), dtype = 'float64')
-        self.Fen     = np.zeros((0), dtype = 'float64')
-        self.VMM     = np.zeros((0), dtype = 'float64')
-        self.hybrid  = np.zeros((0), dtype = 'float64')
-        self.ASIC    = np.zeros((0), dtype = 'float64')
-        self.Channel = np.zeros((0), dtype = 'float64')
-        self.ADC     = np.zeros((0), dtype = 'float64')
-        self.timeStamp  = np.zeros((0), dtype = 'float64')
-        self.BC      = np.zeros((0), dtype = 'float64')
-        self.OTh     = np.zeros((0), dtype = 'float64')
-        self.TDC     = np.zeros((0), dtype = 'float64')
-        self.GEO     = np.zeros((0), dtype = 'float64')
-        self.PulseT    = np.zeros((0), dtype = 'float64')
-        self.PrevPT    = np.zeros((0), dtype = 'float64')
-        self.Durations = np.zeros((0), dtype = 'float64')
+        
+        datype = 'int64'
+        
+        self.Ring    = -1*np.ones((0), dtype = datype)
+        self.Fen     = -1*np.ones((0), dtype = datype)
+        self.VMM     = -1*np.ones((0), dtype = datype)
+        self.hybrid  = -1*np.ones((0), dtype = datype)
+        self.ASIC    = -1*np.ones((0), dtype = datype)
+        self.Channel = -1*np.ones((0), dtype = datype)
+        self.ADC     = -1*np.ones((0), dtype = datype)
+        self.timeStamp   = np.zeros((0), dtype = datype)
+        self.timeCoarse  = np.zeros((0), dtype = datype)
+        self.BC      = -1*np.ones((0), dtype = datype)
+        self.OTh     = -1*np.ones((0), dtype = datype)
+        self.TDC     = -1*np.ones((0), dtype = datype)
+        self.GEO     = -1*np.ones((0), dtype = datype)
+        self.G0      = -1*np.ones((0), dtype = datype)
+        self.PulseT    = np.zeros((0), dtype = datype)
+        self.PrevPT    = np.zeros((0), dtype = datype)
+        self.Durations = np.zeros((0), dtype = datype)
                
     def transformInReadouts(self, data):
-        self.Ring     = data[:,0]
-        self.Fen      = data[:,1]
-        self.VMM      = data[:,2]
-        self.hybrid   = data[:,3]
-        self.ASIC     = data[:,4]
-        self.Channel  = data[:,5]
-        self.ADC      = data[:,6]
-        self.timeStamp  = data[:,7]
-        self.BC       = data[:,8]
-        self.OTh      = data[:,9]
-        self.TDC      = data[:,10]
-        self.GEO      = data[:,11]
-        self.PulseT   = data[:,12]
-        self.PrevPT   = data[:,13]
-                
+        self.Ring       = data[:,0]
+        self.Fen        = data[:,1]
+        self.VMM        = data[:,2]
+        self.hybrid     = data[:,3]
+        self.ASIC       = data[:,4]
+        self.Channel    = data[:,5]
+        self.ADC        = data[:,6]
+        self.BC         = data[:,7]
+        self.OTh        = data[:,8]
+        self.TDC        = data[:,9]
+        self.GEO        = data[:,10]
+        self.timeCoarse = data[:,11]
+        self.PulseT     = data[:,12]
+        self.PrevPT     = data[:,13]
+        self.G0         = data[:,14]
+
     # def list(self):
     #     print("Rings {}".format(self.Ring))
     #     print("Fens {}".format(self.Fen))
@@ -68,29 +74,35 @@ class readouts():
         self.Channel  = np.concatenate((self.Channel, reado.Channel), axis=0)
         self.ADC      = np.concatenate((self.ADC, reado.ADC), axis=0)
         self.timeStamp  = np.concatenate((self.timeStamp, reado.timeStamp), axis=0)
-        self.BC   = np.concatenate((self.BC, reado.BC), axis=0)
-        self.OTh  = np.concatenate((self.OTh, reado.OTh), axis=0)
-        self.TDC  = np.concatenate((self.TDC, reado.TDC), axis=0)
-        self.GEO  = np.concatenate((self.GEO, reado.GEO), axis=0)
+        self.BC      = np.concatenate((self.BC, reado.BC), axis=0)
+        self.OTh     = np.concatenate((self.OTh, reado.OTh), axis=0)
+        self.TDC     = np.concatenate((self.TDC, reado.TDC), axis=0)
+        self.GEO     = np.concatenate((self.GEO, reado.GEO), axis=0)
+        self.G0      = np.concatenate((self.G0, reado.G0), axis=0)
         self.PulseT  = np.concatenate((self.PulseT, reado.PulseT), axis=0)
         self.PrevPT  = np.concatenate((self.PrevPT, reado.PrevPT), axis=0)
+        self.timeCoarse = np.concatenate((self.timeCoarse, reado.timeCoarse), axis=0)
         self.Durations  = np.append(self.Durations, reado.Durations)
+       
               
     def concatenateReadoutsInArrayForDebug(self):
         
         leng = len(self.timeStamp)
         
-        readoutsArray = np.zeros((leng,9),dtype = 'float64')
+        readoutsArray = np.zeros((leng,12),dtype = 'int64')
         
-        readoutsArray[:,0] = self.timeStamp
-        readoutsArray[:,1] = self.Ring
-        readoutsArray[:,2] = self.Fen
-        readoutsArray[:,3] = self.hybrid
-        readoutsArray[:,4] = self.ASIC
-        readoutsArray[:,5] = self.Channel
-        readoutsArray[:,6] = self.ADC
-        readoutsArray[:,7] = self.PulseT
-        readoutsArray[:,8] = self.PrevPT
+        readoutsArray[:,0] = self.Ring
+        readoutsArray[:,1] = self.Fen
+        readoutsArray[:,2] = self.hybrid
+        readoutsArray[:,3] = self.ASIC
+        readoutsArray[:,4] = self.Channel
+        readoutsArray[:,5] = self.ADC
+        readoutsArray[:,6] = self.PulseT
+        readoutsArray[:,7] = self.PrevPT
+        readoutsArray[:,8] = self.timeStamp
+        readoutsArray[:,9] = self.timeCoarse
+        readoutsArray[:,10] = self.TDC
+        readoutsArray[:,11] = self.G0
         
         return readoutsArray
     
@@ -100,28 +112,74 @@ class readouts():
         
         self.timeStamp =  self.timeStamp[indexes]
         self.Ring      =  self.Ring[indexes]
-        self.Fen     =  self.Fen[indexes]
-        self.VMM     =  self.VMM[indexes]
-        self.hybrid  =  self.hybrid[indexes]
-        self.ASIC    =  self.ASIC[indexes]
-        self.Channel =  self.Channel[indexes]
-        self.ADC     =  self.ADC[indexes]
-        self.BC      =  self.BC[indexes]
-        self.OTh     =  self.OTh[indexes]
-        self.TDC     =  self.TDC[indexes]
-        self.GEO     =  self.GEO[indexes]
-        self.PulseT  =  self.PulseT[indexes]
-        self.PrevPT  =  self.PrevPT[indexes]
+        self.Fen       =  self.Fen[indexes]
+        self.VMM       =  self.VMM[indexes]
+        self.hybrid    =  self.hybrid[indexes]
+        self.ASIC      =  self.ASIC[indexes]
+        self.Channel   =  self.Channel[indexes]
+        self.ADC       =  self.ADC[indexes]
+        self.BC        =  self.BC[indexes]
+        self.OTh       =  self.OTh[indexes]
+        self.TDC       =  self.TDC[indexes]
+        self.GEO       =  self.GEO[indexes]
+        self.PulseT    =  self.PulseT[indexes]
+        self.PrevPT    =  self.PrevPT[indexes]
+        self.timeCoarse =  self.timeCoarse[indexes]
+        self.G0        =  self.G0[indexes]
         
     def calculateDuration(self):
          
-         Tstart = np.min(self.timeStamp)
-         Tstop  = np.max(self.timeStamp)
+         # Tstart = np.min(self.timeStamp)
+         # Tstop  = np.max(self.timeStamp)
+         
+         Tstart = self.timeStamp[0]
+         Tstop  = self.timeStamp[-1]
+         
          self.Durations = np.round(Tstop-Tstart, decimals = 3)
          
-         
+    def calculateTimeStampWithTDC(self,NSperClockTick,time_offset=0,time_slope=1):
         
-
+         self.timeStamp = self.timeCoarse + VMM3A_convertCalibrate_TDC_ns(self.TDC,NSperClockTick,time_offset,time_slope).TDC_ns
+    
+    def checkIfCalibrationMode(self):
+        
+        flag = False
+        
+        if np.any(self.G0 == 1) :
+            
+             flag = True
+            
+             print('\n\t\033[1;33mWARNING: calibration latency mode found in READOUTS.\033[1;37m',end='') 
+             time.sleep(1)
+             
+        return flag     
+    
+             
+            
+    def removeCalibrationData(self):
+        
+         print('--> removing latency calib data from readouts ...')
+        
+         noCalibData = self.G0 == 0
+        
+         self.Ring    = self.Ring[noCalibData]
+         self.Fen     = self.Fen[noCalibData]
+         self.VMM     = self.VMM[noCalibData]
+         self.hybrid  = self.hybrid[noCalibData]
+         self.ASIC    = self.ASIC[noCalibData]
+         self.Channel = self.Channel[noCalibData]
+         self.ADC     = self.ADC[noCalibData]
+         self.timeStamp   = self.timeStamp[noCalibData]
+         self.timeCoarse  = self.timeCoarse[noCalibData]
+         self.BC      = self.BC[noCalibData]
+         self.OTh     = self.OTh[noCalibData]
+         self.TDC     = self.TDC[noCalibData]
+         self.GEO     = self.GEO[noCalibData]
+         self.G0      = self.G0[noCalibData]
+         self.PulseT    = self.PulseT[noCalibData]
+         self.PrevPT    = self.PrevPT[noCalibData]
+        
+        
 ###############################################################################
 ###############################################################################
 
@@ -146,9 +204,9 @@ class checkInstrumentID():
 #################################################  
 
 class  checkWhich_RingFenHybrid_InFile():
-    def __init__(self, filePathAndFileName):
-        
-        pcap = pcapng_reader(filePathAndFileName, timeResolutionType='fine', sortByTimeStampsONOFF = True)
+    def __init__(self, filePathAndFileName,NSperClockTick):
+                
+        pcap = pcapng_reader(filePathAndFileName, NSperClockTick, timeResolutionType = 'coarse', sortByTimeStampsONOFF = False)
         self.readouts = pcap.readouts
         
         temp = os.path.split(filePathAndFileName)
@@ -193,26 +251,24 @@ class  checkWhich_RingFenHybrid_InFile():
 #################################################        
         
 class VMM3A():
-    def __init__(self, buffer, timeResolution, timeResolutionType):
-        
-        self.timeResolutionType = timeResolutionType
-        
+    def __init__(self, buffer, NSperClockTick):
+                 
         # decode into little endian integers
         PhysicalRing = int.from_bytes(buffer[0:1], byteorder='little')
         self.Fen     = int.from_bytes(buffer[1:2], byteorder='little')
         self.Length  = int.from_bytes(buffer[2:4], byteorder='little')
-        TimeHI    = int.from_bytes(buffer[4:8], byteorder='little')
-        TimeLO    = int.from_bytes(buffer[8:12], byteorder='little')
-        self.BC   = int.from_bytes(buffer[12:14], byteorder='little')
-        OTADC     = int.from_bytes(buffer[14:16], byteorder='little')
-        G0GEO     = int.from_bytes(buffer[16:17], byteorder='little')
-        self.TDC  = int.from_bytes(buffer[17:18], byteorder='little')
-        self.VMM  = int.from_bytes(buffer[18:19], byteorder='little')
+        timeHI       = int.from_bytes(buffer[4:8], byteorder='little')
+        timeLO       = int.from_bytes(buffer[8:12], byteorder='little')
+        self.BC      = int.from_bytes(buffer[12:14], byteorder='little')
+        OTADC        = int.from_bytes(buffer[14:16], byteorder='little')
+        G0GEO        = int.from_bytes(buffer[16:17], byteorder='little')
+        self.TDC     = int.from_bytes(buffer[17:18], byteorder='little')
+        self.VMM     = int.from_bytes(buffer[18:19], byteorder='little')
         self.Channel = int.from_bytes(buffer[19:20], byteorder='little')
         
         #######################
         #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
-        self.Ring = np.floor(PhysicalRing/2)
+        self.Ring = int(np.floor(PhysicalRing/2))
         # self.Ring = PhysicalRing
         #######################
 
@@ -222,21 +278,88 @@ class VMM3A():
         self.G0       = G0GEO >> 7
         self.GEO      = G0GEO & 0x3F
         
-        self.ASIC     = self.VMM & 0x1           #extract only LSB
-        self.hybrid   = (self.VMM & 0xE) >> 1    #extract only 1110 and shift right by one 
+        self.ASIC     =  self.VMM & 0x1           #extract only LSB
+        self.hybrid   = (self.VMM & 0xE) >> 1     #extract only 1110 and shift right by one 
 
-        # if bD0 == 0: # normal mode
+        # if self.G0 == 0: # normal mode
         #    pass
-        # elif bD0 == 1: # calibration mode
+        # elif self.G0 == 1: # calibration mode
         #    pass
 
         #  in seconds
-        if self.timeResolutionType == 'coarse':
-            self.timeStamp =  TimeHI + TimeLO * timeResolution # coarse time resolution
-        elif self.timeResolutionType == 'fine':
-            # self.timeStamp =  TimeHI + TimeLO*timeResolution + ( timeResolution*2 - (self.TDC*(60/255))*1e-9 )  #fine time resolution
-            self.timeStamp =  TimeHI + TimeLO*timeResolution + ( timeResolution*2*1.5 - (self.TDC*(60/255))*1e-9 )  #fine time resolution
+        # self.timeCoarse =  np.around(TimeHI*1.0 + TimeLO * timeResolution , decimals=9) # coarse time resolution
+        
+        # print(type(timeLO))
+        # print(timeLO)
+        
+        timeHIns = int(round(timeHI * 1000000000))
+        timeLOns = int(round(timeLO * NSperClockTick))
+        
+        # print(type(timeLOns))
+        # print(timeLOns)
+                                                  
+        # self.timeStamp  =  self.timeHIns + self.timeLOns
+        self.timeCoarse  = timeHIns + timeLOns
+       
+        # self.timeStamp  =  timeHIns + timeLOns + VMM3A_convertCalibrate_TDC_ns(self.TDC,NSperClockTick).TDC_ns
+        
+        # ((NSperClockTick*2*1.5 - self.TDC*60/255 - 0.0) * 1.0)
+        
+        # self.timeStamp  = TimeHI + TimeLO * timeResolution  + VMM3A_convertCalibrate_TDCinSec(self.TDC,timeResolution,time_offset=0,time_slope=1).TDC_s
+        # self.timeStamp  = self.timeCoarse + VMM3A_convertCalibrate_TDCinSec(self.TDC,timeResolution,time_offset=0,time_slope=1).TDC_s
+
+        # print('qui non funziona il caricare il time coarse e time lo maybe float, ed e a cnhe lento fai times tmap alla fine tutto insieme')
+
+        # self.timeStamp  =  0 
+        # self.timeStamp  =  self.timeCoarse + 100e-9
+        # print(self.timeCoarse,self.timeStamp)
+        # Corrected_time = (1.5*timeResolution*2 – TDC*60ns/255 – time_offset)*time_slope
+        # Complete_time = BC*timeResolution*2 + corrected_time
+        
+class VMM3A_convertCalibrate_TDC_ns(): 
+    def __init__(self,TDC,NSperClockTick,time_offset=0,time_slope=1):
+                
+        # self.TDC = TDC
+        # self.NSperClockTick = NSperClockTick
+   
+        self.pTAC = 60    #  in ns
+        
+    # def convert_ns(self):
+        
+    #     self.calibrate(time_offset=0, time_slope=1)
+        
+    # def calibrate(self,time_offset,time_slope):
+        
+         # time_offset in ns, time_slope adimensional
+        
+        aboveLimit = TDC > 255
+        belowLimit = TDC < 0 
+        
+        if np.any(aboveLimit == True):
+            TDC[aboveLimit] = 255
+        elif np.any(belowLimit == True):
+            TDC[belowLimit] = 0
+        
+        TDC_ns = np.around( ( (NSperClockTick*2*1.5 - TDC*self.pTAC/255 - time_offset) * time_slope ) )
+
+        self.TDC_ns = TDC_ns.astype('int64')
+        
+        
+class VMM3A_calibrate_ADC():  
+    def __init__(self,ADC,ADC_offset=0,ADC_slope=1):      
             
+        ADC_calibrated = np.around(( ADC - ADC_offset ) * ADC_slope)
+        
+        aboveLimit = ADC_calibrated > 1023
+        belowLimit = ADC_calibrated < 0
+        
+        if np.any(aboveLimit == True):
+            ADC_calibrated[aboveLimit] = 1023
+        elif np.any(belowLimit == True):
+            ADC_calibrated[belowLimit] = 0
+        
+        self.ADC_calibrated  = ADC_calibrated.astype('int64')
+        
 ###############################################################################
 ###############################################################################
         
@@ -257,15 +380,15 @@ class checkIfFileExistInFolder():
 ################################################## 
 
 class pcapng_reader():
-    def __init__(self, filePathAndFileName, timeResolutionType='fine', sortByTimeStampsONOFF = True):
+    def __init__(self, filePathAndFileName, NSperClockTick, timeResolutionType = 'fine', sortByTimeStampsONOFF = True):
         
         self.readouts = readouts()
         
         try:
             # print('PRE-ALLOC method to load data ...')
-            self.pcapng = pcapng_reader_PreAlloc(filePathAndFileName)
+            self.pcapng = pcapng_reader_PreAlloc(filePathAndFileName,NSperClockTick,timeResolutionType)
             self.pcapng.allocateMemory()
-            self.pcapng.read(timeResolutionType)
+            self.pcapng.read()
             self.readouts = self.pcapng.readouts
             
         except:
@@ -278,26 +401,32 @@ class pcapng_reader():
             
         finally:
              
-             if sortByTimeStampsONOFF is True:
+              if sortByTimeStampsONOFF is True:
                  
-                 print('Readouts are sorted by TimeStamp')
+                  print('Readouts are sorted by TimeStamp')
                  
-                 self.readouts.sortByTimeStamps()
+                  self.readouts.sortByTimeStamps()
                  
             
-             else:
+              else:
                 
-                print('Readouts are NOT sorted by TimeStamp')
+                 print('Readouts are NOT sorted by TimeStamp')
                 
-             self.readouts.calculateDuration()     
+              self.readouts.calculateDuration()     
                         
 ##################################################  
 
 class pcapng_reader_PreAlloc():
-    def __init__(self, filePathAndFileName):
+    def __init__(self, filePathAndFileName, NSperClockTick, timeResolutionType = 'fine'):
         
         # number of decimals after comma in seconds, to round the PulseT and PRevPT: 6 means 1us rounding, etc...
-        self.resolution = 9
+        # self.resolution = 9
+        
+        # self.timeResolution = 11.25e-9  #s per tick for 88.888888 MHz
+        # self.timeResolution = 11.356860963629653e-9  #s per tick ESS for 88.0525 MHz
+        self.NSperClockTick = NSperClockTick 
+        
+        self.timeResolutionType  = timeResolutionType
         
         self.filePathAndFileName = filePathAndFileName
         
@@ -307,7 +436,7 @@ class pcapng_reader_PreAlloc():
         fileName = temp2[1]
         
         self.fileSize   = os.path.getsize(self.filePathAndFileName) #bytes
-        print('{} is {} kbytes'.format(fileName,self.fileSize/1e3))
+        print('{} is {} kbytes'.format(fileName,self.fileSize/1000))
     
         self.readouts = readouts()
           
@@ -323,10 +452,7 @@ class pcapng_reader_PreAlloc():
         self.headerSize          = self.mainHeaderSize+self.ESSheaderSize #bytes  (72 bytes)
         
         self.singleReadoutSize   = 20  #bytes
-        
-        # self.timeResolution = 11.25e-9  #s per tick for 88.888888 MHz
-        self.timeResolution = 11.35686096362965e-9  #s per tick ESS for 88.025 MHz
-        
+                
         # self.numOfPacketsPerTransfer = 447
         # self.expectedESSpacketSize = 72+NumOfReadoutsIN1PAcket*20 = max 9000bytes
         # self.preallocLength    =  round(self.fileSize*1.2/self.expectedESSpacketSize)*self.numOfPacketsPerTransfer
@@ -357,7 +483,7 @@ class pcapng_reader_PreAlloc():
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
         
-        packetsSizes = np.zeros((0),dtype='float64')
+        packetsSizes = np.zeros((0),dtype='int64')
         
         for block in scanner:
     
@@ -391,11 +517,9 @@ class pcapng_reader_PreAlloc():
         ff.close()
         
         
-    def read(self, timeResolutionType='fine'):   
+    def read(self):   
         
-        self.timeResolutionType = timeResolutionType
-        
-        self.data = np.zeros((self.preallocLength,14), dtype='float64') 
+        self.data = np.zeros((self.preallocLength,15), dtype='int64') 
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
@@ -439,13 +563,13 @@ class pcapng_reader_PreAlloc():
                         
                     ESSlength  = int.from_bytes(packetData[indexESS+4:indexESS+6], byteorder='little') # bytes    
                     
-                    PulseThigh = int.from_bytes(packetData[indexESS+8:indexESS+12], byteorder='little') # s
-                    PulseTlow  = int.from_bytes(packetData[indexESS+12:indexESS+16], byteorder='little')*self.timeResolution # s
-                    PrevPThigh = int.from_bytes(packetData[indexESS+16:indexESS+20], byteorder='little') # s
-                    PrevPTlow  = int.from_bytes(packetData[indexESS+20:indexESS+24], byteorder='little')*self.timeResolution # s
+                    PulseThigh = int.from_bytes(packetData[indexESS+8:indexESS+12], byteorder='little')*1000000000
+                    PulseTlow  = int.from_bytes(packetData[indexESS+12:indexESS+16], byteorder='little')*self.NSperClockTick 
+                    PrevPThigh = int.from_bytes(packetData[indexESS+16:indexESS+20], byteorder='little')*1000000000
+                    PrevPTlow  = int.from_bytes(packetData[indexESS+20:indexESS+24], byteorder='little')*self.NSperClockTick 
                     
-                    PulseT = np.round((PulseThigh + PulseTlow),decimals=self.resolution) #time rounded at 1us precision is 6 decimals, 7 is 100ns, etc...
-                    PrevPT = np.round((PrevPThigh + PrevPTlow),decimals=self.resolution)
+                    PulseT = int(round(PulseThigh + PulseTlow)) #time rounded at 1us precision is 6 decimals, 7 is 100ns, etc...
+                    PrevPT = int(round(PrevPThigh + PrevPTlow))
                     
                     readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
                     # or alternatively
@@ -476,7 +600,7 @@ class pcapng_reader_PreAlloc():
                                 indexStart = indexDataStart + self.singleReadoutSize * currentReadout
                                 indexStop  = indexDataStart + self.singleReadoutSize * (currentReadout + 1)
                     
-                                vmm3 = VMM3A(packetData[indexStart:indexStop], self.timeResolution, self.timeResolutionType)
+                                vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
                     
                                 index = overallDataIndex-1
                     
@@ -487,16 +611,19 @@ class pcapng_reader_PreAlloc():
                                 self.data[index, 4] = vmm3.ASIC
                                 self.data[index, 5] = vmm3.Channel
                                 self.data[index, 6] = vmm3.ADC
-                                self.data[index, 7] = vmm3.timeStamp
-                                self.data[index, 8] = vmm3.BC
-                                self.data[index, 9] = vmm3.OTh
-                                self.data[index, 10] = vmm3.TDC
-                                self.data[index, 11] = vmm3.GEO
+                                self.data[index, 7] = vmm3.BC
+                                self.data[index, 8] = vmm3.OTh
+                                self.data[index, 9] = vmm3.TDC
+                                self.data[index, 10] = vmm3.GEO
+                                self.data[index, 11] = vmm3.timeCoarse
                                 self.data[index, 12] = PulseT
                                 self.data[index, 13] = PrevPT
-
-                                self.dprint(" \t Packet: {} ({} bytes), Readout: {}, Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time {} s, BC {}, OverTh {}, ADC {}, TDC {}, GEO {} " \
-                                            .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeStamp,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.GEO))
+                                self.data[index, 14] = vmm3.G0  # if 1 is calibration
+                                
+                                # self.data[index, 7] = vmm3.timeStamp
+                             
+                                self.dprint(" \t Packet: {} ({} bytes), Readout: {}, Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time Coarse {} ns, BC {}, OverTh {}, ADC {}, TDC {}, GEO {} " \
+                                            .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeCoarse,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.GEO))
 
                 
                                 ###########
@@ -532,7 +659,23 @@ class pcapng_reader_PreAlloc():
         datanew = cz.dataOUT
         
         self.readouts.transformInReadouts(datanew)
-              
+        
+
+        # self.readouts.calculateTimeStamp(self.NSperClockTick)
+        if self.timeResolutionType == 'fine':
+            self.readouts.calculateTimeStampWithTDC(self.NSperClockTick)
+        elif self.timeResolutionType == 'coarse':
+            self.readouts.timeStamp = self.readouts.timeCoarse
+
+        flag = self.readouts.checkIfCalibrationMode()
+        
+        if flag is True: 
+            self.readouts.removeCalibrationData()
+        
+        # self.readouts.timeStamp  = self.readouts.timeCoarse  + VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset=100e-9,time_slope=1).TDC_s
+       
+        # self.readouts.TDC =  VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset=100e-9,time_slope=1).TDC_s
+        
         print('\ndata loaded - found {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.totalReadoutCount, self.counterPackets,self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))    
         # print('\n')
         
@@ -753,16 +896,21 @@ if __name__ == '__main__':
    tProfilingStart = time.time()
 
    # arg = parser.parse_args()
-   # filePath = './'+"VMM3a_Freia.pcapng"
+   
    # filePath = './'+"VMM3a.pcapng"
    
    path = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
    
+  
+   
    # filePath = path+'pcap_for_fra.pcapng'
    # filePath = path+'pcap_for_fra_ch2test.pcapng'
    # filePath = path+'pcap_for_fra_ch2test_take2.pcapng'
-   # filePath = path+'pcap_for_fra_coinc.pcapng'
-   filePath = path+'freiatest.pcapng'
+   filePath = path+'pcap_for_fra_coinc.pcapng'
+   # filePath = path+'freiatest.pcapng'
+   
+   # path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
+   # filePath = path+'VMM3a_Freia.pcapng'
 
    # pr = pcapng_reader(filePath,timeResolutionType='fine')
    # # pr.debug = True
@@ -798,15 +946,35 @@ if __name__ == '__main__':
    
    # cc= checkWhich_RingFenHybrid_InFile(filePath).check()
    
-   # pcapng = pcapng_reader_PreAlloc(filePath)
-   # pcapng.allocateMemory()
-   # pcapng.read(timeResolutionType='fine')
+   NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
    
-   pcap = pcapng_reader(filePath,timeResolutionType='fine', sortByTimeStampsONOFF = True)
+   
+   pcap = pcapng_reader_PreAlloc(filePath,NSperClockTick)
+   pcap.allocateMemory()
+   pcap.read()
+   
+   # pcap = pcapng_reader(filePath, NSperClockTick, timeResolutionType = 'fine', sortByTimeStampsONOFF = False )
+
+   # print('RIMUOVI TIMESTAMP DA VMM3A e troppo lento')
+   
+   # 
+   # 
+   # 
+   
+   
    readouts = pcap.readouts 
    readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
    
-
+   # tdcs = VMM3A_convertCalibrate_TDCinSec(readouts.TDC, NSperClockTick).TDC_ns
+   
+   # timeS = readouts.timeHIs + 100e-9
+   
+   
+    # timeDIff = readouts.timeStamp - readouts.timeHIns 
+   # - readouts.timeLOns*1e-9
+   
+   # aa = np.concatenate((readouts.timeStamp[:,None],readouts.timeHIs[:,None],readouts.timeLOns[:,None]*1e-9,tdcs[:,None],timeDIff[:,None]),axis=1)
+   
    # aa = pr.d
    # bb = pr.e
    

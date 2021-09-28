@@ -46,10 +46,30 @@ class transferDataUtil():
    
     
 class dumpTopcapngUtil():
+
+    def __init__(self, parameters):
+
+        self.parameters = parameters
+
+
     
     def recordPcapFile(self):
-        
+
+        pathToTshark = self.parameters.fileManagement.pathToTshark
+
+        comm = 'tshark -i asds -c numofpacket -r capture.pcapng'
+
+        if os.path.isfile(pathToTshark+'tshark') is False:
+            print('\n \033[1;31mFile conversion pcap to pcapng cannot be performed. \n Tshark not found in your system, either set right path to Thark in parameters or install it.\033[1;37m\n')
+            print('... exiting.')
+            sys.exit()
+
+        else:
+
+            print(' -> converting pcap to pcapng ...',end='')
+
         print(1)
+
         #  to be finished 
         
         # comm = 'sudo tcpdump -1 eno1 -w filename udp port 9000'

@@ -37,7 +37,13 @@ class Tof2LambdaConverter():
         
         velocity = distance/ToF               #m/s
         energy   = (1/2)*(self.mneutr/1.6e-19)*(velocity**2)     #eV
-        self.lamb     = np.sqrt(self.constant/energy)                  #A
+        
+        selGoods =  energy > 0
+        
+        self.lamb = np.zeros(len(energy))
+         
+        self.lamb[selGoods]     = np.sqrt(self.constant/energy[selGoods])                  #A
+        self.lamb[~selGoods]    = np.nan                  #A
         # lamb   = np.round(lamb,decimals=2)
         
         return self.lamb
@@ -85,13 +91,13 @@ class calculateAbsUnits():
 
           self.events.ToF = self.events.timeStamp - self.events.PulseT
           
-          invalidToFs = self.events.ToF < 0.0
+          invalidToFs = self.events.ToF < 0
           
           self.events.ToF[invalidToFs] = self.events.timeStamp[invalidToFs] - self.events.PrevPT[invalidToFs]
           
-          invalidToFsAgain = self.events.ToF < 0.0
+          invalidToFsAgain = self.events.ToF < 0
           
-          self.events.ToF[invalidToFsAgain] = np.nan
+          self.events.ToF[invalidToFsAgain] = np.ma.masked # same as np.nan for int64 instead of floats
           
           if np.sum(invalidToFsAgain) > 0:
               
@@ -109,19 +115,30 @@ class calculateAbsUnits():
          # Distance is from chopper to first wire in mm
          ZfromChopper = self.events.positionZmm + self.parameters.wavelength.distance
          
+         #  from ns to s, from int ot float ! 
+         ToF_s = self.events.ToF/1e9
+         
          tcl = Tof2LambdaConverter()
 
          if self.parameters.wavelength.multipleFramePerReset is True:
                #ToF shifted and corrected by number of bunches
                ToFstart = tcl.lambda2ToF(ZfromChopper*1e-3,self.parameters.wavelength.lambdaMIN)
-               tempToF  = ( (self.events.ToF-ToFstart-self.parameters.wavelength.chopperPickUpDelay) % (self.parameters.wavelength.chopperPeriod/self.parameters.wavelength.numOfBunchesPerPulse) ) + ToFstart
+               tempToF  = ( (ToF_s-ToFstart-self.parameters.wavelength.chopperPickUpDelay) % (self.parameters.wavelength.chopperPeriod/self.parameters.wavelength.numOfBunchesPerPulse) ) + ToFstart
          else:
            
-               tempToF  = self.events.ToF
+               tempToF  = ToF_s
           
          wavel  = tcl.ToF2lambda(ZfromChopper*1e-3, tempToF) #input m and s, output in A
             
          # append to POPH col 7 of POPH is depth in detector - z (mm) and col 8 is lambda
+         
+         # tempwavelength = np.round(wavel, decimals=2)
+         
+         # zeroWave = tempwavelength < 0 
+         
+         # infWave  = np.isinf(tempwavelength)
+         
+         # tempwavelength[np.logical_and(zeroWave,infWave)] = np.nan
          
          self.events.wavelength = np.round(wavel, decimals=2)
            
@@ -241,7 +258,7 @@ if __name__ == '__main__':
    dd = sdat.sampleEventsMultipleCassettes(cassette,'/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/')
    dd.generateGlob(Nevents)
    events  = dd.events
-   eventsArray = events.concatenateEventsInArrayForDebug()
+   eventsArray2 = events.concatenateEventsInArrayForDebug()
 # eventsArray = eventsArray[72:100,:]
 #################### 
 
@@ -255,8 +272,7 @@ if __name__ == '__main__':
    ab = calculateAbsUnits(events, parameters)
    ab.calculatePositionAbsUnit()
 
-   T0 = 0
-   ab.calculateToF(T0)
+   ab.calculateToF()
    
    ab.calculateWavelength()
    
@@ -264,11 +280,13 @@ if __name__ == '__main__':
 
    events = ab.events 
    
+   eventsArray = events.concatenateEventsInArrayForDebug()
+   
    allAxis = hh.allAxis()
    allAxis.createAllAxis(parameters)
    
    #  XY and XToF
-   plev = plo.plottingEvents(events,allAxis)
+   plev = plo.plottingEvents(events,allAxis,True)
    plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits)
     
     #  lambda

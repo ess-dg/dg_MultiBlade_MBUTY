@@ -106,6 +106,12 @@ class cassettes():
           #  by default the cassettes are the ones present in the json file
           self.cassettes = configJsonFile.cassInConfig
           
+class clockTicks():
+      def __init__(self):      
+          
+          self.NSperClockTick =  11.356860963629653  #ns per clock tick ESS for 88.0525 MHz
+          self.clockFreq      =  1/self.NSperClockTick
+          
 class MONitor():
       def __init__(self):
     
@@ -125,7 +131,7 @@ class dataReduction():
     def __init__(self, cassettes, configJsonFile):
         
 
-          self.timeWindow = 3e-6  #us default is 3us for clustering
+          self.timeWindow = 3e-6  #s default is 3us for clustering
           
           # not implented yet
           # overflowcorr      = True   #ON/OFF (does not affect the MONITOR)
@@ -253,6 +259,8 @@ class parameters():
         self.configJsonFile = configJsonFile(self.config)
         
         self.cassettes = cassettes(self.configJsonFile)
+        
+        self.clockTicks = clockTicks()
         
         self.dataReduction  = dataReduction(self.cassettes,self.configJsonFile)
         

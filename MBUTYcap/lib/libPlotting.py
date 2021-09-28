@@ -127,8 +127,8 @@ class plottingReadouts():
             self.plotht.axHandle[1][k].scatter(xx1,self.timeStamp1,0.8,color='b',marker='+')
             self.plotht.axHandle[0][k].set_xlabel('ASIC 0 trigger no.')
             self.plotht.axHandle[1][k].set_xlabel('ASIC 1 trigger no.')
-            self.plotht.axHandle[0][k].set_ylabel('time (s)')
-            self.plotht.axHandle[1][k].set_ylabel('time (s)')
+            self.plotht.axHandle[0][k].set_ylabel('time (ns)')
+            self.plotht.axHandle[1][k].set_ylabel('time (ns)')
             self.plotht.axHandle[0][k].set_title('hybrid '+str(cc)) 
             self.plotht.axHandle[0][k].grid(axis='x', alpha=0.75)
             self.plotht.axHandle[1][k].grid(axis='x', alpha=0.75)
@@ -191,8 +191,8 @@ class plottingHits():
         self.timeStampW = self.hits.timeStamp[sel] * isWire[sel]
         self.timeStampS = self.hits.timeStamp[sel] * isStrip[sel]
         
-        self.timeStampW[self.timeStampW == 0] = None   
-        self.timeStampS[self.timeStampS == 0] = None
+        self.timeStampW[self.timeStampW == 0] = np.ma.masked # same as np.nan for int64 instead of floats   
+        self.timeStampS[self.timeStampS == 0] = np.ma.masked # same as np.nan for int64 instead of floats
         
     def extractTimeStampAndCh1Cass(self,cassette1ID):
            
@@ -208,8 +208,8 @@ class plottingHits():
         self.WireCh  = np.round((wireCh0to31[sel]+10) * isWire[sel])
         self.StripCh = np.round((self.hits.WiresStrips[sel]+20) * isStrip[sel])
         
-        self.WireCh[self.WireCh == 0]   = None   
-        self.StripCh[self.StripCh == 0] = None
+        self.WireCh[self.WireCh == 0]   = np.ma.masked # same as np.nan for int64 instead of floats   
+        self.StripCh[self.StripCh == 0] = np.ma.masked # same as np.nan for int64 instead of floats
         
         self.WireCh  = self.WireCh   - 10
         self.StripCh = self.StripCh  - 20 + self.parameters.configJsonFile.numOfWires
@@ -230,7 +230,7 @@ class plottingHits():
             self.plotht.axHandle[0][k].scatter(xx0,self.timeStampW,0.8,color='r',marker='+') 
             self.plotht.axHandle[0][k].scatter(xx1,self.timeStampS,0.8,color='b',marker='+')
             self.plotht.axHandle[0][k].set_xlabel('trigger no.')   
-            self.plotht.axHandle[0][k].set_ylabel('time (s)')
+            self.plotht.axHandle[0][k].set_ylabel('time (ns)')
             self.plotht.axHandle[0][k].set_title('cass ID '+str(cc)) 
             self.plotht.axHandle[0][k].grid(axis='x', alpha=0.75)
             self.plotht.axHandle[0][k].grid(axis='y', alpha=0.75)
@@ -248,7 +248,7 @@ class plottingHits():
             self.plothtvs.axHandle[0][k].scatter(self.WireCh,self.timeStampW,0.8,color='r',marker='+') 
             self.plothtvs.axHandle[0][k].scatter(self.StripCh,self.timeStampS,0.8,color='b',marker='+')
             self.plothtvs.axHandle[0][k].set_xlabel('trigger no.')   
-            self.plothtvs.axHandle[0][k].set_ylabel('time (s)')
+            self.plothtvs.axHandle[0][k].set_ylabel('time (ns)')
             self.plothtvs.axHandle[0][k].set_title('cass ID '+str(cc)) 
             self.plothtvs.axHandle[0][k].grid(axis='x', alpha=0.75)
             self.plothtvs.axHandle[0][k].grid(axis='y', alpha=0.75)
@@ -295,7 +295,7 @@ class plottingEvents():
      
         if absUnits == False:
  
-            h2D, _, hToF = hh.histog().histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc])
+            h2D, _, hToF = hh.histog().histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
     
             hProjAll = hh.histog().hist1D(self.allAxis.axWires.axis, self.events.positionW)
             
@@ -340,15 +340,15 @@ class plottingEvents():
             # ToFxgms = ToFxg*1e3 # in ms 
         
             fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
-            pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start,self.allAxis.axToF.stop,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='lower',cmap='viridis')
+            pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start*1e3,self.allAxis.axToF.stop*1e3,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='lower',cmap='viridis')
             fig2.colorbar(pos2, ax=ax2)
             ax2.set_ylabel('Wire ch.')
-            ax2.set_xlabel('ToF (s)')
+            ax2.set_xlabel('ToF (ms)')
             fig2.suptitle('DET ToF')
         
         elif absUnits == True:
             
-            h2D, hProj, hToF = hh.histog().histXYZ(self.allAxis.axWires_mm.axis, self.events.positionWmm[self.selc], self.allAxis.axStrips_mm.axis, self.events.positionSmm[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc])
+            h2D, hProj, hToF = hh.histog().histXYZ(self.allAxis.axWires_mm.axis, self.events.positionWmm[self.selc], self.allAxis.axStrips_mm.axis, self.events.positionSmm[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
     
             hProjAll = hh.histog().hist1D(self.allAxis.axWires_mm.axis, self.events.positionWmm)
             
@@ -390,10 +390,10 @@ class plottingEvents():
         
         
             fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
-            pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start,self.allAxis.axToF.stop,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
+            pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start*1e3,self.allAxis.axToF.stop*1e3,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
             fig2.colorbar(pos2, ax=ax2)
             ax2.set_ylabel('Wire coord. (mm)')
-            ax2.set_xlabel('ToF (s)')
+            ax2.set_xlabel('ToF (ms)')
             fig2.suptitle('DET ToF')
             
         # return h2D
@@ -585,9 +585,9 @@ class plottingEvents():
                selc  = self.events.Cassette  == cass
                sel2D = self.events.positionS >= 0
                
-               histTT  = hh.histog().hist1D(self.allAxis.axToF.axis,self.events.ToF[selc & sel2D]) 
+               histTT  = hh.histog().hist1D(self.allAxis.axToF.axis,self.events.ToF[selc & sel2D]/1e9) 
                
-               histTT1 = hh.histog().hist1D(self.allAxis.axToF.axis,self.events.ToF[selc])
+               histTT1 = hh.histog().hist1D(self.allAxis.axToF.axis,self.events.ToF[selc]/1e9)
                
                self.plotTT.axHandle[0][k].step(self.allAxis.axToF.axis*1e3,histTT1,'r',where='mid',label='all')
                self.plotTT.axHandle[0][k].step(self.allAxis.axToF.axis*1e3,histTT,'b',where='mid',label='2D')
