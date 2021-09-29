@@ -33,6 +33,7 @@ from lib import libEventsSoftThresholds as thre
 #     - save reduced data
 #     - monitor analisys and plots
 #     - ignore extra threhsolds row in file if num of strips is 32  
+#     - TDC and ADC calibration 
 
 ###############################################################################
 ###############################################################################
@@ -69,7 +70,7 @@ parameters.loadConfigParameters(config)
 #################################
 
 ### ON/OFF if you want to rsync the data     
-parameters.fileManagement.sync = True  
+parameters.fileManagement.sync = False  
 
 ### from ... to  ... rsync the data
 parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
@@ -296,10 +297,8 @@ fileDialogue.openFile()
 
 ### init readouts cumulated over file list
 readouts = pcapr.readouts()
-
-# hits = maps.hits()
-
-# eve = clu.events()
+# hits   = maps.hits()
+# events = clu.events()
 
 for fileName in fileDialogue.fileName:
     
@@ -318,9 +317,8 @@ for fileName in fileDialogue.fileName:
     
     # md  = maps.mapDetector(pcap.readouts, config)
     # md.mappAllCassAndChannelsGlob()
-    # # hits = md.hits
-    
-    # # hits.append(md.hits)
+    # hits.append(md.hits)
+     
     # cc = clu.clusterHits(md.hits,parameters.plotting.showStat)
     # cc.clusterizeManyCassettes(parameters.cassettes.cassettes, parameters.dataReduction.timeWindow)
     # eve.append(cc.events)

@@ -56,9 +56,9 @@ class calibrateVMM():
         
         time_slope  = 1
         
-        TDC_calib_s = pcapr.VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset,time_slope).TDC_s
+        TDC_calib = pcapr.VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset,time_slope).TDC_ns
           
-        self.readouts.timeStamp  = self.readouts.timeCoarse  + TDC_calib_s
+        self.readouts.timeStamp  = self.readouts.timeCoarse  + TDC_calib
        
         
     def calibrateADC(self):  
@@ -84,7 +84,7 @@ if __name__ == '__main__':
    # filePath = path+'pcap_for_fra_ch2test_take2.pcapng'
    filePath = path+'pcap_for_fra_coinc.pcapng'
    # filePath = path+'freiatest.pcapng'
-   timeResolution = 11.356860963629653e-9  #s per tick ESS for 88.0525 MHz
+   timeResolution = 11.356860963629653  #s per tick ESS for 88.0525 MHz
    pcap = pcapr.pcapng_reader(filePath, timeResolution, sortByTimeStampsONOFF = True)
    readouts = pcap.readouts 
    readoutsArrayIn = readouts.concatenateReadoutsInArrayForDebug()

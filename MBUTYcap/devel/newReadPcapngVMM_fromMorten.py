@@ -163,8 +163,7 @@ class pcap_reader():
 
 if __name__ == '__main__':
    parser = argparse.ArgumentParser()
-   parser.add_argument("-f", metavar='file', help = "pcap file",
-                       type = str, default = "VMM3a_Freia.pcapng")
+   parser.add_argument("-f", metavar='file', help = "pcap file", type = str, default = "VMM3a_Freia.pcapng")
    parser.add_argument('-d', action='store_true', help = "add debug print")
 
    pr = pcap_reader(parser.parse_args())
