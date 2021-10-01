@@ -568,15 +568,20 @@ class pcapng_reader_PreAlloc():
                     PrevPThigh = int.from_bytes(packetData[indexESS+16:indexESS+20], byteorder='little')*1000000000
                     PrevPTlow  = int.from_bytes(packetData[indexESS+20:indexESS+24], byteorder='little')*self.NSperClockTick 
                     
-                    #  IMPORTANT if you do int round after sum is off, needs to be done before then sum hi and low
-                    PulseThighR = int(round(PulseThigh))
-                    PulseTlowR  = int(round(PulseTlow))
-                    PrevPThighR = int(round(PrevPThigh))
-                    PrevPTlowR  = int(round(PrevPTlow))
+                    PulseThigh2 = int(round(PulseThigh))
+                    PulseTlow2  = int(round(PulseTlow))
+                    PrevPThigh2 = int(round(PrevPThigh))
+                    PrevPTlow2  = int(round(PrevPTlow))
                     
-                    PulseT = PulseThighR + PulseTlowR
-                    PrevPT = PrevPThighR + PrevPTlowR
-                
+                    PulseT = PulseThigh2 + PulseTlow2
+                    PrevPT = PrevPThigh2 + PrevPTlow2
+                    
+                    # PulseT = int(round(PulseThigh + PulseTlow)) #time rounded at 1us precision is 6 decimals, 7 is 100ns, etc...
+                    # PrevPT = int(round(PrevPThigh + PrevPTlow))
+                    
+                    # PulseT = int(round(PulseTh))
+                    
+                    
                     readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
                     # or alternatively
                     # readoutsInPacket = (ESSlength - self.ESSheaderSize) / self.singleReadoutSize

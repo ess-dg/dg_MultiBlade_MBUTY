@@ -98,7 +98,7 @@ class calculateAbsUnits():
           
           if np.sum(invalidToFs) > 0:
               
-              print('\n \033[1;33m\t WARNING ---> some ToFs are invalid, but corrected with Prev. Pulse Time \033[1;37m')
+              print('\n \033[1;31mWARNING ---> some ToF are invalid, but Corrected to PrevPT. \033[1;37m')
               
           invalidToFsAgain = self.events.ToF < 0
           
@@ -106,7 +106,7 @@ class calculateAbsUnits():
           
           if np.sum(invalidToFsAgain) > 0:
               
-              print('\n \033[1;33m\t WARNING ---> some ToFs are invalid (with both PulseT and PrevPT), set as Nan! \033[1;37m')
+              print('\n \033[1;31mWARNING ---> some ToF are invalid, set as Nan! \033[1;37m')
 
           
           # self.events.ToF = np.mod(self.events.timeStamp - T0, self.parameters.plotting.ToFduration)

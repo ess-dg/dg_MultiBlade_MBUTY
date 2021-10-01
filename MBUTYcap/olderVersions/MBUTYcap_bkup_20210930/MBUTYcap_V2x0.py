@@ -36,6 +36,12 @@ from lib import libEventsSoftThresholds as thre
 
 ###############################################################################
 ###############################################################################
+
+# # 'AUTO' or 'SELF'
+# useMode = 'SELF'
+
+# class MBUTY():
+
 profiling = para.profiling()
 print('----------------------------------------------------------------------')
 print('Ciao '+os.environ['USER']+'! Welcome to MBUTY 2.0')
@@ -71,7 +77,7 @@ parameters.loadConfigParameters(config)
 #################################
 
 ### ON/OFF if you want to rsync the data     
-parameters.fileManagement.sync = False  
+parameters.fileManagement.sync = True  
 
 ### from ... to  ... rsync the data
 parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
@@ -89,7 +95,7 @@ parameters.fileManagement.fileName = ['freiatest.pcapng']
 ### valid otions: 'window','fileName', 'latest', 'secondLast', 'wholeFolder'
 ### window opens tos elcet file, filename speficified  earlier, last or sencond last file crearted in folder, 
 ### entire  folder  opend  and analized and cumulated  all togheter 
-# parameters.fileManagement.openMode = 'window'
+parameters.fileManagement.openMode = 'window'
 # parameters.fileManagement.openMode = 'fileName'
 
 ###############
@@ -508,3 +514,19 @@ print('----------------------------------------------------------------------')
 ###############################################################################
 ###############################################################################
 
+###############################################################################
+###############################################################################
+###############################################################################
+###############################################################################  
+  
+# if __name__ == '__main__':   
+     
+# #     if useMode == 'SELF':
+        
+#         MBUTY()
+     
+#     elif useMode == 'AUTO':
+        
+#     #  check status.status 
+#       MBUTY()
+#       time.sleep(2)

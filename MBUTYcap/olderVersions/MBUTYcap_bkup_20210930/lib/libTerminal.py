@@ -7,9 +7,9 @@ Created on Fri Aug 27 16:38:55 2021
 """
 
 import os 
-# from lib import libParameters as para
+from lib import libParameters as para
 import sys
-# import time
+import time
 from datetime import datetime
 import subprocess
 
@@ -66,7 +66,7 @@ class transferDataUtil():
             if verbose is True: 
               print('\n data sync completed')
         else:
-              print('\n \033[1;31mERROR ... connection refused! \n\033[1;37m')
+              print('\n \033[1;31mERROR ... \n\033[1;37m')
         
         # print(status)      
         if verbose is True:     
@@ -110,7 +110,7 @@ class pcapConverter():
         
         else:
         
-            print(' -> converting pcap to pcapng ...')
+            print(' -> converting pcap to pcapng ...',end='')
 
             status = os.system(pathToTshark+'tshark -F pcapng -r ' + pcapFile_PathAndFileName_IN + ' -w '+ pcapngFile_PathAndFileName_OUT )
         
@@ -136,7 +136,7 @@ class pcapConverter():
                  
                  self.flag = False
                  
-                 print('pcap file selected')
+                 print('pcap file selected',end='')
                  
                  self.fileName_OUT = pcapFileName + '_convertedToPcapng.pcapng'
                  
@@ -198,7 +198,7 @@ class dumpToPcapngUtil():
         self.typeCapture = typeCapture
         # comm = 'sudo tcpdump -1 eno1 -w filename udp port 9000'
         
-        print('\n ... recording pcapng file ...')
+        print('\n ... recording pcapng file ...',end='')
 
         ###############################
         if self.typeCapture == 'packets':
@@ -240,8 +240,6 @@ class dumpToPcapngUtil():
         else:
               print('\n \033[1;31mERROR ... \n\033[1;37m')
               
-        return status      
-              
  ###############################       
     def recordByNumOfPackets(self,numOfPackets):
           
@@ -255,109 +253,19 @@ class dumpToPcapngUtil():
         
         self.commandDetails = ' -a duration:'+str(duration_s)
          
-                 
-###############################################################################
-###############################################################################
+         
+############################################################################### 
 
-class acquisitionStatus():
-    def __init__(self, destPath):
-        
-        self.pathFile = destPath+'acquisition.status'
-
-    def checkExist(self):   
-
-        if os.path.isfile(self.pathFile) is True:
-            # if the file already exists open it 
-            flag = True
-            # fo   = open(self.pathFile, "w+")
-            
-        else:    
-            # open/create a new file and add the field names
-            flag = False
-            fo   = open(self.pathFile, "w")
-            fo.writelines('recording')
-            fo.close()
-            
-        return flag   
+# class dumpData():
     
-    def read(self):
-        
-        flag = self.checkExist()
-        
-        # print(flag)
-        
-        fo = open(self.pathFile, "r")
-        lines = fo.readlines()
-        # print(lines) 
-            
-        fo.close()
-        
-        return lines
+              
+          
     
-    def set_RecStatus(self):
-        
-        lines = self.read()
-   
-        fo = open(self.pathFile, "w")
-        fo.writelines('recording')
-        fo.close()  
-        
-    def set_FinStatus(self):
-        
-        lines = self.read()
-   
-        fo = open(self.pathFile, "w")
-        fo.writelines('finished')
-        fo.close() 
-        
-    def flipStatus(self):
-        
-        lines = self.read()
-        
-        # print(lines) 
-        
-        if lines[0] == 'recording':
-           flag = False
-           fo = open(self.pathFile, "w")
-           fo.writelines('finished')
-           fo.close()
-        elif lines[0] == 'finished' :
-           flag = True
-           fo = open(self.pathFile, "w")
-           fo.writelines('recording')
-           fo.close()   
-           
-        return flag   
-      
-    def checkStatus(self):
-        
-        if os.path.isfile(self.pathFile) is True:
-            
-            fo = open(self.pathFile, "r")
-            lines = fo.readlines()
-            # print(lines) 
-            fo.close()
-            
-            if lines[0] == 'recording':
-                acqOver = False
-            elif lines[0] == 'finished' :
-                acqOver = True
-                
-        else:
-            
-            acqOver = None
-            print('status file does not exist')
-            sys.exit()
-    
-            
-        return acqOver
-
         
 ###############################################################################
 ###############################################################################
 
 if __name__ == '__main__':
-
 
    # path  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    # file1 = path+'freia_1k.pcap'
@@ -374,30 +282,14 @@ if __name__ == '__main__':
    
    # b = pcapConverter(parameters).checkExtensionAndConvertPcap(file1)
    
-    # pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
+    pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
 
-    # rec = dumpToPcapngUtil(pathToTshark, interface='en0', destPath='/Users/francescopiscitelli/Desktop/reducedFile/', fileName='temp')
+    rec = dumpToPcapngUtil(pathToTshark, interface='en0', destPath='/Users/francescopiscitelli/Desktop/reducedFile/', fileName='temp')
 
-    # # rec.dump('duration',2)
+    # rec.dump('duration',2)
    
-    # # rec.dump('filesize',130)
+    # rec.dump('filesize',130)
    
-    # rec.dump('packets',15)
+    rec.dump('packets',15)
    
    # path, flag = findPathApp().check('wireshark')
-   
-    destPath  = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
-
-    st = acquisitionStatus(destPath)   
-
-    # st.checkExist()  
-    
-    # st.read()
-    
-    # flag = st.flipStatus()
-   
-    # print(flag)
-    
-    acqOver = st.checkStatus()
-    
-    print(acqOver)
