@@ -21,7 +21,7 @@ destPath   = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
 #  mode = 'poll' -> polling contineously and open new plot atomatically at every new closed file
 #  mode = 'single' -> polling and new plot atomatically as soon as last finle is finished, then exit
 
-mode = 'single'
+# mode = 'single'
 
 # NOTE:
 #  needs fix on auto polling mode, single works
@@ -38,34 +38,36 @@ status.set_RecStatus()
 
 startTime = time.time()
 
-acqOverPlot = True
+# acqOverPlot = True
 
 while True:
     
-    transferData.syncData(sourcePath, destPath, verbose=False)
-    acqOver = status.checkStatus()
+    print('transferring data ...',end='')
+    # transferData.syncData(sourcePath, destPath, verbose=False)
+    print(' -> completed.',end='')
+    acqIsOver = status.checkStatus()
     
-    if acqOver is True:
+    if acqIsOver:
 
-        
-        print('\033[1;36m ACQUISITION IS OVER \033[1;37m\n',end='')
-        # print('\033[1;36m ACQUISITION IS OVER --> launching MBUTY \033[1;37m\n',end='')
+        # print('\033[1;36mACQUISITION IS OVER \033[1;37m\n',end='')
+        print('\033[1;36m ACQUISITION IS OVER --> launching MBUTY \033[1;37m\n',end='')
  
-        if acqOverPlot is True:
-            exec(open("./MBUTYcap_V2x0.py").read())
-       
+        # if acqOverPlot is True:
+        exec(open("./MBUTYcap_V2x0.py").read())
+        # print('open MBUTY')
+        sys.exit()
         
-        if mode == 'single':
-            sys.exit()
-        elif mode == 'poll':
-            acqOverPlot = False
-            time.sleep(5)
+        # if mode == 'single':
+        #     sys.exit()
+        # elif mode == 'poll':
+        #     acqOverPlot = False
+        #     time.sleep(5)
         
     else:
         
         timeElaps =  time.time() - startTime 
         
-        print('\033[1;33m\nRECORDING ... elapsed time '+str('%.0f' % timeElaps)+' s \033[1;37m',end=' ')
+        print('\033[1;33m\nRECORDING ... \033[1;37m elapsed time '+str('%.0f' % timeElaps)+' s',end=' ')
         
         for tt in range(5):
             print('%',end=' ')

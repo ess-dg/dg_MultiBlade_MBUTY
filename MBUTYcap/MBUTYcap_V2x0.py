@@ -71,7 +71,7 @@ parameters.loadConfigParameters(config)
 #################################
 
 ### ON/OFF if you want to rsync the data     
-parameters.fileManagement.sync = False  
+parameters.fileManagement.sync = True  
 
 ### from ... to  ... rsync the data
 parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
@@ -89,8 +89,9 @@ parameters.fileManagement.fileName = ['freiatest.pcapng']
 ### valid otions: 'window','fileName', 'latest', 'secondLast', 'wholeFolder'
 ### window opens tos elcet file, filename speficified  earlier, last or sencond last file crearted in folder, 
 ### entire  folder  opend  and analized and cumulated  all togheter 
-# parameters.fileManagement.openMode = 'window'
+parameters.fileManagement.openMode = 'window'
 # parameters.fileManagement.openMode = 'fileName'
+# parameters.fileManagement.openMode = 'latest'
 
 ###############
 ### path to threshold  file
@@ -217,8 +218,8 @@ parameters.plotting.plotMultiplicity = False
 # parameters.configJsonFile.orientation = 'vertical'
 
 ### 'W.max-S.max' is max max,  'W.cog-S.cog' is CoG CoG, 'W.max-S.cog' is wires max and strips CoG 
-parameters.plotting.positionReconstruction = 'W.max-S.cog'
-# parameters.plotting.positionReconstruction = 'W.max-S.max'
+# parameters.plotting.positionReconstruction = 'W.max-S.cog'
+parameters.plotting.positionReconstruction = 'W.max-S.max'
 
 ### if True plot XY and XtoF plot in absolute unit (mm), if False plot in wire and strip ch no.
 parameters.plotting.plotABSunits = False
@@ -311,10 +312,10 @@ for fileName in fileDialogue.fileName:
         fileName = conv.fileName_OUT
         
     ### check which Ring, Fen and Hybrid is present in the selected File 
-    # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName).check()
+    # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,parameters.clockTicks.NSperClockTick).check()
     
     ### load data  
-    pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, sortByTimeStampsONOFF = False)
+    pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, timeResolutionType='fine', sortByTimeStampsONOFF = False)
     readouts.append(pcap.readouts)
     
     # md  = maps.mapDetector(pcap.readouts, config)
@@ -344,7 +345,8 @@ md  = maps.mapDetector(readouts, config)
 md.mappAllCassAndChannelsGlob()
 hits = md.hits
 
-hits.Cassette = np.ones(len((hits.Cassette)),dtype='int64')
+# for debug force all hits in a single cassetteno.1 even if from different hybrids
+# hits.Cassette = np.ones(len((hits.Cassette)),dtype='int64')
 
 ####################
 ### getting the hits for the MONitor
@@ -401,9 +403,9 @@ ab.calculateToF()
 # if parameters.wavelength.calculateLambda is True:
 #     ab.calculateWavelength()
 
-# eventsBTh = ab.events 
+eventsBTh = ab.events 
 
-# eventsArrayBTh = eventsBTh.concatenateEventsInArrayForDebug() 
+eventsArrayBTh = eventsBTh.concatenateEventsInArrayForDebug() 
 
 ###############################################################################
 ###############################################################################
@@ -475,13 +477,16 @@ plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.
 # if parameters.plotting.plotInstRate is True:
 #     plev.plotInstantaneousRate(parameters.cassettes.cassettes)
 
-sel = np.logical_or(hits.WiresStrips == 31,  hits.WiresStrips == 2)
+# sel = np.logical_or(hits.WiresStrips == 31,  hits.WiresStrips == 2)
+sel = np.logical_or(hits.WiresStrips == 95,  hits.WiresStrips == 2)
 
 diffe       = np.diff(hits.timeStamp[sel])
 
 print(np.sum(~sel))
 
 sortedDiffe = diffe[diffe.argsort()]
+
+# print('freq injected in 1 ch '+str(1/(sortedDiffe[-1]*1e-9))+' Hz')
 
 TD = np.arange(-2000,2000,1)
 

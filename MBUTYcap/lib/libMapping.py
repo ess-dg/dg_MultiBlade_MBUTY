@@ -388,7 +388,7 @@ class mapDetector():
         for k, cass in enumerate(self.config.DETparameters.cassInConfig): 
             selection = np.logical_and( self.hits.Cassette == cass , self.hits.WorS == 0 ) #  wires is WorS = 0
             
-            #  if just add +32 every cassette in config does not matter the  ID
+            #  if just add +32 every cassette in config does not matter the ID
             # index = k
             #  if the cassette ID drives the position in the  space, 1 is the bottom cassette orthe most left 
             index = cass-1

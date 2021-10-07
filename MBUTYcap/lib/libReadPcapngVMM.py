@@ -131,9 +131,14 @@ class readouts():
          
          # Tstart = np.min(self.timeStamp)
          # Tstop  = np.max(self.timeStamp)
-         
-         Tstart = self.timeStamp[0]
-         Tstop  = self.timeStamp[-1]
+         try:
+             Tstart = self.timeStamp[0]
+             Tstop  = self.timeStamp[-1]
+         except: 
+             Tstart = 0
+             Tstop  = 0
+             print('\t \033[1;33mWARNING: Not able to calculate duration! (File might be empty)\033[1;37m')
+             time.sleep(2)
          
          self.Durations = np.round(Tstop-Tstart, decimals = 3)
          
@@ -913,7 +918,9 @@ if __name__ == '__main__':
    # filePath = path+'pcap_for_fra_ch2test.pcapng'
    # filePath = path+'pcap_for_fra_ch2test_take2.pcapng'
    # filePath = path+'pcap_for_fra_coinc.pcapng'
-   filePath = path+'freiatest.pcapng'
+   # filePath = path+'freiatest.pcapng'
+   
+   filePath = path+'20211005_091349_morten.pcapng'
    
    # path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    # filePath = path+'VMM3a_Freia.pcapng'
@@ -923,6 +930,7 @@ if __name__ == '__main__':
    # # pr.ret()
    # # data = pr.data
    # 
+
    
    # pr = pcapng_reader_PreAlloc(filePath)
 
@@ -953,26 +961,20 @@ if __name__ == '__main__':
    
    NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
    
-   cc= checkWhich_RingFenHybrid_InFile(filePath,NSperClockTick).check()
+   cc = checkWhich_RingFenHybrid_InFile(filePath,NSperClockTick).check()
    
-   
-   
+
    
    # pcap = pcapng_reader_PreAlloc(filePath,NSperClockTick)
    # pcap.allocateMemory()
    # pcap.read()
    
-   # pcap = pcapng_reader(filePath, NSperClockTick, timeResolutionType = 'fine', sortByTimeStampsONOFF = False )
+   pcap = pcapng_reader(filePath, NSperClockTick, timeResolutionType = 'fine', sortByTimeStampsONOFF = False )
 
-   # print('RIMUOVI TIMESTAMP DA VMM3A e troppo lento')
-   
-   # 
-   # 
-   # 
    
    
-   # readouts = pcap.readouts 
-   # readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+   readouts = pcap.readouts 
+   readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
    
    # tdcs = VMM3A_convertCalibrate_TDCinSec(readouts.TDC, NSperClockTick).TDC_ns
    

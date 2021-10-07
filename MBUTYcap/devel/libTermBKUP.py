@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -47,7 +48,11 @@ class transferDataUtil():
         
         command = 'rsync -av --progress'
 
+        # command = 'cp'
+        
         comm = command + ' ' + sourcePath + ' ' + destPath
+        
+        # print(comm)
    
         if verbose is False:
             status = os.system(comm+ ' >/dev/null')
@@ -56,6 +61,8 @@ class transferDataUtil():
             status = os.system(comm)
         
         # NOTE: it will ask for password 
+        
+        # disp(cmdout)
         
         if status == 0: 
             if verbose is True: 
@@ -81,6 +88,10 @@ class pcapConverter():
         self.fileName_OUT = ''
      
     def convertPcap2Pcapng(self,pcapFile_PathAndFileName_IN,pcapngFile_PathAndFileName_OUT):
+        
+        # comm = 'tcpdump -r file_to_convert -w file_converted '
+        
+        # self.parameters.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
         
         pathToTshark = self.parameters.fileManagement.pathToTshark
         
@@ -163,7 +174,7 @@ class pcapConverter():
     
 class dumpToPcapngUtil():
 
-    def __init__(self, pathToTshark, interface='en0', destPath='./', fileName='temp'):
+    def __init__(self, pathToTshark, interface='en0', destPath='./', fileName='temp', numOfFiles=1):
 
         if os.path.isfile(pathToTshark+'tshark') is False:
             
@@ -177,73 +188,80 @@ class dumpToPcapngUtil():
 
         self.pathToTshark = pathToTshark
         self.interface    = interface
-        self.destPath     = destPath
-        self.fileName     = fileName
- 
-    def dump(self,typeOfCapture='packets',extraArgs=100,numOfFiles=1):
         
-        command1 = self.pathToTshark+'tshark'+' -i '+str(self.interface)
-
         nowTime = datetime.now()
         current_date = nowTime.strftime("%Y%m%d")
         current_time = nowTime.strftime("%H%M%S")
 
-        file1    = self.destPath+current_date+'_'+current_time+'_'+self.fileName
-        fileExt  = '.pcapng'
+        self.fileh    = destPath+current_date+'_'+current_time+'_'+fileName
+        self.filehExt = '.pcapng'
         
-        print('\nrecording '+str(numOfFiles)+' pcapng files ...')
+        self.acqNum = np.arange(0,numOfFiles,1)
         
-        status = []
+        format(self.acqNum[k],'05d')
+        
+    def dump(self,typeCapture='packets',extraArgs=100):
+    
+        self.typeCapture = typeCapture
+        # comm = 'sudo tcpdump -1 eno1 -w filename udp port 9000'
+        
+        print('\n ... recording pcapng file ...')
 
-        for currentAcq in np.arange(numOfFiles):
+        ###############################
+        if self.typeCapture == 'packets':
             
-            currentAcqStr = str(format(currentAcq,'05d'))
+            print(' by packets -> {} packets'.format(extraArgs))
             
-            print('\n... recording file no. '+currentAcqStr+' of '+str(format(numOfFiles-1,'05d')))
+            numOfPackets = extraArgs
             
-            ###############################
-            if typeOfCapture == 'packets':
-                
-                print('by packets -> {} packets'.format(extraArgs))
-                
-                numOfPackets = extraArgs
-                commandDetails = ' -c '+str(numOfPackets)
-  
-            elif typeOfCapture == 'filesize':
-                
-                print('by file size -> {} kbytes'.format(extraArgs))
-                
-                sizekbytes = extraArgs
-                commandDetails = ' -a filesize:'+str(sizekbytes)
-                
-                
-            elif typeOfCapture == 'duration':
-                
-                print('by duration -> {} s'.format(extraArgs))
-                
-                duration_s = extraArgs
-                commandDetails = ' -a duration:'+str(duration_s)
-                
-            ###############################   
+            self.recordByNumOfPackets(numOfPackets)
             
-            fileFull =  file1+'_'+currentAcqStr+fileExt
+        elif self.typeCapture == 'filesize':
             
-            temp = os.system(command1+commandDetails+' -w '+fileFull)
+            print(' by file size -> {} kbytes'.format(extraArgs))
             
-            status.append(temp)
+            sizekbytes = extraArgs
             
-            if temp != 0:
-                print(' \033[1;31mERROR ... \n\033[1;37m')
-                sys.exit()
-                
-        if np.sum(status) == 0: 
-               print('\nrecording completed!')
+            self.recordBySize(sizekbytes)
+            
+            
+        elif self.typeCapture == 'duration':
+            
+            print(' by duration -> {} s'.format(extraArgs))
+            
+            duration_s = extraArgs
+            
+            self.recordByDuration(duration_s)  
+            
+        ###############################   
+        
+        string1 = self.pathToTshark+'tshark'+' -i '+str(self.interface)
+        string2 = ' -w '+self.fileh
+        
+        self.command = string1+self.commandDetails+string2
+        
+        status = os.system(self.command)
+
+        if status == 0: 
+              print('\n recording completed!')
         else:
-               print(' \033[1;31mERROR ... \n\033[1;37m')
-                  
+              print('\n \033[1;31mERROR ... \n\033[1;37m')
+              
         return status      
               
- 
+ ###############################       
+    def recordByNumOfPackets(self,numOfPackets):
+          
+        self.commandDetails = ' -c '+str(numOfPackets)
+
+    def recordBySize(self,sizekbytes):  
+        
+        self.commandDetails = ' -a filesize:'+str(sizekbytes)
+    
+    def recordByDuration(self,duration_s):  
+        
+        self.commandDetails = ' -a duration:'+str(duration_s)
+         
                  
 ###############################################################################
 ###############################################################################
@@ -347,13 +365,37 @@ class acquisitionStatus():
 
 if __name__ == '__main__':
 
-   ########
-    # path, flag = findPathApp().check('wireshark')
-   
-   ########
-    # destPath  = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
 
-    # st = acquisitionStatus(destPath)   
+   # path  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
+   # file1 = path+'freia_1k.pcap'
+   
+   # file2 = path+'freia_1k_converted.pcapng'
+   
+   # currentPath = os.path.abspath(os.path.dirname(__file__))+'/'
+
+   # parameters = para.parameters(currentPath)
+   
+   # # a = tsharkUtil(parameters)
+   
+   # # a.convertPcan2Pcapng(file1, file2)
+   
+   # b = pcapConverter(parameters).checkExtensionAndConvertPcap(file1)
+   
+    # pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
+
+    # rec = dumpToPcapngUtil(pathToTshark, interface='en0', destPath='/Users/francescopiscitelli/Desktop/reducedFile/', fileName='temp')
+
+    # # rec.dump('duration',2)
+   
+    # # rec.dump('filesize',130)
+   
+    # rec.dump('packets',15)
+   
+   # path, flag = findPathApp().check('wireshark')
+   
+    destPath  = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
+
+    st = acquisitionStatus(destPath)   
 
     # st.checkExist()  
     
@@ -363,19 +405,6 @@ if __name__ == '__main__':
    
     # print(flag)
     
-    # acqOver = st.checkStatus()
+    acqOver = st.checkStatus()
     
-    # print(acqOver)
-   
-   
-   ########
-   pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
-
-   rec = dumpToPcapngUtil(pathToTshark, interface='en0', destPath='/Users/francescopiscitelli/Desktop/reducedFile/', fileName='temp')
-   # status=rec.dump('duration',2,3)
-   
-   # rec.dump('filesize',3,2)
-   
-   status=rec.dump('packets',9,numOfFiles=2)
-   
-   #
+    print(acqOver)
