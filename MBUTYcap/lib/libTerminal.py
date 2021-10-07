@@ -188,7 +188,7 @@ class dumpToPcapngUtil():
         current_date = nowTime.strftime("%Y%m%d")
         current_time = nowTime.strftime("%H%M%S")
 
-        file1    = self.destPath+current_date+'_'+current_time+'_'+self.fileName
+        file1    = self.destPath+current_date+'_'+current_time+'_'
         fileExt  = '.pcapng'
         
         print('\nrecording '+str(numOfFiles)+' pcapng files ...')
@@ -208,6 +208,8 @@ class dumpToPcapngUtil():
                 
                 numOfPackets = extraArgs
                 commandDetails = ' -c '+str(numOfPackets)
+                
+                file2    = 'pkts'+str(numOfPackets)
   
             elif typeOfCapture == 'filesize':
                 
@@ -215,6 +217,8 @@ class dumpToPcapngUtil():
                 
                 sizekbytes = extraArgs
                 commandDetails = ' -a filesize:'+str(sizekbytes)
+                
+                file2    = 'size_kb_'+str(sizekbytes)
                 
                 
             elif typeOfCapture == 'duration':
@@ -224,9 +228,11 @@ class dumpToPcapngUtil():
                 duration_s = extraArgs
                 commandDetails = ' -a duration:'+str(duration_s)
                 
+                file2    = 'duration_s_'+str(duration_s)
+                
             ###############################   
             
-            fileFull =  file1+'_'+currentAcqStr+fileExt
+            fileFull =  file1+file2+'_'+self.fileName+'_'+currentAcqStr+fileExt
             
             temp = os.system(command1+commandDetails+' -w '+fileFull)
             
