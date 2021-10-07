@@ -6,6 +6,8 @@ Created on Thu Sep  2 13:15:57 2021
 @author: francescopiscitelli
 """
 
+import numpy as np
+
 import os
 import glob
 import sys
@@ -24,6 +26,10 @@ class fileDialogue():
         self.filePath  = parameters.fileManagement.filePath
         
         self.fileName  = parameters.fileManagement.fileName
+        self.fileSerials  = parameters.fileManagement.fileSerials
+        
+        if isinstance(self.fileName, list) is False:
+            self.fileName = [self.fileName]
         
     def openFile(self):
         
@@ -42,21 +48,30 @@ class fileDialogue():
         elif self.openMode == 'wholeFolder' :
            self.openWholeFolder() 
            
+        elif self.openMode == 'sequence' :
+           self.openSequence() 
+           
         else:
-            print('\n \033[1;31mPlease select a correct open file mode: window, fileName, latest, secondLast or wholeFolder \033[1;37m\n')
+            print('\n \033[1;31mPlease select a correct open file mode: window, fileName, latest, secondLast, wholeFolder or sequence \033[1;37m\n')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
             sys.exit()
             
-        self.checkIfExists()    
-        
         if self.openMode == 'wholeFolder' :
             print('\033[1;36mAll Files selected in folder '+self.filePath+' \033[1;37m') 
+        elif self.openMode == 'sequence' :
+            print('\033[1;36mFile selected: ',self.fileName[0],' with serials: ',end='')
+            for ss in self.fileSerials:
+                print(ss,', ',end='')
+            print('\033[1;37m') 
         else:
             print('\033[1;36mFile selected: ',end='')
             for ff in self.fileName:
                 print(ff,', ',end='')
             print('\033[1;37m') 
+            
+            
+        self.checkIfExists() 
                      
     def checkIfExists(self):
         
@@ -104,12 +119,7 @@ class fileDialogue():
             
     def openFileName(self):
         
-        if isinstance(self.fileName, list) is False:
-            
-            self.fileName = [self.fileName]
-            
-        else:
-            pass
+        pass
         
     def openLatestFile(self):
         
@@ -156,28 +166,72 @@ class fileDialogue():
             fileName.append(temp)
             
         self.fileName = fileName  
-
-
+        
+    def openSequence(self):
+        
+        # print(self.fileSerials)
+        # print(type(self.fileSerials))
+        # self.fileName = []
+        
+        if isinstance(self.fileName, list) is False:
+            self.fileName = [self.fileName]
+        
+        if len(self.fileName) > 1:
+            print('\n \033[1;31mFileName must be a single file for sequence open mode \033[1;37m\n')
+            print(' ---> Exiting ... \n')
+            print('------------------------------------------------------------- \n')
+            sys.exit()
+   
+        # temp2 = os.path.split(self.fileName)
+        
+        temp = str(self.fileName[0]).rsplit('.'[-1])
+        extension='.'+temp[1]
+        
+        temp2 = temp[0].rsplit('_',1)
+        
+        fileName1 = temp2[0]+'_'
+        
+        self.fileName = []
+        
+        for ser in self.fileSerials:
+            
+            self.fileName.append(fileName1+str(format(ser,'05d'))+extension)
     
 ###############################################################################
 ###############################################################################
 
 if __name__ == '__main__' :
     
-    path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTY/develBinary/'
+    path = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
     
-    configFilePath  = './'
+    configFilePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
     configFileName  = "MB300_AMOR_config.json"
     config = maps.read_json_config(configFilePath+configFileName)
-    config.get_allParameters()
-
-    parameters = para.parameters(config)
-    # 
-    parameters.fileManagement.openMode = 'wholeFolder'
     
+    currentPath = os.path.abspath(os.path.dirname(__file__))+'/'
+    parameters  = para.parameters(currentPath)
+
+    parameters.loadConfigParameters(config)
+
+    parameters.fileManagement.filePath = path
+    
+    # parameters.fileManagement.fileName = ['20211007_114629_duration_s_4_temp_00000.pcapng']
+
+    parameters.fileManagement.fileName = '20211007_114629_duration_s_4_temp_00000.pcapng'
+  
+    parameters.fileManagement.openMode = 'sequence'
+    
+    parameters.fileManagement.openMode = 'fileName'
+    parameters.fileManagement.openMode = 'window'
+    parameters.fileManagement.openMode = 'latest'
+    
+    
+    parameters.fileManagement.fileSerials = np.arange(0,5,1)
+    
+    parameters.fileManagement.fileSerials = [0,5,6]
     
     fileDetails  = fileDialogue(parameters)
-    fileDetails.openFile()
+    aa = fileDetails.openFile()
     
     print(fileDetails.fileName)
     

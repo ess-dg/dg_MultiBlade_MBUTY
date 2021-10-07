@@ -58,6 +58,7 @@ class fileManagement():
             
             self.filePath = self.currentPath+'data/'
             self.fileName = []
+            self.fileSerials = []
                      
             self.configFilePath = self.currentPath+'config/'
             self.configFileName = 'temp.json'

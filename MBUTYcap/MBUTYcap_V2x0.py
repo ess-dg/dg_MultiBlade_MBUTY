@@ -33,6 +33,7 @@ from lib import libEventsSoftThresholds as thre
 #     - save reduced data
 #     - monitor analisys and plots
 #     - TDC and ADC calibration 
+#     - sum together all acq 00000,00001 etc in file managment util
 
 ###############################################################################
 ###############################################################################
@@ -86,12 +87,16 @@ parameters.fileManagement.filePath = parameters.fileManagement.destPath
 parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 parameters.fileManagement.fileName = ['freiatest.pcapng']
 
-### valid otions: 'window','fileName', 'latest', 'secondLast', 'wholeFolder'
-### window opens tos elcet file, filename speficified  earlier, last or sencond last file crearted in folder, 
+# parameters.fileManagement.fileSerials = np.arange(0,5,1)
+
+### valid otions: 'window','fileName', 'latest', 'secondLast', 'wholeFolder', 'sequence' 
+### window opens to selcet file, filename speficified  earlier, last or sencond last file crearted in folder, 
 ### entire  folder  opend  and analized and cumulated  all togheter 
+### sequence opens all filens in     parameters.fileManagement.fileSerials and with fileName
 parameters.fileManagement.openMode = 'window'
 # parameters.fileManagement.openMode = 'fileName'
 # parameters.fileManagement.openMode = 'latest'
+# parameters.fileManagement.openMode = 'sequence'
 
 ###############
 ### path to threshold  file
