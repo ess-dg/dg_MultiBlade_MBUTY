@@ -43,14 +43,14 @@ startTime = time.time()
 while True:
     
     print('transferring data ...',end='')
-    # transferData.syncData(sourcePath, destPath, verbose=False)
+    transferData.syncData(sourcePath, destPath, verbose=False)
     print(' -> completed.',end='')
     acqIsOver = status.checkStatus()
     
     if acqIsOver:
 
         # print('\033[1;36mACQUISITION IS OVER \033[1;37m\n',end='')
-        print('\033[1;36m ACQUISITION IS OVER --> launching MBUTY \033[1;37m\n',end='')
+        print('\033[1;36m\nACQUISITION IS OVER --> launching MBUTY \033[1;37m\n',end='')
  
         # if acqOverPlot is True:
         exec(open("./MBUTYcap_V2x0.py").read())

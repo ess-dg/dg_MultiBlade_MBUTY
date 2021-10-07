@@ -26,7 +26,6 @@ class dumpToFile():
          sta.set_RecStatus()
          
          status = rec.dump(typeOfCapture,quantity,numOfFiles)
-        
          if status == 0: 
               sta.set_FinStatus()
          else:

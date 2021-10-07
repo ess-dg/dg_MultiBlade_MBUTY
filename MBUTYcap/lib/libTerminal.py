@@ -12,7 +12,7 @@ import sys
 # import time
 from datetime import datetime
 import subprocess
-import numpy as np
+# import numpy as np
 
 ###############################################################################
 ############################################################################### 
@@ -195,7 +195,7 @@ class dumpToPcapngUtil():
         
         status = []
 
-        for currentAcq in np.arange(numOfFiles):
+        for currentAcq in range(numOfFiles):
             
             currentAcqStr = str(format(currentAcq,'05d'))
             
@@ -236,12 +236,13 @@ class dumpToPcapngUtil():
                 print(' \033[1;31mERROR ... \n\033[1;37m')
                 sys.exit()
                 
-        if np.sum(status) == 0: 
+        allStatus = sum(status)      
+        if allStatus == 0: 
                print('\nrecording completed!')
         else:
                print(' \033[1;31mERROR ... \n\033[1;37m')
                   
-        return status      
+        return allStatus    
               
  
                  
