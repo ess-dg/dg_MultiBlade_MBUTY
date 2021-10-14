@@ -294,11 +294,7 @@ class plottingEvents():
         normColors = logScaleMap(logScale).normColors
      
         if absUnits == False:
-            
-            if  len(self.events.ToF) == 0 :
-               print('\t \033[1;33mWARNING: ToF arrasy is empty ')
-               self.events.ToF = np.zeros((len(self.events.positionW)),dtype='int64')
-            
+ 
             h2D, _, hToF = hh.histog().histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
     
             hProjAll = hh.histog().hist1D(self.allAxis.axWires.axis, self.events.positionW)
@@ -352,12 +348,7 @@ class plottingEvents():
         
         elif absUnits == True:
             
-            if  len(self.events.ToF) == 0 :
-                print('\t \033[1;33mWARNING: ToF arrasy is empty ')
-                self.events.ToF = np.zeros(len(self.events.positionWmm),dtype='int64')
-            
-            
-            h2D, hProj, hToF = hh.histog().histXYZ(self.allAxis.axWires_mm.axis, self.events.positionWmm[self.selc], self.allAxis.axStrips_mm.axis, self.events.positionSmm[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)    
+            h2D, hProj, hToF = hh.histog().histXYZ(self.allAxis.axWires_mm.axis, self.events.positionWmm[self.selc], self.allAxis.axStrips_mm.axis, self.events.positionSmm[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
     
             hProjAll = hh.histog().hist1D(self.allAxis.axWires_mm.axis, self.events.positionWmm)
             

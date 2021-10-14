@@ -918,9 +918,9 @@ if __name__ == '__main__':
    # filePath = path+'pcap_for_fra_ch2test.pcapng'
    # filePath = path+'pcap_for_fra_ch2test_take2.pcapng'
    # filePath = path+'pcap_for_fra_coinc.pcapng'
-   filePath = path+'freiatest.pcapng'
+   # filePath = path+'freiatest.pcapng'
    
-   # filePath = path+'20211005_091349_morten.pcapng'
+   filePath = path+'20211005_091349_morten.pcapng'
    
    # path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    # filePath = path+'VMM3a_Freia.pcapng'
@@ -969,12 +969,12 @@ if __name__ == '__main__':
    # pcap.allocateMemory()
    # pcap.read()
    
-   # pcap = pcapng_reader(filePath, NSperClockTick, timeResolutionType = 'fine', sortByTimeStampsONOFF = False )
+   pcap = pcapng_reader(filePath, NSperClockTick, timeResolutionType = 'fine', sortByTimeStampsONOFF = False )
 
    
    
-   # readouts = pcap.readouts 
-   # readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+   readouts = pcap.readouts 
+   readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
    
    # tdcs = VMM3A_convertCalibrate_TDCinSec(readouts.TDC, NSperClockTick).TDC_ns
    

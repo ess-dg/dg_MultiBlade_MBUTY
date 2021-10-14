@@ -70,67 +70,38 @@ class fileManagement():
             self.openMode = 'latest'
             
             self.saveReducedFileONOFF = False
-            self.saveReducedPath = './'
+            self.saveReducedPath = ''
             self.reducedNameMainFolder  = 'entry1'
 
             self.reducedCompressionHDFT  = 'gzip'  
             self.reducedCompressionHDFL  = 9     # gzip compression level 0 - 9
             
-      def importConfigFileDetails(self,config=None):
-          
-          if config is None:
-              
-             self.configFilePath = './'
-             self.configFileName = './'
-              
-          else:
+      def importConfigFileDetails(self,config):
           
             self.configFilePath = config.configFilePath
             self.configFileName = config.configFileName
  
             
 class configJsonFile():
-      def __init__(self, config=None):
+      def __init__(self, config):
           
-          if config is None:
-              
-              self.detectorName = 'empty'
-              
-              self.numOfCassettes = 0
-              
-              self.orientation = 'empty'
-                        
-              #  by default the cassettes are the ones present in the json file 
-              self.cassInConfig = [0]
-              
-              self.numOfWires  = 0
-              self.numOfStrips = 0
-              
-              self.wirePitch  = 0
-              self.stripPitch = 0
-              
-              self.bladesInclination = 0
-              self.offset1stWires    = 0
-              
-          else:
-              
-              self.detectorName = config.DETparameters.name
-              
-              self.numOfCassettes = config.DETparameters.numOfCassettes
-              
-              self.orientation = config.DETparameters.orientation
-                        
-              #  by default the cassettes are the ones present in the json file 
-              self.cassInConfig = config.DETparameters.cassInConfig
-              
-              self.numOfWires  = config.DETparameters.numOfWires
-              self.numOfStrips = config.DETparameters.numOfStrips
-              
-              self.wirePitch  = config.DETparameters.wirePitch
-              self.stripPitch = config.DETparameters.stripPitch
-              
-              self.bladesInclination = config.DETparameters.bladesInclination
-              self.offset1stWires    = config.DETparameters.offset1stWires
+          self.detectorName = config.DETparameters.name
+          
+          self.numOfCassettes = config.DETparameters.numOfCassettes
+          
+          self.orientation = config.DETparameters.orientation
+                    
+          #  by default the cassettes are the ones present in the json file 
+          self.cassInConfig = config.DETparameters.cassInConfig
+          
+          self.numOfWires  = config.DETparameters.numOfWires
+          self.numOfStrips = config.DETparameters.numOfStrips
+          
+          self.wirePitch  = config.DETparameters.wirePitch
+          self.stripPitch = config.DETparameters.stripPitch
+          
+          self.bladesInclination = config.DETparameters.bladesInclination
+          self.offset1stWires    = config.DETparameters.offset1stWires
           
 class cassettes():  
       def __init__(self, configJsonFile):  
@@ -159,7 +130,7 @@ class MONitor():
           self.MONDistance  = 0   #mm distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
 
 class dataReduction():
-    def __init__(self):
+    def __init__(self, cassettes, configJsonFile):
         
 
           self.timeWindow = 3e-6  #s default is 3us for clustering
@@ -169,7 +140,7 @@ class dataReduction():
           # zerosuppression   = True   #ON/OFF (does not affect the MONITOR)
 
           # software thresholds
-          # NOTE: they are applied to the flipped or swapped odd/even order of ch!
+          # NOTE: they are applied to the flipped or swpadded odd/even order of ch!
           # th on ch number: 32 w and 32 s, one row per cassette 
           # 'OFF', ''fromFile'' = File With Threhsolds Loaded, 'userDefined' = User defines the Thresholds in an array softTh
 
@@ -242,7 +213,7 @@ class plotting():
           
 class wavelength():          
           
-      def __init__(self):
+      def __init__(self, plotting):
         
           self.distance  = 0 #mm from chopper to detector front wire
 
@@ -280,12 +251,8 @@ class parameters():
                 
         self.fileManagement = fileManagement(currentPath)
         
-    def init_empty(self):
+    def loadConfigParameters(self,config):
         
-        self.loadConfigParameters(config=None)
-        
-    def loadConfigParameters(self,config=None):
-
         self.config = config
  
         # self.fileManagement = fileManagement(self.fileManagement.currentPath)
@@ -297,14 +264,14 @@ class parameters():
         
         self.clockTicks = clockTicks()
         
-        self.dataReduction  = dataReduction()
+        self.dataReduction  = dataReduction(self.cassettes,self.configJsonFile)
         
         self.pulseHeigthSpect = pulseHeigthSpect()
         
         self.plotting = plotting(self.configJsonFile)
         self.plotting.calculateDerivedParam()
         
-        self.wavelength = wavelength()
+        self.wavelength = wavelength(self.plotting)
         
         self.MONitor = MONitor()
         
@@ -364,19 +331,14 @@ if __name__ == '__main__' :
     
     # prof.stop()
     
-    parameters2  = parameters('/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/')
+    parameters  = parameters('/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/')
     
     configFilePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/'+'config/'
     # configFileName  = "MB300_AMOR_config.json"
     configFileName  = "MB300_FREIA_config.json"
     
     config = maps.read_json_config(configFilePath+configFileName)
-    # parameters.loadConfigParameters(config)
-    
-    parameters2.loadConfigParameters()
-    
-    parr = parameters()
-    parr.init_empty()
+    parameters.loadConfigParameters(config)
     
     # parameters.dataReduction.softThArray.ThW[:,1] = 5000
     
