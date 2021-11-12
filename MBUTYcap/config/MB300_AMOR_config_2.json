@@ -22,10 +22,6 @@
 		{"ID" : 14, "Ring" : 5, "Fen" : 1, "Hybrid" : 1, "HybridSerial" : "E5533333222222221111111100000014"}
 	],
 	
-	"ChannelMapping" : [
-        	{"AdapterType" : "reverse", "WireASIC" : 1, "StripASIC" : 0}
-    ],
-
 	"wires"  : 32,
 	"strips" : 64,
 
@@ -36,7 +32,7 @@
 	"offset1stWires_mm" : 11,
 
 	"Monitor" : [
-		{"ID" : 99,  "Ring" : 11, "Fen" : 1, "Hybrid" : 0, "ASIC" : 0, "Channel" : 0, "HybridSerial" : "moni"}
+		{"ID" : 99,  "Ring" : 0, "Fen" : 1, "Hybrid" : 0, "ASIC" : 0, "Channel" : 3, "HybridSerial" : "E5re67"}
 	] 
 
 }

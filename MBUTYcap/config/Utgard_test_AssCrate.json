@@ -1,5 +1,5 @@
 {
-	"Detector": "MB300.AMOR",
+	"Detector": "test_assister",
 
 	"cassettes" : 14,
 	
@@ -36,7 +36,7 @@
 	"offset1stWires_mm" : 11,
 
 	"Monitor" : [
-		{"ID" : 99,  "Ring" : 11, "Fen" : 1, "Hybrid" : 0, "ASIC" : 0, "Channel" : 0, "HybridSerial" : "moni"}
+		{"ID" : 99,  "Ring" : 0, "Fen" : 1, "Hybrid" : 0, "ASIC" : 1, "Channel" : 62, "HybridSerial" : "E5re67"}
 	] 
 
 }

@@ -224,8 +224,6 @@ class multiplicityCount():
 class clusterHits():
      def __init__(self, hits, showStat): 
          
-         print('\033[1;36m\nClustering events ... \033[1;37m',end='')
-         
          # 0 is no stat, 1 is stat per cassette, 2 is stat for all at once 
          self.showStat = showStat
          
@@ -524,21 +522,10 @@ class checkCassIDs():
              
              flag = False 
              
-             if np.any(presentCassettes<=-1):
-              # there is unmapped data in hits, might be MON
-                 print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits only contains Cassettes IDs:', end=' ')
-                 presentCassettes = presentCassettes[presentCassettes>=0]
-                 for cc in presentCassettes:
-                     print(int(cc),end=' ')
-                 print('and UNMAPPED data (maybe MON)\033[1;37m',end=' ')
-                 
-             else:
-                 # there is NO unmapped data in hits
-                 print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits only contains Cassettes IDs:', end=' ')
-                 for cc in presentCassettes:
-                     print(int(cc),end=' ')
-                 print('\033[1;37m',end=' ')
-             
+             print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits only contains Cassettes IDs:', end=' ')
+             for cc in presentCassettes:
+                 print(int(cc),end=' ')
+             print('\033[1;37m',end=' ')
          else: 
              flag = True
              
@@ -561,33 +548,6 @@ class checkCassIDs():
              
          return flag 
      
-###############################################################################
-
-class hitsMON2events():
-    
-    def __init__(self,hitsMON):
-         print('\033[1;36mTransforming MON hits into events ... \033[1;37m',end='')
-         
-         self.hits = hitsMON
-
-         self.events = events()
-         
-         self.events.importDurations(self.hits)
-         
-         self.events.PHW  = self.hits.ADC
-         self.events.PHS  = self.hits.ADC
-         self.events.WorS = 99
-         self.events.PrevPT = self.hits.PrevPT
-         self.events.PulseT = self.hits.PulseT
-         self.events.timeStamp = self.hits.timeStamp
-         
-         
-    # def hitsToEvents(self):
-        
-        
-        
-         
-
 ###############################################################################
 ###############################################################################
 

@@ -632,34 +632,7 @@ class plottingEvents():
                    
               
                legend = self.plotWA.axHandle[0][k].legend(loc='upper right', shadow=False, fontsize='large')
-  
-
-  
-###############################################################################
-  
-class plottingMON():
-    
-    def __init__(self, eventsMON, allAxis):
-        
-        self.eventsMON = eventsMON
-        self.allAxis   = allAxis
-        
-    def plotToF_MON(self):
-        
-        histTM  = hh.histog().hist1D(self.allAxis.axToF.axis,self.eventsMON.ToF/1e9) 
-
-        figMONTOF, ax1 = plt.subplots(num=999,figsize=(6,12), nrows=1, ncols=1) 
-        figMONTOF.suptitle('MON ToF')
-        
-        ax1.step(self.allAxis.axToF.axis*1e3,histTM,'k',where='mid',label='MON')
-        ax1.set_xlabel('ToF (ms)')
-        ax1.set_ylabel('counts')
-    
-    def plotPHS_MON(self):
-         
-         print('not implemented yet!')
-            
-            
+          
 ###############################################################################
 ###############################################################################
 

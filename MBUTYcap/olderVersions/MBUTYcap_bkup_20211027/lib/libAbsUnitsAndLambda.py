@@ -59,12 +59,7 @@ class Tof2LambdaConverter():
 ###############################################################################
 
 class calculateAbsUnits():
-     def __init__(self, events, parameters, text=''): 
-         
-         if text == '':
-             print('\033[1;36m\nCalculating absolute units ... \033[1;37m',end='')
-         else: 
-             print('\033[1;36m\nCalculating absolute units '+text+'  ... \033[1;37m',end='')
+     def __init__(self, events, parameters): 
          
          self.events = events
          self.events.createAbsUnitsArrays()
@@ -97,19 +92,22 @@ class calculateAbsUnits():
           self.events.ToF = self.events.timeStamp - self.events.PulseT
           
           invalidToFs = self.events.ToF < 0
-                    
+          
+          self.events.ToF[invalidToFs] = self.events.timeStamp[invalidToFs] - self.events.PrevPT[invalidToFs]
+          
+          
           if np.sum(invalidToFs) > 0:
               
               print('\n \033[1;33m\t WARNING ---> some ToFs are invalid, but corrected with Prev. Pulse Time \033[1;37m')
               
-              self.events.ToF[invalidToFs] = self.events.timeStamp[invalidToFs] - self.events.PrevPT[invalidToFs]
+          invalidToFsAgain = self.events.ToF < 0
           
-              invalidToFsAgain = self.events.ToF < 0
+          self.events.ToF[invalidToFsAgain] = np.ma.masked # same as np.nan for int64 instead of floats
           
-              if np.sum(invalidToFsAgain) > 0:
+          if np.sum(invalidToFsAgain) > 0:
               
-                  print('\n \033[1;33m\t WARNING ---> some ToFs are invalid (with both PulseT and PrevPT), set as Nan! \033[1;37m')
-                  self.events.ToF[invalidToFsAgain] = np.ma.masked # same as np.nan for int64 instead of floats
+              print('\n \033[1;33m\t WARNING ---> some ToFs are invalid (with both PulseT and PrevPT), set as Nan! \033[1;37m')
+
           
           # self.events.ToF = np.mod(self.events.timeStamp - T0, self.parameters.plotting.ToFduration)
           

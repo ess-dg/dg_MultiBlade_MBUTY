@@ -45,13 +45,8 @@ if __name__ == '__main__':
     # parser.add_argument("-e", "--destination", help = "path where to save recorded pcapng files", type = str, default = "/Users/francescopiscitelli/Desktop/reducedFile/")
     
     
-    # #  ARGS for ESSDAQ
-    # parser.add_argument("-i", "--interface", help = "interface from which capture packets", type = str, default = "p4p1")
-    # parser.add_argument("-t", "--tshark", help = "path where tshark is located", type = str, default = "/usr/sbin/")
-    # parser.add_argument("-e", "--destination", help = "path where to save recorded pcapng files", type = str, default = "/home/essdaq/pcaps/")
-
-    #  ARGS for ESSDAQ EFU
-    parser.add_argument("-i", "--interface", help = "interface from which capture packets", type = str, default = "ens2f0")
+    #  ARGS for ESSDAQ
+    parser.add_argument("-i", "--interface", help = "interface from which capture packets", type = str, default = "p4p1")
     parser.add_argument("-t", "--tshark", help = "path where tshark is located", type = str, default = "/usr/sbin/")
     parser.add_argument("-e", "--destination", help = "path where to save recorded pcapng files", type = str, default = "/home/essdaq/pcaps/")
 

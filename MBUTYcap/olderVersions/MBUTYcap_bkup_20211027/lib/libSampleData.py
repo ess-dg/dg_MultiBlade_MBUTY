@@ -49,7 +49,29 @@ class sampleReadouts_1():
             self.readouts.Channel[0:10] = np.arange(17,27,1) 
             
             self.readouts.ADC[0:10] = 1000
-                        
+            
+            # self.readouts.timeStamp[0]= 1.1475e-6
+            # self.readouts.timeStamp[1]= 2.2725e-6
+            # self.readouts.timeStamp[2]= 3.3975e-6
+            # self.readouts.timeStamp[3]= 4.5225e-6
+            # self.readouts.timeStamp[4]= 5.6475e-6
+            # self.readouts.timeStamp[5]= 6.7725e-6
+            # self.readouts.timeStamp[6]= 7.8975e-6
+            # self.readouts.timeStamp[7]= 9.0225e-6
+            # self.readouts.timeStamp[8]= 10.1475e-6
+            # self.readouts.timeStamp[9]= 11.27225e-6
+            
+            # self.readouts.timeStamp[0]= 2.0e-6
+            # self.readouts.timeStamp[1]= 3.0e-6
+            # self.readouts.timeStamp[2]= 5.0e-6
+            # self.readouts.timeStamp[3]= 6.0e-6
+            # self.readouts.timeStamp[4]= 8.0e-6
+            # self.readouts.timeStamp[5]= 9.0e-6
+            # self.readouts.timeStamp[6]= 11.0e-6
+            # self.readouts.timeStamp[7]= 12.0e-6
+            # self.readouts.timeStamp[8]= 14.0e-6
+            # self.readouts.timeStamp[9]= 15.0e-6
+            
             self.readouts.timeStamp[0]= 20000
             self.readouts.timeStamp[1]= 25000
             self.readouts.timeStamp[2]= 35000
@@ -77,12 +99,10 @@ class sampleReadouts_2():
             self.readouts.Channel = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.ADC     = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.timeStamp  = rando*np.ones((Nreadouts), dtype = 'int64')
-            self.readouts.timeCoarse = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.BC      = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.OTh     = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.TDC     = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.GEO     = rando*np.ones((Nreadouts), dtype = 'int64')
-            self.readouts.G0      = np.zeros((Nreadouts), dtype = 'int64')
             self.readouts.PulseT  = np.zeros((Nreadouts), dtype = 'int64')
             self.readouts.PrevPT  = np.zeros((Nreadouts), dtype = 'int64')
         
