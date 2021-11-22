@@ -56,6 +56,7 @@ configFilePath  = currentPath+'config/'
 # configFileName  = "MB300_AMOR_config1to5.json"
 # configFileName  = "MB300_AMOR_config11to14.json"
 configFileName  = "MB300_AMOR_config.json"
+# configFileName  = "MB300_AMOR_config_rev.json"
 # configFileName  = "MB300_FREIA_config.json"
 # configFileName  = "MB300_FREIA_config_inverted.json"
 # configFileName  = "Utgard_test.json"
@@ -92,15 +93,17 @@ parameters.fileManagement.filePath = parameters.fileManagement.destPath
 parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 parameters.fileManagement.fileName = ['freiatest.pcapng']
 
-# parameters.fileManagement.fileSerials = np.arange(0,5,1)
+parameters.fileManagement.fileName = ['20211116_164147_duration_s_10_day5_00000.pcapng']
+
+# parameters.fileManagement.fileSerials = np.arange(18,28,1)
 
 ### valid otions: 'window','fileName', 'latest', 'secondLast', 'wholeFolder', 'sequence' 
 ### window opens to selcet file, filename speficified  earlier, last or sencond last file crearted in folder, 
 ### entire  folder  opend  and analized and cumulated  all togheter 
 ### sequence opens all filens in     parameters.fileManagement.fileSerials and with fileName
 parameters.fileManagement.openMode = 'window'
-# parameters.fileManagement.openMode = 'fileName'
-parameters.fileManagement.openMode = 'latest'
+parameters.fileManagement.openMode = 'fileName'
+# parameters.fileManagement.openMode = 'latest'
 # parameters.fileManagement.openMode = 'sequence'
 
 ###############
@@ -203,7 +206,7 @@ parameters.plotting.showStat = 'globalStat'
 
 ###############     
 ### raw plots
-parameters.plotting.plotRawReadouts         = False
+parameters.plotting.plotRawReadouts         = True
 parameters.plotting.plotReadoutsTimeStamps  = False
 parameters.plotting.plotRawHits             = False
 parameters.plotting.plotHitsTimeStamps      = False
@@ -212,13 +215,13 @@ parameters.plotting.plotHitsTimeStampsVSChannels = False
 ###############
 ### Instantaneous Rate
 parameters.plotting.plotInstRate    = False
-parameters.plotting.instRateBin     = 1e-6  # s
+parameters.plotting.instRateBin     = 100e-6  # s
  
 ###############
 ### ToF plot integrated over individual cassette, one per cassette
 parameters.plotting.plotToFDistr    = True
 
-parameters.plotting.ToFrange        = 0.15    # s
+parameters.plotting.ToFrange        = 0.1    # s
 parameters.plotting.ToFbinning      = 100e-6 # s
 
 # parameters.plotting.ToFrange        = 0.001   # s
@@ -257,7 +260,7 @@ parameters.pulseHeigthSpect.plotPHS = True
 parameters.pulseHeigthSpect.plotPHSlog = False
 
 parameters.pulseHeigthSpect.energyBins = 128
-parameters.pulseHeigthSpect.maxEnerg   = 4100
+parameters.pulseHeigthSpect.maxEnerg   = 1200
 
 ### plot the PHS correaltion wires vs strips
 parameters.pulseHeigthSpect.plotPHScorrelation = False
@@ -266,6 +269,9 @@ parameters.pulseHeigthSpect.plotPHScorrelation = False
 ###############################################################################
 ########    end of with all the settings you can choose   #####################
 ########        DO NOT EDIT BELOW THIS LINE!!!!           #####################
+###############################################################################
+###############################################################################
+###############################################################################
 ###############################################################################
 ###############################################################################
 ###############################################################################
@@ -509,10 +515,10 @@ if parameters.plotting.plotToFDistr is True:
 #     plev.plotMultiplicity(parameters.cassettes.cassettes)
 
 # ### PHS
-# if parameters.pulseHeigthSpect.plotPHS is True:
-#     plev.plotPHS(parameters.cassettes.cassettes, parameters, logScale = parameters.pulseHeigthSpect.plotPHSlog)
-# if parameters.pulseHeigthSpect.plotPHScorrelation is True:
-#     plev.plotPHScorrelation(parameters.cassettes.cassettes, parameters.pulseHeigthSpect.plotPHSlog)
+if parameters.pulseHeigthSpect.plotPHS is True:
+    plev.plotPHS(parameters.cassettes.cassettes, parameters, logScale = parameters.pulseHeigthSpect.plotPHSlog)
+if parameters.pulseHeigthSpect.plotPHScorrelation is True:
+    plev.plotPHScorrelation(parameters.cassettes.cassettes, parameters.pulseHeigthSpect.plotPHSlog)
 
 # ### instantaneous Rate per cassette
 # if parameters.plotting.plotInstRate is True:
@@ -522,8 +528,10 @@ if parameters.plotting.plotToFDistr is True:
 if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is True:
     
     plMON = plo.plottingMON(eventsMON,allAxis)
-    plMON.plotToF_MON()
-#######################################
+    plMON.plot_ToF_PHS_MON()
+
+###############################################################################
+###############################################################################
 
 # # sel = np.logical_or(hits.WiresStrips == 31,  hits.WiresStrips == 2)
 # sel = np.logical_or(hits.WiresStrips == 95,  hits.WiresStrips == 2)
@@ -548,10 +556,7 @@ if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is T
 # ax.set_xlim((-200,200))
 # # figl.suptitle('2FEN_2Hy')
       
-######################
-### monitor
 
-#  to be implemented
 
 ###############################################################################
 ###############################################################################

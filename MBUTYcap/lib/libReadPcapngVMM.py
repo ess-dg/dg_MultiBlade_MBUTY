@@ -192,6 +192,7 @@ class checkInstrumentID():
     def __init__(self, ID):
         self.FREIAID = 72
         self.EstiaID = 76
+        self.AMORID  = 78
         
         self.printa = True
         
@@ -199,6 +200,8 @@ class checkInstrumentID():
              print('found Freia data stream')
         elif ID == self.EstiaID:
              print('found Estia data stream')
+        elif ID == self.AMORID:
+             print('found AMOR data stream')
         else:
              print('found some other data stream')
              
@@ -397,7 +400,10 @@ class pcapng_reader():
             self.readouts = self.pcapng.readouts
             
         except:
-            print('\n... PRE-ALLOC method failed, trying APPEND method to load data ...')
+            # print('\n... PRE-ALLOC method failed, trying APPEND method to load data ...')
+            print('\n... PRE-ALLOC method failed, exiting ...')
+            
+            sys.exit()
             
             #  HERE IS FUTURE DEVEL IF NEEDED 
             # self.pcapng = pcapng_reader_slowAppend(filePathAndFileName)

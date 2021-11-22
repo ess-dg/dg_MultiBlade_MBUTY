@@ -11,7 +11,6 @@ import time
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
-
 from lib import libReadPcapngVMM as pcapr
 from lib import libSampleData as sdat
 from lib import libMapping as maps
@@ -90,7 +89,7 @@ class plottingReadouts():
             self.ploth.axHandle[1][k].bar(self.xbins,self.histo1,0.8,color='b')
             self.ploth.axHandle[0][k].set_xlabel('ASIC 0 ch no.')
             self.ploth.axHandle[1][k].set_xlabel('ASIC 1 ch no.')
-            self.ploth.axHandle[0][k].set_title('hybrid '+str(cc)) 
+            self.ploth.axHandle[0][k].set_title('hyb.'+str(cc)) 
             
     def extractTimeStamp1hybrid(self,cassette1ID):
         
@@ -129,7 +128,7 @@ class plottingReadouts():
             self.plotht.axHandle[1][k].set_xlabel('ASIC 1 trigger no.')
             self.plotht.axHandle[0][k].set_ylabel('time (ns)')
             self.plotht.axHandle[1][k].set_ylabel('time (ns)')
-            self.plotht.axHandle[0][k].set_title('hybrid '+str(cc)) 
+            self.plotht.axHandle[0][k].set_title('hyb.'+str(cc)) 
             self.plotht.axHandle[0][k].grid(axis='x', alpha=0.75)
             self.plotht.axHandle[1][k].grid(axis='x', alpha=0.75)
             self.plotht.axHandle[0][k].grid(axis='y', alpha=0.75)
@@ -296,7 +295,7 @@ class plottingEvents():
         if absUnits == False:
             
             if  len(self.events.ToF) == 0 :
-               print('\t \033[1;33mWARNING: ToF arrasy is empty ')
+               print('\t \033[1;33mWARNING: ToF array is empty ')
                self.events.ToF = np.zeros((len(self.events.positionW)),dtype='int64')
             
             h2D, _, hToF = hh.histog().histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
@@ -644,21 +643,30 @@ class plottingMON():
         self.eventsMON = eventsMON
         self.allAxis   = allAxis
         
-    def plotToF_MON(self):
+    def plot_ToF_PHS_MON(self):
         
         histTM  = hh.histog().hist1D(self.allAxis.axToF.axis,self.eventsMON.ToF/1e9) 
+        
+        histPM  = hh.histog().hist1D(self.allAxis.axEnergy.axis,self.eventsMON.PHW) 
 
-        figMONTOF, ax1 = plt.subplots(num=999,figsize=(6,12), nrows=1, ncols=1) 
-        figMONTOF.suptitle('MON ToF')
+        figMONTOF, (ax1, ax2) = plt.subplots(num=999,figsize=(9,6), nrows=1, ncols=2) 
+        figMONTOF.suptitle('MONITOR')
         
         ax1.step(self.allAxis.axToF.axis*1e3,histTM,'k',where='mid',label='MON')
         ax1.set_xlabel('ToF (ms)')
         ax1.set_ylabel('counts')
+        ax1.set_title('ToF')
+        
+        ax2.step(self.allAxis.axEnergy.axis,histPM,'k',where='mid',label='MON')
+        ax2.set_xlabel('Pulse Heigth (a.u.)')
+        ax2.set_ylabel('counts')
+        ax2.set_title('PHS')
     
-    def plotPHS_MON(self):
+    
          
-         print('not implemented yet!')
+    def plotLambda_MON(self):
             
+         print('not implemented yet!')
             
 ###############################################################################
 ###############################################################################
