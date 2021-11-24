@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V2.2 2021/11/12      francescopiscitelli     ######################
+########    V2.3 2021/11/24      francescopiscitelli     ######################
 ###############################################################################
 ###############################################################################
 
@@ -32,14 +32,14 @@ from lib import libReducedFileH5 as saveH5
 
 # STILL TO IMPLEMENT:
 #     - save reduced data - almost done 
-#     - monitor analisys and plots
+#     - monitor lambda
 #     - TDC and ADC calibration 
 
 ###############################################################################
 ###############################################################################
 profiling = para.profiling()
 print('----------------------------------------------------------------------')
-print('Ciao '+os.environ['USER']+'! Welcome to MBUTY 2.2')
+print('Ciao '+os.environ['USER']+'! Welcome to MBUTY 2.3')
 print('----------------------------------------------------------------------')
 plt.close("all")
 ### check version ###
@@ -92,8 +92,7 @@ parameters.fileManagement.filePath = parameters.fileManagement.destPath
 # parameters.fileManagement.filePath = parameters.fileManagement.destPath
 parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 parameters.fileManagement.fileName = ['freiatest.pcapng']
-
-parameters.fileManagement.fileName = ['20211116_164147_duration_s_10_day5_00000.pcapng']
+# parameters.fileManagement.fileName = ['20211117_191116_duration_s_1800_night2_00006.pcapng']
 
 # parameters.fileManagement.fileSerials = np.arange(18,28,1)
 
@@ -166,7 +165,6 @@ parameters.wavelength.plotLambdaDistr = False
 parameters.wavelength.lambdaBins  = 128
 parameters.wavelength.lambdaRange = [1, 16]   #A
 
-
 parameters.wavelength.chopperPeriod = 0.06 #s (NOTE: only matters if multipleFramesPerRest > 1)
 
 ### if chopper has two openings or more per reset of ToF
@@ -212,6 +210,9 @@ parameters.plotting.plotRawHits             = False
 parameters.plotting.plotHitsTimeStamps      = False
 parameters.plotting.plotHitsTimeStampsVSChannels = False
 
+# with false disables clustering and mapping for speed
+bareReadoutsCalc = True
+
 ###############
 ### Instantaneous Rate
 parameters.plotting.plotInstRate    = False
@@ -223,9 +224,6 @@ parameters.plotting.plotToFDistr    = True
 
 parameters.plotting.ToFrange        = 0.1    # s
 parameters.plotting.ToFbinning      = 100e-6 # s
-
-# parameters.plotting.ToFrange        = 0.001   # s
-# parameters.plotting.ToFbinning      = 10e-6   # s
      
 parameters.plotting.plotMultiplicity = False 
 
@@ -241,7 +239,7 @@ parameters.plotting.plotABSunits = False
 ### plot XY and XToF in log scale 
 parameters.plotting.plotIMGlog = False
 
-### ON/OFF, if  Tof  and Lambdaplot needs to include only events with strip present (2D) is True otherwise all events  also without strip set to False
+### ON/OFF, if  Tof  and Lambdaplot needs to include only events with strip present (2D) is True otherwise all events also without strip set to False
 parameters.plotting.coincidenceWS_ONOFF = True
 
 ### histogram outBounds param set as True as default (Events out of bounds stored in first and last bin)
@@ -250,7 +248,7 @@ parameters.plotting.hitogOutBounds = True
 ### for absolute  units calculation in X, already loaded in config json file
 # parameters.configJsonFile.offset1stWires = 10
 
-###############     
+##############################      
 ### PHS
 
 ### ON/OFF PHS per channel and global
@@ -315,12 +313,15 @@ fileDialogue.openFile()
 ###############################################################################
 ###############################################################################
 
-### init readouts cumulated over file list
+### initialize readouts cumulated over file list
 readouts = pcapr.readouts()
 # hits   = maps.hits()
 # events = clu.events()
 
-for fileName in fileDialogue.fileName:
+
+for cont, fileName in enumerate(fileDialogue.fileName):
+
+    print('-> reading file {} of {}'.format(cont+1,len(fileDialogue.fileName)))
     
     ### check if a file is pcapng otherwise pcap is converted into pcapng
     conv = ta.pcapConverter(parameters)
@@ -353,7 +354,7 @@ for fileName in fileDialogue.fileName:
 
 ####################
 ### for debug, readouts in single array
-readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+# readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
 ####################
 
 # md  = maps.mapDetector(readouts, config)
@@ -361,9 +362,24 @@ readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
 # hits = md.hits
 # hitsArray  = hits.concatenateHitsInArrayForDebug()
 
-test = True
 
-if test is True:
+####################
+### getting the hits for the MONitor
+if parameters.MONitor.MONOnOff is True:
+    MON = maps.mapMonitor(readouts, config)
+    hitsMON = MON.hits
+    
+    MONe = clu.hitsMON2events(hitsMON)
+    eventsMON = MONe.events
+    
+    abMON = absu.calculateAbsUnits(eventsMON, parameters, 'MON')
+    abMON.calculateToF()
+    
+    # CALCULATION OF LAMBDA ON MON NOT YET IMPLEMENTED
+
+
+if bareReadoutsCalc is False:
+    
     ###############################################################################
     ### map data
     md  = maps.mapDetector(readouts, config)
@@ -373,19 +389,6 @@ if test is True:
     # for debug force all hits in a single cassetteno.1 even if from different hybrids
     # hits.Cassette = np.ones(len((hits.Cassette)),dtype='int64')
     
-    ####################
-    ### getting the hits for the MONitor
-    if parameters.MONitor.MONOnOff is True:
-        MON = maps.mapMonitor(readouts, config)
-        hitsMON = MON.hits
-        
-        MONe = clu.hitsMON2events(hitsMON)
-        eventsMON = MONe.events
-        
-        abMON = absu.calculateAbsUnits(eventsMON, parameters, 'MON')
-        abMON.calculateToF()
-        
-        # CALCULATION OF LAMBDA ON MON NOT YET IMPLEMENTED
      
     ####################    
     ### for debug, generate sample hits 
@@ -401,7 +404,7 @@ if test is True:
     
     ####################    
     ### for debug, hits in single array 
-    hitsArray = hits.concatenateHitsInArrayForDebug()
+    # hitsArray = hits.concatenateHitsInArrayForDebug()
     ####################
     
     ###############################################################################
@@ -436,9 +439,15 @@ if test is True:
     if parameters.wavelength.calculateLambda is True:
         ab.calculateWavelength()
     
-    eventsBTh = ab.events 
+    # eventsBTh = ab.events 
     
-    eventsArrayBTh = eventsBTh.concatenateEventsInArrayForDebug() 
+    events = ab.events 
+    
+    ####################    
+    ### for debug, events in single array 
+    # eventsArrayBTh = eventsBTh.concatenateEventsInArrayForDebug() 
+    # eventsArrayBTh = events.concatenateEventsInArrayForDebug() 
+    ####################    
     
     ###############################################################################
     ###############################################################################
@@ -462,7 +471,8 @@ if test is True:
         fileNameSave  = fileDialogue.fileName[0]+'_reduced'
         
         sav = saveH5.saveReducedDataToHDF(parameters,parameters.fileManagement.saveReducedPath,fileNameSave)
-        sav.save(eventsBTh)
+        # sav.save(eventsBTh)
+        sav.save(events)
 
 ###############################################################################
 ###############################################################################
@@ -494,37 +504,38 @@ if (parameters.plotting.plotRawHits or parameters.plotting.plotHitsTimeStamps or
 ######################
 ### events
 
-
+if bareReadoutsCalc is False:
     ### XY and XToF
-plev = plo.plottingEvents(events,allAxis,parameters.plotting.coincidenceWS_ONOFF)
-plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits, orientation = parameters.configJsonFile.orientation)
+    plev = plo.plottingEvents(events,allAxis,parameters.plotting.coincidenceWS_ONOFF)
+    plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits, orientation = parameters.configJsonFile.orientation)
     
     # ### ToF per cassette 
-if parameters.plotting.plotToFDistr is True:
+    if parameters.plotting.plotToFDistr is True:
         plev.plotToF(parameters.cassettes.cassettes)
 
-# ### lambda
-# if parameters.wavelength.plotXLambda is True:
-#     plev.plotXLambda(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits)
-# ### lambda per cassette
-# if parameters.wavelength.plotLambdaDistr is True:
-#     plev.plotLambda(parameters.cassettes.cassettes)
+    ### lambda
+    if parameters.wavelength.plotXLambda is True:
+        plev.plotXLambda(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits)
+    ### lambda per cassette
+    if parameters.wavelength.plotLambdaDistr is True:
+        plev.plotLambda(parameters.cassettes.cassettes)
+        
+    ### multiplicity 
+    if parameters.plotting.plotMultiplicity is True:
+        plev.plotMultiplicity(parameters.cassettes.cassettes)
+
+    # ### PHS
+    if parameters.pulseHeigthSpect.plotPHS is True:
+        plev.plotPHS(parameters.cassettes.cassettes, parameters, logScale = parameters.pulseHeigthSpect.plotPHSlog)
+    if parameters.pulseHeigthSpect.plotPHScorrelation is True:
+        plev.plotPHScorrelation(parameters.cassettes.cassettes, parameters.pulseHeigthSpect.plotPHSlog)
     
-# ### multiplicity 
-# if parameters.plotting.plotMultiplicity is True:
-#     plev.plotMultiplicity(parameters.cassettes.cassettes)
+    ### instantaneous Rate per cassette
+    if parameters.plotting.plotInstRate is True:
+        plev.plotInstantaneousRate(parameters.cassettes.cassettes)
 
-# ### PHS
-if parameters.pulseHeigthSpect.plotPHS is True:
-    plev.plotPHS(parameters.cassettes.cassettes, parameters, logScale = parameters.pulseHeigthSpect.plotPHSlog)
-if parameters.pulseHeigthSpect.plotPHScorrelation is True:
-    plev.plotPHScorrelation(parameters.cassettes.cassettes, parameters.pulseHeigthSpect.plotPHSlog)
-
-# ### instantaneous Rate per cassette
-# if parameters.plotting.plotInstRate is True:
-#     plev.plotInstantaneousRate(parameters.cassettes.cassettes)
-
-
+############
+# MON plots
 if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is True:
     
     plMON = plo.plottingMON(eventsMON,allAxis)
@@ -532,6 +543,7 @@ if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is T
 
 ###############################################################################
 ###############################################################################
+#  any other plot that the user wants...
 
 # # sel = np.logical_or(hits.WiresStrips == 31,  hits.WiresStrips == 2)
 # sel = np.logical_or(hits.WiresStrips == 95,  hits.WiresStrips == 2)
