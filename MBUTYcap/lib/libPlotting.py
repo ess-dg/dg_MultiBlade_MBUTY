@@ -38,101 +38,129 @@ class preparePlotMatrix():
         self.axHandle            = np.atleast_2d(self.axHandle)
   
 ################################
+
+########################################
+
+class checkReadoutsClass():
+     def __init__(self, readouts):
+         
+         self.readouts = readouts
+         
+         self.flag   =  True
+         
+         if len(self.readouts.Channel) == 0 :
+             
+             self.flag  = False
+             
+             print('\t \033[1;33mWARNING: Readouts array is empty -> skipping plots')
+                   
+                   
         
 class plottingReadouts():
    
     def __init__(self, readouts, config):
     
-        self.readouts = readouts
+        # self.readouts = readouts
         
         self.config   = config
         
-        # self.parameters = parameters
+        checkke = checkReadoutsClass(readouts)
+        self.readouts = checkke.readouts
+        self.flag = checkke.flag 
         
-        self.xbins = np.linspace(0,63,64)
+        # self.parameters = parameters
+        if self.flag is True:
+            self.xbins = np.linspace(0,63,64)
         
     def histChRaw1hybrid(self,cassette1ID):
         
-        self.config.get_cassID2RingFenHybrid(cassette1ID)
-
-        # cassette correpsonds to a particluar triplet of ring fen and hybrid so Icanuse cassette to loop over hybrids
-        
-        # print(self.config.cassMap.RingID)
-        # print(self.config.cassMap.FenID)
-        # print(self.config.cassMap.hybridID)
-        
-        sel1 = self.readouts.Ring   == self.config.cassMap.RingID
-        sel2 = self.readouts.Fen    == self.config.cassMap.FenID
-        sel3 = self.readouts.hybrid == self.config.cassMap.hybridID
-        
-        sel = sel1 & sel2 & sel3
-        
-        asic0  = self.readouts.ASIC == 0
-        asic1  = self.readouts.ASIC == 1
-        
-        # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
-        
-        self.histo0 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel & asic0])
-        self.histo1 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel & asic1])
+        if self.flag is True:
+            self.config.get_cassID2RingFenHybrid(cassette1ID)
+    
+            # cassette correpsonds to a particluar triplet of ring fen and hybrid so Icanuse cassette to loop over hybrids
+            
+            # print(self.config.cassMap.RingID)
+            # print(self.config.cassMap.FenID)
+            # print(self.config.cassMap.hybridID)
+            
+            sel1 = self.readouts.Ring   == self.config.cassMap.RingID
+            sel2 = self.readouts.Fen    == self.config.cassMap.FenID
+            sel3 = self.readouts.hybrid == self.config.cassMap.hybridID
+            
+            sel = sel1 & sel2 & sel3
+            
+            asic0  = self.readouts.ASIC == 0
+            asic1  = self.readouts.ASIC == 1
+            
+            # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
+            
+            self.histo0 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel & asic0])
+            self.histo1 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel & asic1])
         
     def plotChRaw(self,hybrids): 
         
-        self.ploth = preparePlotMatrix(1001, 2, len(hybrids))
+        if self.flag is True:
         
-        self.ploth.figHandle.suptitle('Readouts - raw channels')
-
-        for k, cc in enumerate(hybrids):
+            self.ploth = preparePlotMatrix(1001, 2, len(hybrids))
             
-            self.histChRaw1hybrid(cc)  
-
-            self.ploth.axHandle[0][k].bar(self.xbins,self.histo0,0.8,color='r') 
-            self.ploth.axHandle[1][k].bar(self.xbins,self.histo1,0.8,color='b')
-            self.ploth.axHandle[0][k].set_xlabel('ASIC 0 ch no.')
-            self.ploth.axHandle[1][k].set_xlabel('ASIC 1 ch no.')
-            self.ploth.axHandle[0][k].set_title('hyb.'+str(cc)) 
+            self.ploth.figHandle.suptitle('Readouts - raw channels')
+    
+            for k, cc in enumerate(hybrids):
+                
+                self.histChRaw1hybrid(cc)  
+    
+                self.ploth.axHandle[0][k].bar(self.xbins,self.histo0,0.8,color='r') 
+                self.ploth.axHandle[1][k].bar(self.xbins,self.histo1,0.8,color='b')
+                self.ploth.axHandle[0][k].set_xlabel('ASIC 0 ch no.')
+                self.ploth.axHandle[1][k].set_xlabel('ASIC 1 ch no.')
+                self.ploth.axHandle[0][k].set_title('hyb.'+str(cc)) 
             
     def extractTimeStamp1hybrid(self,cassette1ID):
         
-        self.config.get_cassID2RingFenHybrid(cassette1ID)
+        if self.flag is True:
         
-        sel1 = self.readouts.Ring   == self.config.cassMap.RingID
-        sel2 = self.readouts.Fen    == self.config.cassMap.FenID
-        sel3 = self.readouts.hybrid == self.config.cassMap.hybridID
-        
-        sel = sel1 & sel2 & sel3
-        
-        asic0  = self.readouts.ASIC == 0
-        asic1  = self.readouts.ASIC == 1
-        
-        # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
-        
-        self.timeStamp0 = self.readouts.timeStamp[sel & asic0]
-        self.timeStamp1 = self.readouts.timeStamp[sel & asic1]
+            self.config.get_cassID2RingFenHybrid(cassette1ID)
+            
+            sel1 = self.readouts.Ring   == self.config.cassMap.RingID
+            sel2 = self.readouts.Fen    == self.config.cassMap.FenID
+            sel3 = self.readouts.hybrid == self.config.cassMap.hybridID
+            
+            sel = sel1 & sel2 & sel3
+            
+            asic0  = self.readouts.ASIC == 0
+            asic1  = self.readouts.ASIC == 1
+            
+            # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
+            
+            self.timeStamp0 = self.readouts.timeStamp[sel & asic0]
+            self.timeStamp1 = self.readouts.timeStamp[sel & asic1]
             
     def plotTimeStamps(self,hybrids):
         
-        self.plotht = preparePlotMatrix(1002, 2, len(hybrids))
+        if self.flag is True:
         
-        self.plotht.figHandle.suptitle('Readouts - raw channels time stamps')
-        
-        for k, cc in enumerate(hybrids):
+            self.plotht = preparePlotMatrix(1002, 2, len(hybrids))
             
-            self.extractTimeStamp1hybrid(cc)  
+            self.plotht.figHandle.suptitle('Readouts - raw channels time stamps')
             
-            xx0 = np.arange(0,len(self.timeStamp0),1)
-            xx1 = np.arange(0,len(self.timeStamp1),1)
-            
-            self.plotht.axHandle[0][k].scatter(xx0,self.timeStamp0,0.8,color='r',marker='+') 
-            self.plotht.axHandle[1][k].scatter(xx1,self.timeStamp1,0.8,color='b',marker='+')
-            self.plotht.axHandle[0][k].set_xlabel('ASIC 0 trigger no.')
-            self.plotht.axHandle[1][k].set_xlabel('ASIC 1 trigger no.')
-            self.plotht.axHandle[0][k].set_ylabel('time (ns)')
-            self.plotht.axHandle[1][k].set_ylabel('time (ns)')
-            self.plotht.axHandle[0][k].set_title('hyb.'+str(cc)) 
-            self.plotht.axHandle[0][k].grid(axis='x', alpha=0.75)
-            self.plotht.axHandle[1][k].grid(axis='x', alpha=0.75)
-            self.plotht.axHandle[0][k].grid(axis='y', alpha=0.75)
-            self.plotht.axHandle[1][k].grid(axis='y', alpha=0.75)
+            for k, cc in enumerate(hybrids):
+                
+                self.extractTimeStamp1hybrid(cc)  
+                
+                xx0 = np.arange(0,len(self.timeStamp0),1)
+                xx1 = np.arange(0,len(self.timeStamp1),1)
+                
+                self.plotht.axHandle[0][k].scatter(xx0,self.timeStamp0,0.8,color='r',marker='+') 
+                self.plotht.axHandle[1][k].scatter(xx1,self.timeStamp1,0.8,color='b',marker='+')
+                self.plotht.axHandle[0][k].set_xlabel('ASIC 0 trigger no.')
+                self.plotht.axHandle[1][k].set_xlabel('ASIC 1 trigger no.')
+                self.plotht.axHandle[0][k].set_ylabel('time (ns)')
+                self.plotht.axHandle[1][k].set_ylabel('time (ns)')
+                self.plotht.axHandle[0][k].set_title('hyb.'+str(cc)) 
+                self.plotht.axHandle[0][k].grid(axis='x', alpha=0.75)
+                self.plotht.axHandle[1][k].grid(axis='x', alpha=0.75)
+                self.plotht.axHandle[0][k].grid(axis='y', alpha=0.75)
+                self.plotht.axHandle[1][k].grid(axis='y', alpha=0.75)
             
         
 ################################
@@ -262,8 +290,31 @@ class logScaleMap():
             self.normColors = LogNorm()
         elif logScale is False:
             self.normColors = None
-            
+
+########################################
+
+class checkEventsClass():
+     def __init__(self, events):
+         
+         self.events = events
+         
+         self.flag   =  True
+         
+         if len(self.events.positionW) == 0 :
+             
+             self.flag  = False
+             
+             print('\t \033[1;33mWARNING: Events array is empty -> skipping plots')
+             
+         else:
         
+             if  len(self.events.ToF) == 0 :
+                   print('\t \033[1;33mWARNING: ToF array is empty ')
+                   self.events.ToF = np.zeros((len(self.events.positionW)),dtype='int64')
+                     
+        
+
+#######################################
         
 class plottingEvents():
     
@@ -271,168 +322,178 @@ class plottingEvents():
         
         # self.Ncass = Ncass
         
-        self.events  = events
+        # self.events  = events
         self.allAxis = allAxis
         
         # self.selectCoinc = events.positionS >= -2
         
         self.coincidenceWS_ONOFF = coincidenceWS_ONOFF
+        
+        checkke = checkEventsClass(events)
+        self.events = checkke.events
+        self.flag   = checkke.flag
     
-        if self.coincidenceWS_ONOFF is True:
-            print('\t building histograms ... coincidence W/S ON for ToF and Lambda ...')
-            self.selc = events.positionS >= 0 
-        else:
-            print('\t building histograms ... coincidence W/S OFF for ToF and Lambda ...')
-            self.selc = events.positionS >= - np.inf
+        if self.flag is True:
+            if self.coincidenceWS_ONOFF is True:
+                print('\t building histograms ... coincidence W/S ON for ToF and Lambda ...')
+                self.selc = events.positionS >= 0 
+            else:
+                print('\t building histograms ... coincidence W/S OFF for ToF and Lambda ...')
+                self.selc = events.positionS >= - np.inf
         
         # self.sharex='col'
         # self.sharey='row' 
             
     def plotXYToF(self, logScale = False, absUnits = False, orientation = 'vertical'):
         
-        normColors = logScaleMap(logScale).normColors
+        if self.flag is True:
+            normColors = logScaleMap(logScale).normColors
+         
+            if absUnits == False:
+                
+                # if  len(self.events.ToF) == 0 :
+                #    print('\t \033[1;33mWARNING: ToF array is empty ')
+                #    self.events.ToF = np.zeros((len(self.events.positionW)),dtype='int64')
+                
+                h2D, _, hToF = hh.histog().histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
+        
+                hProjAll = hh.histog().hist1D(self.allAxis.axWires.axis, self.events.positionW)
+                
+                hProj2D  = np.sum(h2D,axis=0)
+                
+                if orientation == 'vertical':
+                
+                    fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
+                    # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
+                    pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires.start,self.allAxis.axWires.stop,self.allAxis.axStrips.stop,self.allAxis.axStrips.start], origin='upper',cmap='viridis')
+                    fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    # cbar1 =fig2D.colorbar(pos1,ax=ax1)
+                    # cbar2.minorticks_on()
+                    # ax1.set_aspect('tight')
+                    ax1.set_xlabel('Wire ch.')
+                    ax1.set_ylabel('Strip ch.')
+                    fig2D.suptitle('DET image')
+                    
+                    
+                elif orientation == 'horizontal':     
+        
+                    fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(12,6), nrows=1, ncols=2)    
+                    pos1  = ax1.imshow(np.rot90(h2D,1),aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axStrips.start,self.allAxis.axStrips.stop,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='upper',cmap='viridis')
+                    fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    ax1.set_ylabel('Wire ch.')
+                    ax1.set_xlabel('Strip ch.')
+                    fig2D.suptitle('DET image')
+                    
+    
+                
+                pos2 = ax2.step(self.allAxis.axWires.axis,hProjAll,'r',where='mid',label='1D')
+                ax2.step(self.allAxis.axWires.axis,hProj2D,'b',where='mid',label='2D')
+                if logScale is True:
+                   ax2.set_yscale('log')
+                ax2.set_xlabel('Wire ch.')
+                ax2.set_ylabel('counts')
+                ax2.set_xlim(self.allAxis.axWires.start,self.allAxis.axWires.stop)
+                legend = ax2.legend(loc='upper right', shadow=False, fontsize='large')
+    
+                ########
+                # 2D image of detector ToF vs Wires 
+                # ToFxgms = ToFxg*1e3 # in ms 
+            
+                fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
+                pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start*1e3,self.allAxis.axToF.stop*1e3,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='lower',cmap='viridis')
+                fig2.colorbar(pos2, ax=ax2)
+                ax2.set_ylabel('Wire ch.')
+                ax2.set_xlabel('ToF (ms)')
+                fig2.suptitle('DET ToF')
+            
+            elif absUnits == True:
+                
+                # if  len(self.events.ToF) == 0 :
+                #     print('\t \033[1;33mWARNING: ToF arrasy is empty ')
+                #     self.events.ToF = np.zeros(len(self.events.positionWmm),dtype='int64')
+                
+                
+                h2D, hProj, hToF = hh.histog().histXYZ(self.allAxis.axWires_mm.axis, self.events.positionWmm[self.selc], self.allAxis.axStrips_mm.axis, self.events.positionSmm[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)    
+        
+                hProjAll = hh.histog().hist1D(self.allAxis.axWires_mm.axis, self.events.positionWmm)
+                
+                hProj2D  = np.sum(h2D,axis=0)
+                
+                if orientation == 'vertical':
+                
+                    fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
+                    # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
+                    pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop,self.allAxis.axStrips_mm.stop,self.allAxis.axStrips_mm.start], origin='upper',cmap='viridis')
+                    fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    # cbar1 =fig2D.colorbar(pos1,ax=ax1)
+                    # cbar2.minorticks_on()
+                    # ax1.set_aspect('tight')
+                    ax1.set_xlabel('Wire coord. (mm)')
+                    ax1.set_ylabel('Strip (mm)')
+                    fig2D.suptitle('DET image')
      
-        if absUnits == False:
-            
-            if  len(self.events.ToF) == 0 :
-               print('\t \033[1;33mWARNING: ToF array is empty ')
-               self.events.ToF = np.zeros((len(self.events.positionW)),dtype='int64')
-            
-            h2D, _, hToF = hh.histog().histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
-    
-            hProjAll = hh.histog().hist1D(self.allAxis.axWires.axis, self.events.positionW)
-            
-            hProj2D  = np.sum(h2D,axis=0)
-            
-            if orientation == 'vertical':
-            
-                fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
-                # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
-                pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires.start,self.allAxis.axWires.stop,self.allAxis.axStrips.stop,self.allAxis.axStrips.start], origin='upper',cmap='viridis')
-                fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
-                # cbar1 =fig2D.colorbar(pos1,ax=ax1)
-                # cbar2.minorticks_on()
-                # ax1.set_aspect('tight')
-                ax1.set_xlabel('Wire ch.')
-                ax1.set_ylabel('Strip ch.')
-                fig2D.suptitle('DET image')
-                
-                
-            elif orientation == 'horizontal':     
-    
-                fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(12,6), nrows=1, ncols=2)    
-                pos1  = ax1.imshow(np.rot90(h2D,1),aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axStrips.start,self.allAxis.axStrips.stop,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='upper',cmap='viridis')
-                fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
-                ax1.set_ylabel('Wire ch.')
-                ax1.set_xlabel('Strip ch.')
-                fig2D.suptitle('DET image')
-                
-
-            
-            pos2 = ax2.step(self.allAxis.axWires.axis,hProjAll,'r',where='mid',label='1D')
-            ax2.step(self.allAxis.axWires.axis,hProj2D,'b',where='mid',label='2D')
-            if logScale is True:
-               ax2.set_yscale('log')
-            ax2.set_xlabel('Wire ch.')
-            ax2.set_ylabel('counts')
-            ax2.set_xlim(self.allAxis.axWires.start,self.allAxis.axWires.stop)
-            legend = ax2.legend(loc='upper right', shadow=False, fontsize='large')
-
-            ########
-            # 2D image of detector ToF vs Wires 
-            # ToFxgms = ToFxg*1e3 # in ms 
-        
-            fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
-            pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start*1e3,self.allAxis.axToF.stop*1e3,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='lower',cmap='viridis')
-            fig2.colorbar(pos2, ax=ax2)
-            ax2.set_ylabel('Wire ch.')
-            ax2.set_xlabel('ToF (ms)')
-            fig2.suptitle('DET ToF')
-        
-        elif absUnits == True:
-            
-            if  len(self.events.ToF) == 0 :
-                print('\t \033[1;33mWARNING: ToF arrasy is empty ')
-                self.events.ToF = np.zeros(len(self.events.positionWmm),dtype='int64')
-            
-            
-            h2D, hProj, hToF = hh.histog().histXYZ(self.allAxis.axWires_mm.axis, self.events.positionWmm[self.selc], self.allAxis.axStrips_mm.axis, self.events.positionSmm[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)    
-    
-            hProjAll = hh.histog().hist1D(self.allAxis.axWires_mm.axis, self.events.positionWmm)
-            
-            hProj2D  = np.sum(h2D,axis=0)
-            
-            if orientation == 'vertical':
-            
-                fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
-                # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
-                pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop,self.allAxis.axStrips_mm.stop,self.allAxis.axStrips_mm.start], origin='upper',cmap='viridis')
-                fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
-                # cbar1 =fig2D.colorbar(pos1,ax=ax1)
-                # cbar2.minorticks_on()
-                # ax1.set_aspect('tight')
-                ax1.set_xlabel('Wire coord. (mm)')
-                ax1.set_ylabel('Strip (mm)')
-                fig2D.suptitle('DET image')
- 
-               
-            elif orientation == 'horizontal':  
-                
-                fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
-                # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
-                pos1  = ax1.imshow(np.rot90(h2D,1),aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axStrips_mm.start,self.allAxis.axStrips_mm.stop,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='upper',cmap='viridis')
-                fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
-                ax1.set_ylabel('Wire coord. (mm)')
-                ax1.set_xlabel('Strip (mm)')
-                fig2D.suptitle('DET image')
-    
-    
-            pos2 = ax2.step(self.allAxis.axWires_mm.axis,hProjAll,'r',where='mid',label='1D')
-            ax2.step(self.allAxis.axWires_mm.axis,hProj2D,'b',where='mid',label='2D')
-            if logScale is True:
-               ax2.set_yscale('log')
-            ax2.set_xlabel('Wire coord. (mm)')
-            ax2.set_ylabel('counts')
-            ax2.set_xlim(self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop)
-            legend = ax2.legend(loc='upper right', shadow=False, fontsize='large')
+                   
+                elif orientation == 'horizontal':  
+                    
+                    fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
+                    # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
+                    pos1  = ax1.imshow(np.rot90(h2D,1),aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axStrips_mm.start,self.allAxis.axStrips_mm.stop,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='upper',cmap='viridis')
+                    fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    ax1.set_ylabel('Wire coord. (mm)')
+                    ax1.set_xlabel('Strip (mm)')
+                    fig2D.suptitle('DET image')
         
         
-            fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
-            pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start*1e3,self.allAxis.axToF.stop*1e3,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
-            fig2.colorbar(pos2, ax=ax2)
-            ax2.set_ylabel('Wire coord. (mm)')
-            ax2.set_xlabel('ToF (ms)')
-            fig2.suptitle('DET ToF')
+                pos2 = ax2.step(self.allAxis.axWires_mm.axis,hProjAll,'r',where='mid',label='1D')
+                ax2.step(self.allAxis.axWires_mm.axis,hProj2D,'b',where='mid',label='2D')
+                if logScale is True:
+                   ax2.set_yscale('log')
+                ax2.set_xlabel('Wire coord. (mm)')
+                ax2.set_ylabel('counts')
+                ax2.set_xlim(self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop)
+                legend = ax2.legend(loc='upper right', shadow=False, fontsize='large')
             
-        # return h2D
+            
+                fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
+                pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start*1e3,self.allAxis.axToF.stop*1e3,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
+                fig2.colorbar(pos2, ax=ax2)
+                ax2.set_ylabel('Wire coord. (mm)')
+                ax2.set_xlabel('ToF (ms)')
+                fig2.suptitle('DET ToF')
+                
+            # return h2D
             
 
     def plotXLambda(self, logScale=False, absUnits = False):
         
-        normColors = logScaleMap(logScale).normColors
-        
-        if absUnits is False:
-            h = hh.histog().hist2D(self.allAxis.axLambda.axis, self.events.wavelength[self.selc], self.allAxis.axWires.axis , self.events.positionW[self.selc])
+        if self.flag is True:
             
-            figl, axl = plt.subplots(num=103,figsize=(6,6), nrows=1, ncols=1) 
-            posl1  = axl.imshow(h,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axLambda.start,self.allAxis.axLambda.stop,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='lower',cmap='viridis')
-            figl.colorbar(posl1, ax=axl)
-            axl.set_ylabel('Wire ch.')
-            axl.set_xlabel('wavelength (A)')
-            figl.suptitle('DET wavelength')
+            normColors = logScaleMap(logScale).normColors
             
-        elif absUnits == True:
-            
-            h = hh.histog().hist2D(self.allAxis.axLambda.axis, self.events.wavelength[self.selc], self.allAxis.axWires_mm.axis , self.events.positionWmm[self.selc])
-            
-            figl, axl = plt.subplots(num=103,figsize=(6,6), nrows=1, ncols=1) 
-            posl1  = axl.imshow(h,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axLambda.start,self.allAxis.axLambda.stop,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
-            figl.colorbar(posl1, ax=axl)
-            axl.set_ylabel('Wire coord. (mm)')
-            axl.set_xlabel('wavelength (A)')
-            figl.suptitle('DET wavelength')
+            if absUnits is False:
+                h = hh.histog().hist2D(self.allAxis.axLambda.axis, self.events.wavelength[self.selc], self.allAxis.axWires.axis , self.events.positionW[self.selc])
+                
+                figl, axl = plt.subplots(num=103,figsize=(6,6), nrows=1, ncols=1) 
+                posl1  = axl.imshow(h,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axLambda.start,self.allAxis.axLambda.stop,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='lower',cmap='viridis')
+                figl.colorbar(posl1, ax=axl)
+                axl.set_ylabel('Wire ch.')
+                axl.set_xlabel('wavelength (A)')
+                figl.suptitle('DET wavelength')
+                
+            elif absUnits == True:
+                
+                h = hh.histog().hist2D(self.allAxis.axLambda.axis, self.events.wavelength[self.selc], self.allAxis.axWires_mm.axis , self.events.positionWmm[self.selc])
+                
+                figl, axl = plt.subplots(num=103,figsize=(6,6), nrows=1, ncols=1) 
+                posl1  = axl.imshow(h,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axLambda.start,self.allAxis.axLambda.stop,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
+                figl.colorbar(posl1, ax=axl)
+                axl.set_ylabel('Wire coord. (mm)')
+                axl.set_xlabel('wavelength (A)')
+                figl.suptitle('DET wavelength')
 
     def plotMultiplicity(self, cassettes):
+        
+        if self.flag is True:
         
             self.width      = 0.2
             self.extentplot = 7
@@ -492,54 +553,58 @@ class plottingEvents():
 
     def plotPHS(self, cassettes, parameters, logScale = False):
         
-        normColors = logScaleMap(logScale).normColors
+        if self.flag is True:
         
-        self.plotPHS = preparePlotMatrix(601, 4, len(cassettes))
-        
-        self.plotPHS.figHandle.suptitle('Pulse Heigth Spectra')
-        
-        wireCh0to31Round = np.round(np.mod(self.events.positionW,parameters.configJsonFile.numOfWires))
-                
-        stripChRound     = np.round(self.events.positionS)
-        
-        wireAx  = np.linspace(0,parameters.configJsonFile.numOfWires-1, parameters.configJsonFile.numOfWires)
-        
-        stripAx = np.linspace(0,parameters.configJsonFile.numOfStrips-1, parameters.configJsonFile.numOfStrips)
-        
-        for k, cass in enumerate(cassettes):
-   
-                selc  = self.events.Cassette  == cass
-                sel2D = self.events.positionS >= 0
-                
-                PHSw  = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc],wireAx,wireCh0to31Round[selc]) # wires 
-                PHSs  = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHS[selc & sel2D],wireAx,stripChRound[selc & sel2D]) # strips
-                PHSwc = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc & sel2D],wireAx,wireCh0to31Round[selc & sel2D]) # wires coinc with strips 2D
-                
-                self.plotPHS.axHandle[0][k].imshow(PHSw,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,wireAx[0],wireAx[-1]], origin='lower',cmap='jet')
-                self.plotPHS.axHandle[1][k].imshow(PHSs,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,stripAx[0],stripAx[-1]], origin='lower',cmap='jet')
-                self.plotPHS.axHandle[2][k].imshow(PHSwc,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,wireAx[0],wireAx[-1]], origin='lower',cmap='jet')
-                
-                self.plotPHS.axHandle[0][k].set_title('cass ID '+str(cass))
-                if k == 0:
-                    self.plotPHS.axHandle[0][k].set_ylabel('wires ch. no.')
-                    self.plotPHS.axHandle[1][k].set_ylabel('strips ch. no.')
-                    self.plotPHS.axHandle[2][k].set_ylabel('wires coinc. ch. no.')
-           
-                   #global PHS
-                PHSGw  = np.sum(PHSw,axis=0)
-                PHSGs  = np.sum(PHSs,axis=0)
-                PHSGwc = np.sum(PHSwc,axis=0)
+            normColors = logScaleMap(logScale).normColors
+            
+            self.plotPHS = preparePlotMatrix(601, 4, len(cassettes))
+            
+            self.plotPHS.figHandle.suptitle('Pulse Heigth Spectra')
+            
+            wireCh0to31Round = np.round(np.mod(self.events.positionW,parameters.configJsonFile.numOfWires))
+                    
+            stripChRound     = np.round(self.events.positionS)
+            
+            wireAx  = np.linspace(0,parameters.configJsonFile.numOfWires-1, parameters.configJsonFile.numOfWires)
+            
+            stripAx = np.linspace(0,parameters.configJsonFile.numOfStrips-1, parameters.configJsonFile.numOfStrips)
+            
+            for k, cass in enumerate(cassettes):
        
-                # global PHS plot
-                self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGw,'r',where='mid',label='w')
-                self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGs,'b',where='mid',label='s')
-                self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGwc,'k',where='mid',label='w/s')
-                self.plotPHS.axHandle[3][k].set_xlabel('pulse height (a.u.)')
-                self.plotPHS.axHandle[3][k].legend(loc='upper right', shadow=False, fontsize='large')
-                if k == 0:
-                   self.plotPHS.axHandle[3][k].set_ylabel('counts')
+                    selc  = self.events.Cassette  == cass
+                    sel2D = self.events.positionS >= 0
+                    
+                    PHSw  = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc],wireAx,wireCh0to31Round[selc]) # wires 
+                    PHSs  = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHS[selc & sel2D],wireAx,stripChRound[selc & sel2D]) # strips
+                    PHSwc = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc & sel2D],wireAx,wireCh0to31Round[selc & sel2D]) # wires coinc with strips 2D
+                    
+                    self.plotPHS.axHandle[0][k].imshow(PHSw,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,wireAx[0],wireAx[-1]], origin='lower',cmap='jet')
+                    self.plotPHS.axHandle[1][k].imshow(PHSs,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,stripAx[0],stripAx[-1]], origin='lower',cmap='jet')
+                    self.plotPHS.axHandle[2][k].imshow(PHSwc,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,wireAx[0],wireAx[-1]], origin='lower',cmap='jet')
+                    
+                    self.plotPHS.axHandle[0][k].set_title('cass ID '+str(cass))
+                    if k == 0:
+                        self.plotPHS.axHandle[0][k].set_ylabel('wires ch. no.')
+                        self.plotPHS.axHandle[1][k].set_ylabel('strips ch. no.')
+                        self.plotPHS.axHandle[2][k].set_ylabel('wires coinc. ch. no.')
+               
+                       #global PHS
+                    PHSGw  = np.sum(PHSw,axis=0)
+                    PHSGs  = np.sum(PHSs,axis=0)
+                    PHSGwc = np.sum(PHSwc,axis=0)
+           
+                    # global PHS plot
+                    self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGw,'r',where='mid',label='w')
+                    self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGs,'b',where='mid',label='s')
+                    self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGwc,'k',where='mid',label='w/s')
+                    self.plotPHS.axHandle[3][k].set_xlabel('pulse height (a.u.)')
+                    self.plotPHS.axHandle[3][k].legend(loc='upper right', shadow=False, fontsize='large')
+                    if k == 0:
+                       self.plotPHS.axHandle[3][k].set_ylabel('counts')
                    
     def plotPHScorrelation(self, cassettes, logScale = False):
+        
+        if self.flag is True:
               
            normColors = logScaleMap(logScale).normColors
         
@@ -562,6 +627,8 @@ class plottingEvents():
                     self.plotPHScorr.axHandle[0][k].set_ylabel('pulse height strips (a.u.)')
             
     def plotInstantaneousRate(self, cassettes):
+        
+        if self.flag is True:
            
            self.plotInst = preparePlotMatrix(209, 1, len(cassettes))
            
@@ -583,6 +650,8 @@ class plottingEvents():
                    
                    
     def plotToF(self, cassettes):
+        
+        if self.flag is True:
            
           self.plotTT = preparePlotMatrix(333, 1, len(cassettes))
           
@@ -608,6 +677,8 @@ class plottingEvents():
                legend = self.plotTT.axHandle[0][k].legend(loc='upper right', shadow=False, fontsize='large')
                
     def plotLambda(self, cassettes):
+        
+        if self.flag is True:
            
           self.plotWA = preparePlotMatrix(339, 1, len(cassettes))
           

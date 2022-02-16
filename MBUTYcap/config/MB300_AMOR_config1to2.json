@@ -1,16 +1,13 @@
 {
-	"Detector": "MB300.AMOR",
+	"Detector": "MB300.AMOR.2",
 
-	"cassettes" : 14,
+	"cassettes" : 2,
 	
 	"orientation" : "horizontal",
 
 	"Cassette2ElectronicsConfig" : [
 	 	{"ID" : 1, "Ring" : 0, "Fen" : 1, "Hybrid" : 0, "HybridSerial" : "E5533333222222221111111100000001"},
-		{"ID" : 2, "Ring" : 0, "Fen" : 1, "Hybrid" : 1, "HybridSerial" : "E5533333222222221111111100000002"},
-		{"ID" : 3, "Ring" : 0, "Fen" : 2, "Hybrid" : 0, "HybridSerial" : "E5533333222222221111111100000003"},
-		{"ID" : 4, "Ring" : 0, "Fen" : 2, "Hybrid" : 1, "HybridSerial" : "E5533333222222221111111100000004"},
-		{"ID" : 5, "Ring" : 1, "Fen" : 1, "Hybrid" : 0, "HybridSerial" : "E5533333222222221111111100000005"}
+		{"ID" : 2, "Ring" : 0, "Fen" : 1, "Hybrid" : 1, "HybridSerial" : "E5533333222222221111111100000002"}
 	],
 	
 	"ChannelMapping" : [

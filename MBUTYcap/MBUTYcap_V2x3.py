@@ -34,12 +34,13 @@ from lib import libReducedFileH5 as saveH5
 #     - save reduced data - almost done 
 #     - monitor lambda
 #     - TDC and ADC calibration 
+#     - now the mon events  stay in the events array,they need  to be taken out 
 
 ###############################################################################
 ###############################################################################
 profiling = para.profiling()
 print('----------------------------------------------------------------------')
-print('Ciao '+os.environ['USER']+'! Welcome to MBUTY 2.3')
+print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 2.3\033[1;37m')
 print('----------------------------------------------------------------------')
 plt.close("all")
 ### check version ###
@@ -52,15 +53,23 @@ parameters  = para.parameters(currentPath)
 ### read json and create parameters for plotting and analisys ###
 
 configFilePath  = currentPath+'config/'
-# configFileName  = "MB300_AMOR_config6to10.json"
+
+# configFileName  = "MB300_AMOR_config1to2.json"
 # configFileName  = "MB300_AMOR_config1to5.json"
+# configFileName  = "MB300_AMOR_config6to10.json"
 # configFileName  = "MB300_AMOR_config11to14.json"
-configFileName  = "MB300_AMOR_config.json"
+
+# configFileName  = "MB300_AMOR_config.json"
+
+# configFileName  = "MB300_AMOR_config_12.json"
+
 # configFileName  = "MB300_AMOR_config_rev.json"
-# configFileName  = "MB300_FREIA_config.json"
+configFileName  = "MB300_FREIA_config.json"
 # configFileName  = "MB300_FREIA_config_inverted.json"
 # configFileName  = "Utgard_test.json"
 # configFileName  = "Utgard_test_AssCrate.json"
+
+configFileName  = "MB18_6cass.json"
 
 ###############################################################################
 ###############################################################################
@@ -80,9 +89,16 @@ parameters.loadConfigParameters(config)
 parameters.fileManagement.sync = False  
 
 ### from ... to  ... rsync the data
-# parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
-parameters.fileManagement.sourcePath = 'essdaq@172.30.244.203:~/pcaps/'
-parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
+
+# test setup
+parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
+# parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataPcapUtgard2/'
+parameters.fileManagement.destPath   = currentPath+'data/'
+
+# AMOR
+# parameters.fileManagement.sourcePath = 'essdaq@172.30.244.203:~/pcaps/'
+# parameters.fileManagement.sourcePath = 'essdaq@det-efu02:~/pcaps/'
+# parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Documents/DOC/DATA/2021_12_AMOR_PSI/data_VMM/'
 
 ###############
 
@@ -165,7 +181,7 @@ parameters.wavelength.plotLambdaDistr = False
 parameters.wavelength.lambdaBins  = 128
 parameters.wavelength.lambdaRange = [1, 16]   #A
 
-parameters.wavelength.chopperPeriod = 0.06 #s (NOTE: only matters if multipleFramesPerRest > 1)
+parameters.wavelength.chopperPeriod = 0.15 #s (NOTE: only matters if multipleFramesPerRest > 1)
 
 ### if chopper has two openings or more per reset of ToF
 parameters.wavelength.multipleFramePerReset = False  #ON/OFF (this only affects the lambda calculation)
@@ -181,13 +197,13 @@ parameters.wavelength.chopperPickUpDelay =  13.5/(2.*180.) * parameters.waveleng
 #################################
 
 ### ON/OFF
-parameters.MONitor.MONOnOff = True   
+parameters.MONitor.MONOnOff = False   
 
 ### threshold on MON, th is OFF if 0, any other value is ON
 parameters.MONitor.MONThreshold = 0   
 
 ### ON/OFF plotting (MON ToF and Pulse Height) 
-parameters.MONitor.plotMONtofPHS = True  
+parameters.MONitor.plotMONtofPHS = False  
 
 ### in mm, distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
 parameters.MONitor.MONDistance  = 0   
@@ -204,14 +220,14 @@ parameters.plotting.showStat = 'globalStat'
 
 ###############     
 ### raw plots
-parameters.plotting.plotRawReadouts         = True
+parameters.plotting.plotRawReadouts         = False
 parameters.plotting.plotReadoutsTimeStamps  = False
 parameters.plotting.plotRawHits             = False
 parameters.plotting.plotHitsTimeStamps      = False
-parameters.plotting.plotHitsTimeStampsVSChannels = False
+parameters.plotting.plotHitsTimeStampsVSChannels = True
 
 # with false disables clustering and mapping for speed
-bareReadoutsCalc = True
+bareReadoutsCalc = False
 
 ###############
 ### Instantaneous Rate
@@ -220,9 +236,9 @@ parameters.plotting.instRateBin     = 100e-6  # s
  
 ###############
 ### ToF plot integrated over individual cassette, one per cassette
-parameters.plotting.plotToFDistr    = True
+parameters.plotting.plotToFDistr    = False
 
-parameters.plotting.ToFrange        = 0.1    # s
+parameters.plotting.ToFrange        = 0.06    # s
 parameters.plotting.ToFbinning      = 100e-6 # s
      
 parameters.plotting.plotMultiplicity = False 
@@ -230,8 +246,8 @@ parameters.plotting.plotMultiplicity = False
 # parameters.configJsonFile.orientation = 'vertical'
 
 ### 'W.max-S.max' is max max,  'W.cog-S.cog' is CoG CoG, 'W.max-S.cog' is wires max and strips CoG 
-# parameters.plotting.positionReconstruction = 'W.max-S.cog'
-parameters.plotting.positionReconstruction = 'W.max-S.max'
+parameters.plotting.positionReconstruction = 'W.max-S.cog'
+# parameters.plotting.positionReconstruction = 'W.max-S.max'
 
 ### if True plot XY and XtoF plot in absolute unit (mm), if False plot in wire and strip ch no.
 parameters.plotting.plotABSunits = False
@@ -258,7 +274,7 @@ parameters.pulseHeigthSpect.plotPHS = True
 parameters.pulseHeigthSpect.plotPHSlog = False
 
 parameters.pulseHeigthSpect.energyBins = 128
-parameters.pulseHeigthSpect.maxEnerg   = 1200
+parameters.pulseHeigthSpect.maxEnerg   = 70000
 
 ### plot the PHS correaltion wires vs strips
 parameters.pulseHeigthSpect.plotPHScorrelation = False
@@ -321,7 +337,7 @@ readouts = pcapr.readouts()
 
 for cont, fileName in enumerate(fileDialogue.fileName):
 
-    print('-> reading file {} of {}'.format(cont+1,len(fileDialogue.fileName)))
+    print('\033[1;32m-> reading file {} of {}\033[1;37m'.format(cont+1,len(fileDialogue.fileName)))
     
     ### check if a file is pcapng otherwise pcap is converted into pcapng
     conv = ta.pcapConverter(parameters)
@@ -354,7 +370,7 @@ for cont, fileName in enumerate(fileDialogue.fileName):
 
 ####################
 ### for debug, readouts in single array
-# readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
 ####################
 
 # md  = maps.mapDetector(readouts, config)
@@ -367,15 +383,19 @@ for cont, fileName in enumerate(fileDialogue.fileName):
 ### getting the hits for the MONitor
 if parameters.MONitor.MONOnOff is True:
     MON = maps.mapMonitor(readouts, config)
-    hitsMON = MON.hits
-    
-    MONe = clu.hitsMON2events(hitsMON)
-    eventsMON = MONe.events
-    
-    abMON = absu.calculateAbsUnits(eventsMON, parameters, 'MON')
-    abMON.calculateToF()
-    
-    # CALCULATION OF LAMBDA ON MON NOT YET IMPLEMENTED
+    if MON.flagMONfound is True:
+        hitsMON = MON.hits
+        
+        MONe = clu.hitsMON2events(hitsMON)
+        eventsMON = MONe.events
+        
+        abMON = absu.calculateAbsUnits(eventsMON, parameters, 'MON')
+        abMON.calculateToF()
+        
+        print('\033[1;32m\t MON events: {}\033[1;37m'.format(len(eventsMON.timeStamp)))
+        
+        
+        # CALCULATION OF LAMBDA ON MON NOT YET IMPLEMENTED
 
 
 if bareReadoutsCalc is False:
@@ -392,10 +412,10 @@ if bareReadoutsCalc is False:
      
     ####################    
     ### for debug, generate sample hits 
-    # Nhits = 1e6
-    # bb = sdat.sampleHitsMultipleCassettes()
-    # bb.generateGlob(Nhits)
-    # hits = bb.hits   
+    Nhits = 5e4
+    bb = sdat.sampleHitsMultipleCassettes()
+    bb.generateGlob(Nhits)
+    hits = bb.hits   
     
     # bb = sdat.sampleHitsMultipleCassettes_2()
     # bb.generateGlob()
@@ -490,16 +510,17 @@ if (parameters.plotting.plotRawReadouts  or  parameters.plotting.plotReadoutsTim
 ######################
 
 ######################
-### hits
-if (parameters.plotting.plotRawHits or parameters.plotting.plotHitsTimeStamps or parameters.plotting.plotHitsTimeStampsVSChannels) is True:
-    plhits = plo.plottingHits(hits, parameters)
-    if parameters.plotting.plotRawHits is True:
-        plhits.plotChRaw(parameters.cassettes.cassettes)
-    if parameters.plotting.plotHitsTimeStamps is True:
-        plhits.plotTimeStamps(parameters.cassettes.cassettes)
-    if parameters.plotting.plotHitsTimeStampsVSChannels is True:    
-        plhits.plotTimeStampsVSCh(parameters.cassettes.cassettes)    
-######################
+if bareReadoutsCalc is False:
+    ### hits
+    if (parameters.plotting.plotRawHits or parameters.plotting.plotHitsTimeStamps or parameters.plotting.plotHitsTimeStampsVSChannels) is True:
+        plhits = plo.plottingHits(hits, parameters)
+        if parameters.plotting.plotRawHits is True:
+            plhits.plotChRaw(parameters.cassettes.cassettes)
+        if parameters.plotting.plotHitsTimeStamps is True:
+            plhits.plotTimeStamps(parameters.cassettes.cassettes)
+        if parameters.plotting.plotHitsTimeStampsVSChannels is True:    
+            plhits.plotTimeStampsVSCh(parameters.cassettes.cassettes)    
+    ######################
 
 ######################
 ### events
@@ -536,7 +557,7 @@ if bareReadoutsCalc is False:
 
 ############
 # MON plots
-if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is True:
+if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is True and MON.flagMONfound is True:
     
     plMON = plo.plottingMON(eventsMON,allAxis)
     plMON.plot_ToF_PHS_MON()

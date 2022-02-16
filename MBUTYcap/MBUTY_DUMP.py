@@ -5,6 +5,13 @@ Created on Tue Sep 28 14:24:18 2021
 
 @author: francescopiscitelli
 """
+
+###############################################################################
+###############################################################################
+########    V2.0 2021/12/14      francescopiscitelli     ######################
+###############################################################################
+###############################################################################
+
 import argparse
 # import os
 # import sys
@@ -18,14 +25,14 @@ from lib import libTerminal as ta
 
 class dumpToFile():
     
-     def __init__(self, pathToTshark, interface='en0', destPath='./', fileName='temp', typeOfCapture='packets', quantity=100, numOfFiles=1):
+     def __init__(self, pathToTshark, interface='en0', destPath='./', fileName='temp', typeOfCapture='packets', quantity=100, numOfFiles=1, delay=0):
          
          rec = ta.dumpToPcapngUtil(pathToTshark, interface, destPath, fileName)
          
          sta = ta.acquisitionStatus(destPath)  
          sta.set_RecStatus()
          
-         status = rec.dump(typeOfCapture,quantity,numOfFiles)
+         status = rec.dump(typeOfCapture,quantity,numOfFiles,delay)
          if status == 0: 
               sta.set_FinStatus()
          else:
@@ -46,19 +53,20 @@ if __name__ == '__main__':
     
     
     # #  ARGS for ESSDAQ
-    # parser.add_argument("-i", "--interface", help = "interface from which capture packets", type = str, default = "p4p1")
-    # parser.add_argument("-t", "--tshark", help = "path where tshark is located", type = str, default = "/usr/sbin/")
-    # parser.add_argument("-e", "--destination", help = "path where to save recorded pcapng files", type = str, default = "/home/essdaq/pcaps/")
-
-    #  ARGS for ESSDAQ EFU
-    parser.add_argument("-i", "--interface", help = "interface from which capture packets", type = str, default = "ens2f0")
+    parser.add_argument("-i", "--interface", help = "interface from which capture packets", type = str, default = "p4p1")
     parser.add_argument("-t", "--tshark", help = "path where tshark is located", type = str, default = "/usr/sbin/")
     parser.add_argument("-e", "--destination", help = "path where to save recorded pcapng files", type = str, default = "/home/essdaq/pcaps/")
+
+    #  ARGS for ESSDAQ EFU
+    # parser.add_argument("-i", "--interface", help = "interface from which capture packets", type = str, default = "ens2f0")
+    # parser.add_argument("-t", "--tshark", help = "path where tshark is located", type = str, default = "/usr/sbin/")
+    # parser.add_argument("-e", "--destination", help = "path where to save recorded pcapng files", type = str, default = "/home/essdaq/pcaps/")
 
 
     # common  fields
     parser.add_argument("-f", "--file", help = "pcapng filename", type = str, default = "temp")
     parser.add_argument("-n", "--numoffiles", help = "num of files to record in sequence", type = int, default = 1)
+    parser.add_argument("-r", "--delay", help = "sleep (s) between consecutive files", type = int, default = 0)
     
     # mutually exclusive fields
     command_group = parser.add_mutually_exclusive_group(required=False)
@@ -87,7 +95,7 @@ if __name__ == '__main__':
         typeOfCapture = 'filesize'
         quantity = args.size
         
-    rec = dumpToFile(pathToTshark=args.tshark, interface=args.interface, destPath=args.destination, fileName=args.file,typeOfCapture=typeOfCapture,quantity=quantity,numOfFiles=args.numoffiles)
+    rec = dumpToFile(pathToTshark=args.tshark, interface=args.interface, destPath=args.destination, fileName=args.file,typeOfCapture=typeOfCapture,quantity=quantity,numOfFiles=args.numoffiles,delay=args.delay)
 
 
 # print('--------------------')

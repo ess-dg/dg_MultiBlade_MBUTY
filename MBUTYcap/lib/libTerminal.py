@@ -9,7 +9,7 @@ Created on Fri Aug 27 16:38:55 2021
 import os 
 # from lib import libParameters as para
 import sys
-# import time
+import time
 from datetime import datetime
 import subprocess
 # import numpy as np
@@ -180,7 +180,10 @@ class dumpToPcapngUtil():
         self.destPath     = destPath
         self.fileName     = fileName
  
-    def dump(self,typeOfCapture='packets',extraArgs=100,numOfFiles=1):
+    def dump(self,typeOfCapture='packets',extraArgs=100,numOfFiles=1,delay=0):
+        
+        # delay in seconds 
+        delay = int(round(delay)) 
         
         command1 = self.pathToTshark+'tshark'+' -i '+str(self.interface)
 
@@ -188,10 +191,16 @@ class dumpToPcapngUtil():
         current_date = nowTime.strftime("%Y%m%d")
         current_time = nowTime.strftime("%H%M%S")
 
-        file1    = self.destPath+current_date+'_'+current_time+'_'
+        if delay > 0:
+            file1    = self.destPath+current_date+'_'+current_time+'_delay'+str(delay)+'s_'
+        else:
+            file1    = self.destPath+current_date+'_'+current_time+'_'
         fileExt  = '.pcapng'
         
         print('\nrecording '+str(numOfFiles)+' pcapng files ...')
+        
+        if delay > 0:
+            print('\ndelaying each file start of '+str(delay)+' s ...')
         
         status = []
 
@@ -235,6 +244,11 @@ class dumpToPcapngUtil():
             fileFull =  file1+file2+'_'+self.fileName+'_'+currentAcqStr+fileExt
             
             temp = os.system(command1+commandDetails+' -w '+fileFull)
+            
+            if delay > 0:
+                print('\n...waiting '+str(delay)+'s for the next acquisition ...')
+                time.sleep(delay)
+                
             
             status.append(temp)
             

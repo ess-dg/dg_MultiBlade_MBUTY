@@ -486,6 +486,8 @@ class mapMonitor():
         self.config = config
         self.config.get_MONmap()
         
+        self.flagMONfound = False
+        
         RingLoc = self.readouts.Ring    == self.config.MONmap.RingID
         FenLoc  = self.readouts.Fen     == self.config.MONmap.FenID
         HyLoc   = self.readouts.hybrid  == self.config.MONmap.hybridID
@@ -502,10 +504,13 @@ class mapMonitor():
             self.hits.PulseT    = self.readouts.PulseT[selection]
             self.hits.Durations = self.readouts.Durations
             self.hits.Duration  = np.sum(self.readouts.Durations)
+            self.flagMONfound = True
         
         else:
             print('\t \033[1;33mNo MONITOR data found in DATA file\033[1;37m')
-        
+            self.flagMONfound = False
+            
+
 
 ###############################################################################
 ###############################################################################

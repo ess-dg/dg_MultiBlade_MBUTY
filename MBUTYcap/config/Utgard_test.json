@@ -1,7 +1,7 @@
 {
 	"Detector": "test",
 
-	"cassettes" : 32,
+	"cassettes" : 1,
 	
 	"orientation" : "vertical",
 

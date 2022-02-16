@@ -6,10 +6,10 @@
 	"orientation" : "horizontal",
 
 	"Cassette2ElectronicsConfig" : [
-		{"ID" : 4, "Ring" : 4, "Fen" : 1, "Hybrid" : 0, "HybridSerial" : "E5533333222222221111111100000011"},
-		{"ID" : 3, "Ring" : 4, "Fen" : 1, "Hybrid" : 1, "HybridSerial" : "E5533333222222221111111100000012"},
-		{"ID" : 2, "Ring" : 5, "Fen" : 1, "Hybrid" : 0, "HybridSerial" : "E5533333222222221111111100000013"},
-		{"ID" : 1, "Ring" : 5, "Fen" : 1, "Hybrid" : 1, "HybridSerial" : "E5533333222222221111111100000014"}
+		{"ID" : 1, "Ring" : 4, "Fen" : 1, "Hybrid" : 0, "HybridSerial" : "E5533333222222221111111100000011"},
+		{"ID" : 2, "Ring" : 4, "Fen" : 1, "Hybrid" : 1, "HybridSerial" : "E5533333222222221111111100000012"},
+		{"ID" : 3, "Ring" : 5, "Fen" : 1, "Hybrid" : 0, "HybridSerial" : "E5533333222222221111111100000013"},
+		{"ID" : 4, "Ring" : 5, "Fen" : 1, "Hybrid" : 1, "HybridSerial" : "E5533333222222221111111100000014"}
 	],
 	
 	"ChannelMapping" : [

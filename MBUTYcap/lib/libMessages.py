@@ -19,6 +19,7 @@ class messages():
         self.yellow = '\033[1;33m'
         self.white  = '\033[1;37m'
         self.cyan   = '\033[1;36m'
+        self.green  = '\033[1;32m'
         
             # print("{}".format(msg))
             
@@ -56,3 +57,4 @@ if __name__ == '__main__' :
     messages().error('ciao \n cdds \n exit',False)
     
     messages().highlight('ciao')
+    
