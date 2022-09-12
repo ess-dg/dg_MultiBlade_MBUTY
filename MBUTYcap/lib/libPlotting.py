@@ -575,7 +575,7 @@ class plottingEvents():
                     sel2D = self.events.positionS >= 0
                     
                     PHSw  = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc],wireAx,wireCh0to31Round[selc]) # wires 
-                    PHSs  = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHS[selc & sel2D],wireAx,stripChRound[selc & sel2D]) # strips
+                    PHSs  = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHS[selc & sel2D],stripAx,stripChRound[selc & sel2D]) # strips
                     PHSwc = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc & sel2D],wireAx,wireCh0to31Round[selc & sel2D]) # wires coinc with strips 2D
                     
                     self.plotPHS.axHandle[0][k].imshow(PHSw,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,wireAx[0],wireAx[-1]], origin='lower',cmap='jet')
