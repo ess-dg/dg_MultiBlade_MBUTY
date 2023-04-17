@@ -19,6 +19,14 @@ from lib import libAbsUnitsAndLambda as absu
 from lib import libHistograms as hh
 from lib import libParameters as para
 
+# import libReadPcapngVMM as pcapr
+# import libSampleData as sdat
+# import libMapping as maps
+# import libCluster as clu
+# import libAbsUnitsAndLambda as absu
+# import libHistograms as hh
+# import libParameters as para
+
 ###############################################################################
 ###############################################################################
 
@@ -109,8 +117,8 @@ class plottingReadouts():
                 
                 self.histChRaw1hybrid(cc)  
     
-                self.ploth.axHandle[0][k].bar(self.xbins,self.histo0,0.8,color='r') 
-                self.ploth.axHandle[1][k].bar(self.xbins,self.histo1,0.8,color='b')
+                self.ploth.axHandle[0][k].bar(self.xbins,self.histo0,0.8,color='b') 
+                self.ploth.axHandle[1][k].bar(self.xbins,self.histo1,0.8,color='r')
                 self.ploth.axHandle[0][k].set_xlabel('ASIC 0 ch no.')
                 self.ploth.axHandle[1][k].set_xlabel('ASIC 1 ch no.')
                 self.ploth.axHandle[0][k].set_title('hyb.'+str(cc)) 
@@ -150,8 +158,8 @@ class plottingReadouts():
                 xx0 = np.arange(0,len(self.timeStamp0),1)
                 xx1 = np.arange(0,len(self.timeStamp1),1)
                 
-                self.plotht.axHandle[0][k].scatter(xx0,self.timeStamp0,0.8,color='r',marker='+') 
-                self.plotht.axHandle[1][k].scatter(xx1,self.timeStamp1,0.8,color='b',marker='+')
+                self.plotht.axHandle[0][k].scatter(xx0,self.timeStamp0,0.8,color='b',marker='+') 
+                self.plotht.axHandle[1][k].scatter(xx1,self.timeStamp1,0.8,color='r',marker='+')
                 self.plotht.axHandle[0][k].set_xlabel('ASIC 0 trigger no.')
                 self.plotht.axHandle[1][k].set_xlabel('ASIC 1 trigger no.')
                 self.plotht.axHandle[0][k].set_ylabel('time (ns)')

@@ -15,6 +15,7 @@ import sys
 # import pandas as pd
 # from lib import libReadPcapngVMM as pcapr
 from lib import libSampleData as sdat
+# import libSampleData as sdat
 
 
 # NOTE: THIS SUPPORTS ONLY 1 MONITOR
@@ -191,6 +192,8 @@ class read_json_config():
         self.get_allParameters()
         
         self.print_DETname()
+        
+        self.check_cassetteLabelling()
               
     def __del__(self):
         try:
@@ -229,7 +232,7 @@ class read_json_config():
         
     def get_DETmap(self):  
         self.DETmap.cassettesMap = self.conf.get('Cassette2ElectronicsConfig')
-    
+
     def get_DETcassettesInConfig(self):
                 
         for cc in self.DETmap.cassettesMap:
@@ -257,6 +260,32 @@ class read_json_config():
                      self.cassMap.FenID        = cc.get("Fen")
                      self.cassMap.hybridID     = cc.get("Hybrid")
                      self.cassMap.hybridSerial = cc.get("HybridSerial")
+                     
+    def check_cassetteLabelling(self):
+
+        numOfCass               = np.shape(self.DETparameters.cassInConfig)[0]
+        numOfCassFromConfigFile = self.DETparameters.numOfCassettes
+        
+        if numOfCass != numOfCassFromConfigFile:
+            print('\033[1;31m CONFIG FILE JSON ERROR: Num of cassettes ({}) not matching num of cassettes in list ({}) in Config file\033[1;31m'.format(numOfCass,numOfCassFromConfigFile))
+            print(' \n -> exiting.')
+            sys.exit()
+        
+        # print(self.DETparameters.cassInConfig)
+      
+        # sortedCass = np.sort(self.DETparameters.cassInConfig)
+        
+        sortedCass = self.DETparameters.cassInConfig
+        
+        # print(self.DETparameters.cassInConfig)
+        
+        # print(sortedCass)
+        
+        if sortedCass[0] != 0:
+            print('\033[1;31m CONFIG FILE JSON ERROR: Cassettes MUST be labelled from 0 -> please correct in JSON file\033[1;31m')
+            print(' \n -> exiting.')
+            sys.exit()
+            
                      
     def get_channelMap(self):  
         
@@ -448,19 +477,22 @@ class mapDetector():
         # # for k, cass in enumerate(cassettesIDs):
         #     #  does not matter the cassette ID the cassettes are arrangted one after the other according to the order in cassettesIDs,   
         
-        #  # in this case the order is the arrangemtn in the json file 
+        #  # in this case the order is the arrangement in the json file 
         # for k, cass in enumerate(self.config.presentCass): 
         #     selection = np.logical_and( self.hits.Cassette == cass , self.hits.WorS == 0 ) #  wires is WorS = 0
         #     self.hits.WiresStripsGlob[selection] = self.hits.WiresStrips[selection] + k*self.config.numOfWires
         
-                  # in this case the order is the arrangemtn in the json file 
+                  # in this case the order is the arrangement in the json file 
         for k, cass in enumerate(self.config.DETparameters.cassInConfig): 
             selection = np.logical_and( self.hits.Cassette == cass , self.hits.WorS == 0 ) #  wires is WorS = 0
             
+            #  IMPORTANT NOTE 
             #  if just add +32 every cassette in config does not matter the ID
             # index = k
             #  if the cassette ID drives the position in the space, 1 is the bottom cassette or the most left 
-            index = cass-1
+            # index = cass-1
+            #  if the cassette ID drives the position in the space, 0 is the bottom cassette or the most left 
+            index = cass
                 
             self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
         
@@ -517,10 +549,12 @@ class mapMonitor():
 
 if __name__ == '__main__':
 
-   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MB300_AMOR_config.json"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MB300_FREIA3_config.json"
    filePathD = './'+"VMM3a_Freia.pcapng"
 
    config = read_json_config(filePath)
+   
+   # config.check_cassetteLabelling()
    
    # name = config.get_DETname()
    # config.get_DETcassettesInConfig()
@@ -543,16 +577,16 @@ if __name__ == '__main__':
    #  pr.read()
    #  vmm1 = pr.readouts
    
-   vmm2 = sdat.sampleReadouts_2()
-   vmm2.fill()
-   readouts = vmm2.readouts
+   # vmm2 = sdat.sampleReadouts_2()
+   # vmm2.fill()
+   # readouts = vmm2.readouts
 
    
    
-   re  = mapDetector(readouts, config)
-   re.debug = True
-   re.initCatData()
-   data1 = re.catData
+   # re  = mapDetector(readouts, config)
+   # re.debug = True
+   # re.initCatData()
+   # data1 = re.catData
    
 
    # re.mapp1cass(1)
@@ -564,16 +598,16 @@ if __name__ == '__main__':
     
    # re.mappAllCassAndChannels()
    
-   re.mappAllCassAndChannelsGlob()
+   # re.mappAllCassAndChannelsGlob()
    
-   re.initCatData()
-   data = re.catData
+   # re.initCatData()
+   # data = re.catData
    
    # re.mappAllCassAndChannelsGlob()
    # hits = re.hits
    
-   hits = re.hits
-   hitsArray = hits.concatenateHitsInArrayForDebug()
+   # hits = re.hits
+   # hitsArray = hits.concatenateHitsInArrayForDebug()
     
    # # # bb = re.mappAllCassAndChannels([345,6,25])
    

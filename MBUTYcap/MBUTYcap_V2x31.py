@@ -54,7 +54,7 @@ parameters  = para.parameters(currentPath)
 
 configFilePath  = currentPath+'config/'
 
-# configFileName  = "MB300_AMOR_config1to2.json"
+configFileName  = "MB300_AMOR_config1to2.json"
 # configFileName  = "MB300_AMOR_config1to5.json"
 # configFileName  = "MB300_AMOR_config6to10.json"
 # configFileName  = "MB300_AMOR_config11to14.json"
@@ -65,11 +65,12 @@ configFilePath  = currentPath+'config/'
 
 # configFileName  = "MB300_AMOR_config_rev.json"
 configFileName  = "MB300_FREIA_config.json"
+configFileName  = "MB300_FREIA3_config.json"
 # configFileName  = "MB300_FREIA_config_inverted.json"
 # configFileName  = "Utgard_test.json"
 # configFileName  = "Utgard_test_AssCrate.json"
 
-configFileName  = "MB18_6cass.json"
+# configFileName  = "MB18_6cass.json"
 
 ###############################################################################
 ###############################################################################
@@ -92,7 +93,7 @@ parameters.fileManagement.sync = False
 
 # test setup
 parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
-# parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataPcapUtgard2/'
+parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataVMM/'
 parameters.fileManagement.destPath   = currentPath+'data/'
 
 # AMOR
@@ -220,11 +221,11 @@ parameters.plotting.showStat = 'globalStat'
 
 ###############     
 ### raw plots
-parameters.plotting.plotRawReadouts         = False
+parameters.plotting.plotRawReadouts         = True
 parameters.plotting.plotReadoutsTimeStamps  = False
 parameters.plotting.plotRawHits             = False
 parameters.plotting.plotHitsTimeStamps      = False
-parameters.plotting.plotHitsTimeStampsVSChannels = True
+parameters.plotting.plotHitsTimeStampsVSChannels = False
 
 # with false disables clustering and mapping for speed
 bareReadoutsCalc = False
@@ -238,7 +239,7 @@ parameters.plotting.instRateBin     = 100e-6  # s
 ### ToF plot integrated over individual cassette, one per cassette
 parameters.plotting.plotToFDistr    = False
 
-parameters.plotting.ToFrange        = 0.06    # s
+parameters.plotting.ToFrange       = 0.06    # s
 parameters.plotting.ToFbinning      = 100e-6 # s
      
 parameters.plotting.plotMultiplicity = False 
@@ -247,7 +248,7 @@ parameters.plotting.plotMultiplicity = False
 
 ### 'W.max-S.max' is max max,  'W.cog-S.cog' is CoG CoG, 'W.max-S.cog' is wires max and strips CoG 
 parameters.plotting.positionReconstruction = 'W.max-S.cog'
-# parameters.plotting.positionReconstruction = 'W.max-S.max'
+parameters.plotting.positionReconstruction = 'W.max-S.max'
 
 ### if True plot XY and XtoF plot in absolute unit (mm), if False plot in wire and strip ch no.
 parameters.plotting.plotABSunits = False
@@ -274,7 +275,7 @@ parameters.pulseHeigthSpect.plotPHS = True
 parameters.pulseHeigthSpect.plotPHSlog = False
 
 parameters.pulseHeigthSpect.energyBins = 128
-parameters.pulseHeigthSpect.maxEnerg   = 70000
+parameters.pulseHeigthSpect.maxEnerg   = 1025
 
 ### plot the PHS correaltion wires vs strips
 parameters.pulseHeigthSpect.plotPHScorrelation = False
@@ -373,10 +374,10 @@ for cont, fileName in enumerate(fileDialogue.fileName):
 readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
 ####################
 
-# md  = maps.mapDetector(readouts, config)
-# md.mappAllCassAndChannelsGlob()
-# hits = md.hits
-# hitsArray  = hits.concatenateHitsInArrayForDebug()
+md  = maps.mapDetector(readouts, config)
+md.mappAllCassAndChannelsGlob()
+hits = md.hits
+hitsArray  = hits.concatenateHitsInArrayForDebug()
 
 
 ####################
@@ -402,9 +403,9 @@ if bareReadoutsCalc is False:
     
     ###############################################################################
     ### map data
-    md  = maps.mapDetector(readouts, config)
-    md.mappAllCassAndChannelsGlob()
-    hits = md.hits
+    # md  = maps.mapDetector(readouts, config)
+    # md.mappAllCassAndChannelsGlob()
+    # hits = md.hits
     
     # for debug force all hits in a single cassetteno.1 even if from different hybrids
     # hits.Cassette = np.ones(len((hits.Cassette)),dtype='int64')
@@ -412,10 +413,10 @@ if bareReadoutsCalc is False:
      
     ####################    
     ### for debug, generate sample hits 
-    Nhits = 5e4
-    bb = sdat.sampleHitsMultipleCassettes()
-    bb.generateGlob(Nhits)
-    hits = bb.hits   
+    # Nhits = 5e4
+    # bb = sdat.sampleHitsMultipleCassettes()
+    # bb.generateGlob(Nhits)
+    # hits = bb.hits   
     
     # bb = sdat.sampleHitsMultipleCassettes_2()
     # bb.generateGlob()
@@ -435,7 +436,7 @@ if bareReadoutsCalc is False:
     
     ####################    
     ### for debug, events in single array 
-    # eventsArray = events.concatenateEventsInArrayForDebug() 
+    eventsArray = events.concatenateEventsInArrayForDebug() 
     ####################
        
     ####################    
@@ -566,10 +567,10 @@ if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is T
 ###############################################################################
 #  any other plot that the user wants...
 
-# # sel = np.logical_or(hits.WiresStrips == 31,  hits.WiresStrips == 2)
-# sel = np.logical_or(hits.WiresStrips == 95,  hits.WiresStrips == 2)
+# sel = np.logical_or(hits.WiresStrips == 31,  hits.WiresStrips == 2)
+sel = np.logical_or(hits.WiresStrips == 0,  hits.WiresStrips == 8)
 
-# diffe       = np.diff(hits.timeStamp[sel])
+diffe       = np.diff(hits.timeStamp[sel])
 
 # print('\n',np.sum(~sel))
 
@@ -577,17 +578,17 @@ if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is T
 
 # # print('freq injected in 1 ch '+str(1/(sortedDiffe[-1]*1e-9))+' Hz')
 
-# TD = np.arange(-2000,2000,1)
+TD = np.arange(-2000,2000,1)
 
-# hist  = hh.histog().hist1D(TD,diffe) 
-# figl, ax = plt.subplots(num=567,figsize=(6,6), nrows=1, ncols=1) 
-# ax.step(TD,hist,'b',where='mid')   
-# ax.set_yscale('log')
-# ax.set_xlabel('delta time (ns)')
-# ax.set_ylabel('counts') 
-# ax.grid()
-# ax.set_xlim((-200,200))
-# # figl.suptitle('2FEN_2Hy')
+hist  = hh.histog().hist1D(TD,diffe) 
+figl, ax = plt.subplots(num=567,figsize=(6,6), nrows=1, ncols=1) 
+ax.step(TD,hist,'b',where='mid')   
+ax.set_yscale('log')
+ax.set_xlabel('delta time (ns)')
+ax.set_ylabel('counts') 
+ax.grid()
+ax.set_xlim((-200,200))
+# figl.suptitle('2FEN_2Hy')
       
 
 

@@ -11,6 +11,10 @@ from lib import libMapping as maps
 from lib import libReadPcapngVMM as pcapr
 from lib import libCluster as clu
 
+# import libMapping as maps
+# import libReadPcapngVMM as pcapr
+# import libCluster as clu
+
 ###############################################################################
 ###############################################################################
 # sample data for AMOR topology

@@ -7,11 +7,13 @@ Created on Fri Sep  3 11:34:33 2021
 """
 
 from lib import libMapping as maps
+# import libMapping as maps
 import numpy as np
 import os
 import sys
 import time
 from lib import libEventsSoftThresholds as thre
+# import libEventsSoftThresholds as thre
 
 ###############################################################################
 
@@ -364,19 +366,24 @@ if __name__ == '__main__' :
     
     # prof.stop()
     
-    parameters2  = parameters('/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/')
+    # parameters2  = parameters('/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/')
     
     configFilePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/'+'config/'
     # configFileName  = "MB300_AMOR_config.json"
-    configFileName  = "MB300_FREIA_config.json"
+    configFileName  = "MB300_FREIA3_config.json"
+    
+    # config = maps.read_json_config(configFilePath+configFileName)
+    # # parameters.loadConfigParameters(config)
+    
+    # parameters2.loadConfigParameters()
+    
+    # parr = parameters()
+    # parr.init_empty()
+    
+    parameters  = parameters(configFilePath)
     
     config = maps.read_json_config(configFilePath+configFileName)
-    # parameters.loadConfigParameters(config)
-    
-    parameters2.loadConfigParameters()
-    
-    parr = parameters()
-    parr.init_empty()
+    parameters.loadConfigParameters(config)
     
     # parameters.dataReduction.softThArray.ThW[:,1] = 5000
     
