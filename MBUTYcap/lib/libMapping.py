@@ -275,16 +275,16 @@ class read_json_config():
       
         # sortedCass = np.sort(self.DETparameters.cassInConfig)
         
-        sortedCass = self.DETparameters.cassInConfig
+        # sortedCass = self.DETparameters.cassInConfig
         
         # print(self.DETparameters.cassInConfig)
         
         # print(sortedCass)
         
-        if sortedCass[0] != 0:
-            print('\033[1;31m CONFIG FILE JSON ERROR: Cassettes MUST be labelled from 0 -> please correct in JSON file\033[1;31m')
-            print(' \n -> exiting.')
-            sys.exit()
+        # if sortedCass[0] != 0:
+        #     print('\033[1;31m CONFIG FILE JSON ERROR: Cassettes MUST be labelled from 0 -> please correct in JSON file\033[1;31m')
+        #     print(' \n -> exiting.')
+        #     sys.exit()
             
                      
     def get_channelMap(self):  
@@ -487,12 +487,12 @@ class mapDetector():
             selection = np.logical_and( self.hits.Cassette == cass , self.hits.WorS == 0 ) #  wires is WorS = 0
             
             #  IMPORTANT NOTE 
-            #  if just add +32 every cassette in config does not matter the ID
-            # index = k
+            #  if just add +32 every cassette in json config does not matter the ID
+            index = k
             #  if the cassette ID drives the position in the space, 1 is the bottom cassette or the most left 
             # index = cass-1
             #  if the cassette ID drives the position in the space, 0 is the bottom cassette or the most left 
-            index = cass
+            # index = cass
                 
             self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
         
