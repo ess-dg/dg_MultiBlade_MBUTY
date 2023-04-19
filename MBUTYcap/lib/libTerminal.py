@@ -253,7 +253,8 @@ class dumpToPcapngUtil():
             status.append(temp)
             
             if temp != 0:
-                print(' \033[1;31mERROR ... \n\033[1;37m')
+                # print(' \033[1;31mERROR ... \n\033[1;37m')
+                print(' ERROR ... EXIT!\n')
                 sys.exit()
                 
         allStatus = sum(status)      
