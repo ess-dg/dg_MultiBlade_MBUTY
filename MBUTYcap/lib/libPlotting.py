@@ -226,8 +226,11 @@ class plottingHits():
         self.timeStampW = self.hits.timeStamp[sel] * isWire[sel]
         self.timeStampS = self.hits.timeStamp[sel] * isStrip[sel]
         
-        self.timeStampW[self.timeStampW == 0] = np.ma.masked # same as np.nan for int64 instead of floats   
-        self.timeStampS[self.timeStampS == 0] = np.ma.masked # same as np.nan for int64 instead of floats
+        # self.timeStampW[self.timeStampW == 0] = np.ma.masked # same as np.nan for int64 instead of floats   
+        # self.timeStampS[self.timeStampS == 0] = np.ma.masked # same as np.nan for int64 instead of floats
+        
+        self.timeStampW = np.ma.masked_where(self.timeStampW == 0,    self.timeStampW) 
+        self.timeStampS = np.ma.masked_where(self.timeStampS == 0,    self.timeStampS) 
         
     def extractTimeStampAndCh1Cass(self,cassette1ID):
            
@@ -253,7 +256,7 @@ class plottingHits():
         
         self.plotht = preparePlotMatrix(1004, 1, len(cassettes))
         
-        self.plotht.figHandle.suptitle('Hits - w and S time stamps')
+        self.plotht.figHandle.suptitle('Hits - W and S time stamps')
         
         for k, cc in enumerate(cassettes):
             
@@ -274,7 +277,7 @@ class plottingHits():
         
         self.plothtvs = preparePlotMatrix(1005, 1, len(cassettes))
         
-        self.plothtvs.figHandle.suptitle('Hits - w and S VS time stamps')
+        self.plothtvs.figHandle.suptitle('Hits - W and S VS time stamps')
         
         for k, cc in enumerate(cassettes):
             
@@ -282,8 +285,8 @@ class plottingHits():
             
             self.plothtvs.axHandle[0][k].scatter(self.WireCh,self.timeStampW,0.8,color='r',marker='+') 
             self.plothtvs.axHandle[0][k].scatter(self.StripCh,self.timeStampS,0.8,color='b',marker='+')
-            self.plothtvs.axHandle[0][k].set_xlabel('trigger no.')   
-            self.plothtvs.axHandle[0][k].set_ylabel('time (ns)')
+            self.plothtvs.axHandle[0][k].set_ylabel('time (ns)')   
+            self.plothtvs.axHandle[0][k].set_xlabel('W or S channel (after mapping)')
             self.plothtvs.axHandle[0][k].set_title('cass ID '+str(cc)) 
             self.plothtvs.axHandle[0][k].grid(axis='x', alpha=0.75)
             self.plothtvs.axHandle[0][k].grid(axis='y', alpha=0.75)
