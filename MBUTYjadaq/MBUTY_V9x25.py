@@ -18,7 +18,11 @@ import h5py
 import os
 import glob
 import sys
-from PyQt5.QtWidgets import QFileDialog
+
+# import matplotlib
+# # matplotlib.use(‘Qt5Agg’)
+from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QGridLayout, QLabel, QLineEdit
+app = QApplication(sys.argv)
 
 # import the library with all specific functions that this code uses 
 from lib import libSyncUtil as syu 
@@ -66,15 +70,17 @@ sync = False   #ON/OFF if you want to rsync the data
 
 ###############################################################################
 
-EFU_JADAQ_fileType = True  # False = JADAQ, True = EFU file loading 
+EFU_JADAQ_fileType = False  # False = JADAQ, True = EFU file loading 
 
 pathsourceEFU      = 'efu@192.168.0.58:/home/efu/data/MB18-setup/'
-pathsourceJDQ      = 'jadaq@192.168.0.57:/home/jadaq/data/MB18/'
+pathsourceJDQ      = 'jadaq@192.168.0.57:/home/jadaq/data/testu/'
 
-desitnationpath    = ''
+pathsourceJDQ      = 'mb@172.30.244.176:/home/mb/data/ioadata/'
 
-# datapath         = desitnationpath 
-datapath         = os.path.abspath('.')+'/data/' 
+desitnationpath    = '/Users/francescopiscitelli/Desktop/dd/'
+
+datapath         = desitnationpath 
+# datapath         = os.path.abspath('.')+'/data/' 
 # datapath         = os.path.join('/home/efu/data', sys.argv[1], '')
 
 filename = '13827-C-ESSmask-20181116-120805_00000.h5'
@@ -98,7 +104,7 @@ acqnum = [0]
 #     except TypeError:
 #         acqnum = [int(sys.argv[3])]
 
-openWindowToSelectFiles = 0
+openWindowToSelectFiles = 2
      #  0 = filename and acqnum is loaded, no window opens
      #  1 = latest file created in folder is loaded with its serial
      #  2 = filename and acqnum are both ignored, window opens and 
@@ -112,6 +118,7 @@ SingleFileDuration       = 60     #s to check if h5 file has all the resets
 saveReducedData = False #ON/OFF
 
 # savereducedpath = os.path.join('/home/efu/data/reduced', sys.argv[1], '')
+
     
 savereducedpath = '/Users/francescopiscitelli/Desktop/reducedFile/'
 
@@ -124,12 +131,16 @@ compressionHDFL  = 9     # gzip compression level 0 - 9
 
 ###############################################################################
 
-digitID = [34,33,31,142,143,137]
+# digitID = [34,33,31,142,143,137]
+
+# digitID = [34,33,31,142,143,137]
+
+digitID = [35]
 
 ###############################################################################
 # mapping channels into geometry 
 
-MAPPING = True     # ON/OFF, if OFF channels are used as in the file
+MAPPING = False     # ON/OFF, if OFF channels are used as in the file
 
 mappath = os.path.join(currentLoc,'tables/')
 mapfile = 'MB18_mapping.xlsx'
@@ -140,13 +151,13 @@ overflowcorr      = True   #ON/OFF (does not affect the MONITOR)
 zerosuppression   = True   #ON/OFF (does not affect the MONITOR)
 
 Clockd            = 16e-9   #s CAEN V1740D clock steps
-Timewindow        = 2e-6    #s to create clusters 
+Timewindow        = 3e-6    #s to create clusters 
 
 ###############################################################################
 
-plotChRaw         = False   #ON/OFF plot of raw ch in the file (not flipped, not swapped) no thresholds (only for 1st serial)
+plotChRaw         = True   #ON/OFF plot of raw ch in the file (not flipped, not swapped) no thresholds (only for 1st serial)
 
-plottimestamp     = False   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
+plottimestamp     = True   #ON/OFF for debugging, plot the events VS time stamp (after thresholds)
 
 plottimeTofs      = False   #ON/OFF for debugging, plot the time duration of ToFs (after thresholds)
 
@@ -162,7 +173,7 @@ plotMultiplicity  = False   #ON/OFF
 # software thresholds
 # NOTE: they are applied to the flipped or swpadded odd/even order of ch!
 # th on ch number: 32 w and 32 s, one row per cassette 
-softthreshold = 1   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines the Thresholds in an array sth 
+softthreshold = 0   # 0 = OFF, 1 = File With Threhsolds Loaded, 2 = User defines the Thresholds in an array sth 
 
 #####
 #  if 1 the file containing the threhsolds is loaded: 
@@ -189,13 +200,13 @@ plotToFhist  = False    #ON/OFF
 # PHS image of all wires and strips for all digitizers             
 EnerHistIMG   = True            # ON/OFF
 
-plotEnerHistIMGinLogScale = False   # ON/OFF
+plotEnerHistIMGinLogScale = True   # ON/OFF
 
 energybins    = 128
 maxenerg      = 70e3
 
 # correlation of PHS wires VS strips per digitiser (only calculated first serial acqnum)
-CorrelationPHSws = False              # ON/OFF
+CorrelationPHSws = True              # ON/OFF
 
 ###############################################################################
 # Position reconstruction (max is max amplitude ch in clsuter either on w or s,
@@ -243,7 +254,7 @@ plotIMGinLogScale = False
    
 ###############################################################################
 # LAMBDA: calcualates lambda and plot hist 
-calculateLambda  = True    # ON/OFF  
+calculateLambda  = False    # ON/OFF  
 
 plotLambdaHist   = False    # ON/OFF hist per digitiser (all ch summed togheter)
                         # (calculateLambda has to be ON to plot this)
@@ -252,7 +263,7 @@ lambdaBins      = 127
 lambdaRange     = [2.5, 10]    #A
 
 #if chopper has two openings or more per reset of ToF
-MultipleFramePerReset = True  #ON/OFF (this only affects the lambda calculation)
+MultipleFramePerReset = False  #ON/OFF (this only affects the lambda calculation)
 NumOfBunchesPerPulse  = 2
 lambdaMIN             = 2.9     #A
 
@@ -264,7 +275,7 @@ PickUpTimeShift =  13.5/(2.*180.) * ToFduration/NumOfBunchesPerPulse  #s
 # NOTE: if the MON does not have any ToF, lambda and ToF spectra can be
 # still calculated but perhaps meaningless
 
-MONOnOff = True       #ON/OFF
+MONOnOff = False       #ON/OFF
 
 MONdigit = 137     #digitiser of the Monitor
 MONch    = 63      #ch after reorganization of channels (from 0 to 63)
@@ -288,7 +299,7 @@ MONDistance  = 0   #m distance of MON from chopper if plotMONtofPH == 1 (needed 
 ###############################################################################
 ###############################################################################
 
-colorrp = ['r','g','b','k','m','c']
+colorrp = ['r','g','b','k','m','c','k']
 
 ###############################################################################
 #  syncing the data from remote computer where files are written

@@ -18,7 +18,11 @@ import h5py
 import os
 import glob
 import sys
-from PyQt5.QtWidgets import QFileDialog
+
+# import matplotlib
+# # matplotlib.use(‘Qt5Agg’)
+from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QGridLayout, QLabel, QLineEdit
+app = QApplication(sys.argv)
 
 # import the library with all specific functions that this code uses 
 from lib import libSyncUtil as syu 
@@ -49,7 +53,7 @@ plt.close("all")
 ###############################################################################
 ###############################################################################
 
-sync = True   #ON/OFF if you want to rsync the data 
+sync = False   #ON/OFF if you want to rsync the data 
 
 ###############################################################################
 

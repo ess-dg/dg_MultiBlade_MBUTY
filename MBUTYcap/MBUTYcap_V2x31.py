@@ -13,6 +13,11 @@ import os
 import sys
 import matplotlib.pyplot as plt
 
+# import matplotlib
+# # matplotlib.use(‘Qt5Agg’)
+from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QGridLayout, QLabel, QLineEdit
+app = QApplication(sys.argv)
+
 ### import the library with all specific functions that this code uses 
 from lib import libReadPcapngVMM as pcapr
 from lib import libSampleData as sdat

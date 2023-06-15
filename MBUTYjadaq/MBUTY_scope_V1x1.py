@@ -17,7 +17,11 @@ import matplotlib.pyplot as plt
 import os
 import glob
 import sys
-from PyQt5.QtWidgets import QFileDialog
+
+# import matplotlib
+# # matplotlib.use(‘Qt5Agg’)
+from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QGridLayout, QLabel, QLineEdit
+app = QApplication(sys.argv)
 
 # import the library with all specific functions that this code uses 
 from lib import libSyncUtil as syu 
@@ -44,16 +48,18 @@ desitnationpath  = '/Users/francescopiscitelli/Desktop/try/'
 # datapath            = desitnationpath 
 datapath            = os.path.abspath('.')+'/data/' 
 
+datapath            ='/Users/francescopiscitelli/Desktop/dd/'
+
 filename = 'JADAQ-traces-file_00000.h5'
 
-openWindowToSelectFiles = 0
+openWindowToSelectFiles = 2
      #  0 = filename is loaded, no window opens 
      #  1 = filename is ignored, no window open, last created file in directory is loaded automatically 
      #  2 = filename is ignored, window opens to selct the file 
      
 ###############################################################################
 
-digitID = 34
+digitID = 35
 
 ###############################################################################
 
@@ -181,7 +187,7 @@ for k in range(Nevents):
     
     ########################
     
-    text = 'Event ' + str(k) + ' - channel '+ str(np.int(Cdata[k,1]))+' - PH '+str(np.int(Cdata[k,2]))
+    text = 'Event ' + str(k) + ' - channel '+ str(int(Cdata[k,1]))+' - PH '+str(int(Cdata[k,2]))
     
     print(text+' - ToF '+  '{:8.2f}'.format( Cdata[k,0]*1e3 ) +' ms')
 
