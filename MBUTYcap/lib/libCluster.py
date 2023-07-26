@@ -434,6 +434,16 @@ class clusterHits():
                 self.TPHM     = self.TPHM[np.logical_not(rejected),:]    #remove rejected from data
                 self.PO       = self.PO[np.logical_not(rejected),:]      #remove rejected from data
                 
+                # check if there are some NaN 
+                theNanOnes = np.logical_or(np.isnan(self.PO[:,0]),np.isnan(self.PO[:,1])) 
+                
+                if np.sum(theNanOnes) > 0:
+                    print('\n --> \033[1;33mWARNING: Some NaN (invalid value) values found in clustering -> removed from events.\033[1;37m',end='')
+
+                
+                self.TPHM     = self.TPHM[np.logical_not(theNanOnes),:]    #remove nan from data
+                self.PO       = self.PO[np.logical_not(theNanOnes),:]      #remove nan from data
+                
                 # self.events.NeventsNotRejAll = self.events.Nevents - (self.rejCounter[1]+self.rejCounter[3]+self.rejCounter[4]);
                 # self.events.NeventsNotRej2D   = np.sum(self.POPH[:,1] >= 0)
                 
