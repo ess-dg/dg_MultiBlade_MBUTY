@@ -45,7 +45,7 @@ from lib import libReducedFileH5 as saveH5
 ###############################################################################
 profiling = para.profiling()
 print('----------------------------------------------------------------------')
-print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 2.3\033[1;37m')
+print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 2.31\033[1;37m')
 print('----------------------------------------------------------------------')
 plt.close("all")
 ### check version ###

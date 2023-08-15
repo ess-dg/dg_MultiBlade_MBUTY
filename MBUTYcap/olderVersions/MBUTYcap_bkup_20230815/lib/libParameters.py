@@ -205,7 +205,6 @@ class plotting():
           self.plotRawHits             = False
           self.plotHitsTimeStamps      = False
           self.plotHitsTimeStampsVSChannels   = False
-          self.plotChopperResets       = False
            
           self.plotInstRate    = False
           self.instRateBin     = 1e-6  # s

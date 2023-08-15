@@ -170,28 +170,7 @@ class plottingReadouts():
                 self.plotht.axHandle[0][k].grid(axis='y', alpha=0.75)
                 self.plotht.axHandle[1][k].grid(axis='y', alpha=0.75)
             
-    def plotChoppResets(self):
-            
-            if self.flag is True:
-            
-                self.plothc = preparePlotMatrix(9999, 1, 2)
-                
-                self.plothc.figHandle.suptitle('Chopper Resets - all channels')
-                
-                xax = np.arange(0,len(self.readouts.PulseT))
-                
-                resetsTime = (self.readouts.PulseT - self.readouts.PulseT[0]) / 1e9    # from ns to s 
-                
-                self.plothc.axHandle[0][0].scatter(xax,resetsTime,0.8,color='k',marker='+') 
-                self.plothc.axHandle[0][0].set_xlabel('trigger no.')
-                self.plothc.axHandle[0][0].set_ylabel('time (s)')
-                
-                deltaTime = np.concatenate((np.diff(resetsTime),[0]),axis=0)
-                
-                self.plothc.axHandle[0][1].scatter(xax,deltaTime,0.8,color='k',marker='+') 
-                self.plothc.axHandle[0][1].set_xlabel('trigger no.')
-                self.plothc.axHandle[0][1].set_ylabel('delta time betweeen resets (s)')
-            
+        
 ################################
         
 class plottingHits():

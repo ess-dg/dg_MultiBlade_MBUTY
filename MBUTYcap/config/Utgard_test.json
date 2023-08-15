@@ -6,7 +6,7 @@
 	"orientation" : "vertical",
 
 	"Cassette2ElectronicsConfig" : [
-		{"ID" : 1, "Ring" : 0, "Fen" : 0, "Hybrid" : 0}
+		{"ID" : 0, "Ring" : 0, "Fen" : 0, "Hybrid" : 0}
 	],
 	
 	"ChannelMapping" : [

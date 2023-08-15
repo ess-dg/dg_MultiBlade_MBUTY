@@ -184,25 +184,7 @@ class readouts():
          self.PulseT    = self.PulseT[noCalibData]
          self.PrevPT    = self.PrevPT[noCalibData]
         
-  
-    def checkChopperFreq(self):  
         
-        deltaTime  = np.diff(self.PulseT - self.PulseT[0])
-        
-        indexesIsNotZero  = np.argwhere(deltaTime>0)
-        
-        deltaTimeNoTZero = deltaTime[indexesIsNotZero]
-        
-        meanDelta = np.mean(deltaTimeNoTZero)/1e9
-        
-        varianceDelta = np.var(deltaTimeNoTZero)/1e9
-        
-        meanFreq = 1/meanDelta
-        
-        print('\nChopper Period is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta,varianceDelta,meanFreq)))
-        
-  
-    
 ###############################################################################
 ###############################################################################
 
