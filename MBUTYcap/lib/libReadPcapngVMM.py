@@ -187,21 +187,24 @@ class readouts():
   
     def checkChopperFreq(self):  
         
-        deltaTime  = np.diff(self.PulseT - self.PulseT[0])
-        
-        indexesIsNotZero  = np.argwhere(deltaTime>0)
-        
-        deltaTimeNoTZero = deltaTime[indexesIsNotZero]
-        
-        meanDelta = np.mean(deltaTimeNoTZero)/1e9
-        
-        varianceDelta = np.var(deltaTimeNoTZero)/1e9
-        
-        meanFreq = 1/meanDelta
-        
-        print('\nChopper Period is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta,varianceDelta,meanFreq)))
-        
-  
+        try:
+            deltaTime  = np.diff(self.PulseT - self.PulseT[0])
+            
+            indexesIsNotZero  = np.argwhere(deltaTime>0)
+            
+            deltaTimeNoTZero = deltaTime[indexesIsNotZero]
+            
+            meanDelta = np.mean(deltaTimeNoTZero)/1e9
+            
+            varianceDelta = np.var(deltaTimeNoTZero)/1e9
+            
+            meanFreq = 1/meanDelta
+            
+            print('\nChopper Period is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta,varianceDelta,meanFreq)))
+        except:
+
+            print('\t \033[1;33mWARNING: Unable to calculate chopper frequency! \033[1;37m')
+            time.sleep(2)
     
 ###############################################################################
 ###############################################################################
