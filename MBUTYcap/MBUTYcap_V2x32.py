@@ -573,12 +573,12 @@ if bareReadoutsCalc is False:
     if parameters.plotting.plotInstRate is True:
         plev.plotInstantaneousRate(parameters.cassettes.cassettes)
 
-############
-# MON plots
-if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is True and MON.flagMONfound is True:
-    
-    plMON = plo.plottingMON(eventsMON,allAxis)
-    plMON.plot_ToF_PHS_MON()
+    ############
+    # MON plots
+    if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is True and MON.flagMONfound is True:
+        
+        plMON = plo.plottingMON(eventsMON,allAxis)
+        plMON.plot_ToF_PHS_MON()
 
 ###############################################################################
 ###############################################################################
