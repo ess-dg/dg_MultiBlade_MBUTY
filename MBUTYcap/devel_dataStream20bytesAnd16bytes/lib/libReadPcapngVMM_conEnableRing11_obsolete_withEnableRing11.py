@@ -144,8 +144,12 @@ class readouts():
          
     def calculateTimeStampWithTDC(self,NSperClockTick,time_offset=0,time_slope=1):
         
-         self.timeStamp = self.timeCoarse + VMM3A_convertCalibrate_TDC_ns(self.TDC,NSperClockTick,time_offset,time_slope).TDC_ns
-    
+        selVMMdata = self.Ring <= 10
+        
+        self.timeStamp[selVMMdata]  = self.timeCoarse[selVMMdata] + VMM3A_convertCalibrate_TDC_ns(self.TDC[selVMMdata],NSperClockTick,time_offset,time_slope).TDC_ns
+        
+        self.timeStamp[~selVMMdata] = self.timeCoarse[~selVMMdata]
+           
     def checkIfCalibrationMode(self):
         
         flag = False
@@ -200,11 +204,7 @@ class readouts():
             
             meanFreq = 1/meanDelta
             
-            if np.isnan(meanDelta):
-                print('\nNo Chopper found')
-            else:
-                print('\nChopper Period is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta,varianceDelta,meanFreq)))
-                       
+            print('\nChopper Period is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta,varianceDelta,meanFreq)))
         except:
 
             print('\t \033[1;33mWARNING: Unable to calculate chopper frequency! \033[1;37m')
@@ -282,7 +282,32 @@ class  checkWhich_RingFenHybrid_InFile():
         
         
 #################################################        
+     
+class ring11data():
+    def __init__(self, buffer, NSperClockTick):
+                 
+        # decode into little endian integers
+        PhysicalRing = int.from_bytes(buffer[0:1], byteorder='little')
+        self.Fen     = int.from_bytes(buffer[1:2], byteorder='little')
+        self.Length  = int.from_bytes(buffer[2:4], byteorder='little')
+        timeHI       = int.from_bytes(buffer[4:8], byteorder='little')
+        timeLO       = int.from_bytes(buffer[8:12], byteorder='little')
+        self.Pos     = int.from_bytes(buffer[12:13], byteorder='little')
+        self.Channel = int.from_bytes(buffer[13:14], byteorder='little')
+        self.ADC     = int.from_bytes(buffer[14:16], byteorder='little')
         
+        #######################
+        #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
+        self.Ring = int(np.floor(PhysicalRing/2))
+        # self.Ring = PhysicalRing
+        #######################
+
+        timeHIns = int(round(timeHI * 1000000000))
+        timeLOns = int(round(timeLO * NSperClockTick))
+        
+        self.timeCoarse  = timeHIns + timeLOns
+          
+
 class VMM3A():
     def __init__(self, buffer, NSperClockTick):
                  
@@ -413,13 +438,13 @@ class checkIfFileExistInFolder():
 ################################################## 
 
 class pcapng_reader():
-    def __init__(self, filePathAndFileName, NSperClockTick, timeResolutionType = 'fine', sortByTimeStampsONOFF = True):
+    def __init__(self, filePathAndFileName, NSperClockTick, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, enableRing11data = False):
         
         self.readouts = readouts()
         
         try:
             # print('PRE-ALLOC method to load data ...')
-            self.pcapng = pcapng_reader_PreAlloc(filePathAndFileName,NSperClockTick,timeResolutionType)
+            self.pcapng = pcapng_reader_PreAlloc(filePathAndFileName,NSperClockTick,timeResolutionType,enableRing11data)
             self.pcapng.allocateMemory()
             self.pcapng.read()
             self.readouts = self.pcapng.readouts
@@ -453,7 +478,7 @@ class pcapng_reader():
 ##################################################  
 
 class pcapng_reader_PreAlloc():
-    def __init__(self, filePathAndFileName, NSperClockTick, timeResolutionType = 'fine'):
+    def __init__(self, filePathAndFileName, NSperClockTick, timeResolutionType = 'fine', enableRing11data = False):
         
         # number of decimals after comma in seconds, to round the PulseT and PRevPT: 6 means 1us rounding, etc...
         # self.resolution = 9
@@ -463,6 +488,8 @@ class pcapng_reader_PreAlloc():
         self.NSperClockTick = NSperClockTick 
         
         self.timeResolutionType  = timeResolutionType
+        
+        self.enableRing11data = enableRing11data
         
         self.filePathAndFileName = filePathAndFileName
         
@@ -488,6 +515,8 @@ class pcapng_reader_PreAlloc():
         self.headerSize          = self.mainHeaderSize+self.ESSheaderSize #bytes  (72 bytes)
         
         self.singleReadoutSize   = 20  #bytes
+        
+        self.singleReadoutSizeRing11   = 16  #bytes
                 
         # self.numOfPacketsPerTransfer = 447
         # self.expectedESSpacketSize = 72+NumOfReadoutsIN1PAcket*20 = max 9000bytes
@@ -635,32 +664,114 @@ class pcapng_reader_PreAlloc():
                             readoutsInPacket = int(readoutsInPacket)
                             self.totalReadoutCount += readoutsInPacket
                             
+                            readoutSize = self.singleReadoutSize
+                                                      
                             for currentReadout in range(readoutsInPacket):
-                                
+                                      
                                 overallDataIndex += 1 
                             
-                                indexStart = indexDataStart + self.singleReadoutSize * currentReadout
-                                indexStop  = indexDataStart + self.singleReadoutSize * (currentReadout + 1)
+                                indexStart = indexDataStart + readoutSize * currentReadout
+                                indexStop  = indexDataStart + readoutSize * (currentReadout + 1)
                     
-                                vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
-                    
+                                vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)                
+                                
                                 index = overallDataIndex-1
-                    
-                                self.data[index, 0] = vmm3.Ring
-                                self.data[index, 1] = vmm3.Fen
-                                self.data[index, 2] = vmm3.VMM
-                                self.data[index, 3] = vmm3.hybrid
-                                self.data[index, 4] = vmm3.ASIC
-                                self.data[index, 5] = vmm3.Channel
-                                self.data[index, 6] = vmm3.ADC
-                                self.data[index, 7] = vmm3.BC
-                                self.data[index, 8] = vmm3.OTh
-                                self.data[index, 9] = vmm3.TDC
-                                self.data[index, 10] = vmm3.GEO
-                                self.data[index, 11] = vmm3.timeCoarse
-                                self.data[index, 12] = PulseT
-                                self.data[index, 13] = PrevPT
-                                self.data[index, 14] = vmm3.G0  # if 1 is calibration
+                                
+                                print('counter',overallDataIndex)
+                                
+                                # print('before-> ',readoutSize)
+                                
+                                # print(self.enableRing11data)
+                                
+                                if self.enableRing11data == False:
+                                   
+                                    print('ring vmm',vmm3.Ring)
+                                    
+                                    if vmm3.Ring != 0:
+                                        print('\n \033[1;31m---> Ring 11 data found! Please enable ring 11 data -> exiting. \033[1;37m')
+                                        sys.exit()
+                                        
+                                    # self.placeVVMdataInArray(self,vmm3,PulseT,PrevPT,index)
+                                    
+                                    self.data[index, 0] = vmm3.Ring
+                                    self.data[index, 1] = vmm3.Fen
+                                    self.data[index, 2] = vmm3.VMM
+                                    self.data[index, 3] = vmm3.hybrid
+                                    self.data[index, 4] = vmm3.ASIC
+                                    self.data[index, 5] = vmm3.Channel
+                                    self.data[index, 6] = vmm3.ADC
+                                    self.data[index, 7] = vmm3.BC
+                                    self.data[index, 8] = vmm3.OTh
+                                    self.data[index, 9] = vmm3.TDC
+                                    self.data[index, 10] = vmm3.GEO
+                                    self.data[index, 11] = vmm3.timeCoarse
+                                    self.data[index, 12] = PulseT
+                                    self.data[index, 13] = PrevPT
+                                    self.data[index, 14] = vmm3.G0  # if 1 is calibration
+                                    
+                                elif self.enableRing11data == True:
+                                
+                                    # if vmm3.Ring <= 10:
+                                    if vmm3.Ring == 0:
+                                        
+                                        print('ring from vmm, ring: ',vmm3.Ring)
+                                        
+                                        readoutSize = self.singleReadoutSize
+                                        # self.placeVVMdataInArray(self,vmm3,PulseT,PrevPT,index)
+                                        
+                                        self.data[index, 0] = vmm3.Ring
+                                        self.data[index, 1] = vmm3.Fen
+                                        self.data[index, 2] = vmm3.VMM
+                                        self.data[index, 3] = vmm3.hybrid
+                                        self.data[index, 4] = vmm3.ASIC
+                                        self.data[index, 5] = vmm3.Channel
+                                        self.data[index, 6] = vmm3.ADC
+                                        self.data[index, 7] = vmm3.BC
+                                        self.data[index, 8] = vmm3.OTh
+                                        self.data[index, 9] = vmm3.TDC
+                                        self.data[index, 10] = vmm3.GEO
+                                        self.data[index, 11] = vmm3.timeCoarse
+                                        self.data[index, 12] = PulseT
+                                        self.data[index, 13] = PrevPT
+                                        self.data[index, 14] = vmm3.G0  # if 1 is calibration
+                                        
+                                    # elif vmm3.Ring == 11:
+                                    else:  
+                                        
+                                        indexStart = indexDataStart + readoutSize * currentReadout
+                                        indexStop  = indexDataStart + readoutSize * (currentReadout + 1)
+                                        
+                                        dataFromRing11 = ring11data(packetData[indexStart:indexStop], self.NSperClockTick)
+                                         
+                                        readoutSize = self.singleReadoutSizeRing11
+                                        
+                                        # self.placeRing11dataInArray(self,dataFromRing11,PulseT,PrevPT,index)
+                                        
+                                        self.data[index, 0] = dataFromRing11.Ring
+                                        self.data[index, 1] = dataFromRing11.Fen
+                                        self.data[index, 2] = 0
+                                        self.data[index, 3] = 0
+                                        self.data[index, 4] = 0
+                                        self.data[index, 5] = dataFromRing11.Channel
+                                        self.data[index, 6] = dataFromRing11.ADC
+                                        self.data[index, 7] = 0
+                                        self.data[index, 8] = 0
+                                        self.data[index, 9] = 0
+                                        self.data[index, 10] = dataFromRing11.Pos
+                                        self.data[index, 11] = dataFromRing11.timeCoarse
+                                        self.data[index, 12] = PulseT
+                                        self.data[index, 13] = PrevPT
+                                        self.data[index, 14] = 0
+                        
+                                        print('ring 11 data -> found ring: ',dataFromRing11.Ring)
+                                        # print(dataFromRing11.Channel)
+                                        
+                                else:
+                                        
+                                    print('\n \033[1;31mWARNING ---> some other ring found! \033[1;37m')
+                                        
+                                  
+                                # print('after-> ',readoutSize)
                                 
                                 # self.data[index, 7] = vmm3.timeStamp
                              
@@ -722,6 +833,45 @@ class pcapng_reader_PreAlloc():
         # print('\n')
         
         ff.close()
+        
+        
+    def placeVVMdataInArray(self,vmm3,PulseT,PrevPT,index):
+        
+        # print('ciao')
+        
+        self.data[index, 0] = vmm3.Ring
+        self.data[index, 1] = vmm3.Fen
+        self.data[index, 2] = vmm3.VMM
+        self.data[index, 3] = vmm3.hybrid
+        self.data[index, 4] = vmm3.ASIC
+        self.data[index, 5] = vmm3.Channel
+        self.data[index, 6] = vmm3.ADC
+        self.data[index, 7] = vmm3.BC
+        self.data[index, 8] = vmm3.OTh
+        self.data[index, 9] = vmm3.TDC
+        self.data[index, 10] = vmm3.GEO
+        self.data[index, 11] = vmm3.timeCoarse
+        self.data[index, 12] = PulseT
+        self.data[index, 13] = PrevPT
+        self.data[index, 14] = vmm3.G0  # if 1 is calibration
+        
+    def placeRing11dataInArray(self,dataFromRing11,PulseT,PrevPT,index):
+        
+        self.data[index, 0] = dataFromRing11.Ring
+        self.data[index, 1] = dataFromRing11.Fen
+        self.data[index, 2] = 0
+        self.data[index, 3] = 0
+        self.data[index, 4] = 0
+        self.data[index, 5] = dataFromRing11.Channel
+        self.data[index, 6] = dataFromRing11.ADC
+        self.data[index, 7] = 0
+        self.data[index, 8] = 0
+        self.data[index, 9] = 0
+        self.data[index, 10] = dataFromRing11.Pos
+        self.data[index, 11] = dataFromRing11.timeCoarse
+        self.data[index, 12] = PulseT
+        self.data[index, 13] = PrevPT
+        self.data[index, 14] = 0
         
         
 class checkIfDataHasZeros():
@@ -941,15 +1091,17 @@ if __name__ == '__main__':
    
    # filePath = './'+"VMM3a.pcapng"
    
-   path = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
+   # path = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
    
-  
+   path = '/Users/francescopiscitelli/Desktop/dataVMM/'
    
    # filePath = path+'pcap_for_fra.pcapng'
    # filePath = path+'pcap_for_fra_ch2test.pcapng'
    # filePath = path+'pcap_for_fra_ch2test_take2.pcapng'
    # filePath = path+'pcap_for_fra_coinc.pcapng'
-   filePath = path+'freiatest.pcapng'
+   # filePath = path+'freiatest.pcapng'
+   
+   filePath=path+'20230821_135744_pkts10_testinghybrdis-monitor_00000.pcapng'
    
    # filePath = path+'20211005_091349_morten.pcapng'
    
@@ -992,9 +1144,12 @@ if __name__ == '__main__':
    
    NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
    
-   cc = checkWhich_RingFenHybrid_InFile(filePath,NSperClockTick).check()
+   # cc = checkWhich_RingFenHybrid_InFile(filePath,NSperClockTick).check()
    
-
+   readouts = readouts 
+   
+   pcap = pcapng_reader(filePath, NSperClockTick, timeResolutionType='fine', sortByTimeStampsONOFF = False, enableRing11data = True)
+   readouts.append(pcap.readouts)
    
    # pcap = pcapng_reader_PreAlloc(filePath,NSperClockTick)
    # pcap.allocateMemory()

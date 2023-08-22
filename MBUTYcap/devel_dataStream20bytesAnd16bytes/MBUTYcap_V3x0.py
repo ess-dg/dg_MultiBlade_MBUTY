@@ -45,7 +45,7 @@ from lib import libReducedFileH5 as saveH5
 ###############################################################################
 profiling = para.profiling()
 print('----------------------------------------------------------------------')
-print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 2.32\033[1;37m')
+print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 3.0\033[1;37m')
 print('----------------------------------------------------------------------')
 plt.close("all")
 ### check version ###
@@ -69,13 +69,17 @@ configFilePath  = currentPath+'config/'
 # configFileName  = "MB300_AMOR_config_12.json"
 
 # configFileName  = "MB300_AMOR_config_rev.json"
-configFileName  = "MB300_FREIA_config.json"
-configFileName  = "MB300_FREIA3_config.json"
+# configFileName  = "MB300_FREIA_config.json"
+# configFileName  = "MB300_FREIA3_config.json"
 # configFileName  = "MB300_FREIA_config_inverted.json"
-configFileName  = "Utgard_test.json"
+# configFileName  = "Utgard_test.json"
 # configFileName  = "Utgard_test_AssCrate.json"
 
-# configFileName  = "MB18_6cass.json"
+configFileName  = "Utgard_test_H0.json"
+# # configFileName  = "Utgard_test.json"
+# configFileName  = "Utgard_test_5hyb.json"
+
+# configFileName  = "Utgard_AMOR.json"
 
 ###############################################################################
 ###############################################################################
@@ -92,19 +96,21 @@ parameters.loadConfigParameters(config)
 #################################
 
 ### ON/OFF if you want to rsync the data     
-parameters.fileManagement.sync = False  
+parameters.fileManagement.sync = True  
 
 ### from ... to  ... rsync the data
 
 # test setup
 parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
+
+# parameters.fileManagement.sourcePath = 'essdaq@192.168.0.1:~/pcaps/'
+
 parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataVMM/'
 # parameters.fileManagement.destPath   = currentPath+'data/'
+# parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataVMMdatenere/'
 
-# AMOR
-# parameters.fileManagement.sourcePath = 'essdaq@172.30.244.203:~/pcaps/'
-# parameters.fileManagement.sourcePath = 'essdaq@det-efu02:~/pcaps/'
-# parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Documents/DOC/DATA/2021_12_AMOR_PSI/data_VMM/'
+
+# parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Documents/DOC/DATA/202308_Utgard_MBnewAMOR_VMM_muons/DATA/'
 
 ###############
 
@@ -114,7 +120,12 @@ parameters.fileManagement.filePath = parameters.fileManagement.destPath
 # parameters.fileManagement.filePath = parameters.fileManagement.destPath
 parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 parameters.fileManagement.fileName = ['freiatest.pcapng']
-# parameters.fileManagement.fileName = ['test1hyb_MODEext_extInjection_ChopTTLconnect.pcapng']
+# parameters.fileManagement.fileName = ['20230821_113026_duration_s_3_testinghybrdis-monitor_00000.pcapng']
+
+# parameters.fileManagement.fileName = ['20230821_133733_pkts10_testinghybrdis-monitor_00000.pcapng']
+
+
+parameters.fileManagement.fileName = ['20230821_135744_pkts10_testinghybrdis-monitor_00000.pcapng']
 
 # parameters.fileManagement.fileSerials = np.arange(18,28,1)
 
@@ -203,13 +214,13 @@ parameters.wavelength.chopperPickUpDelay =  13.5/(2.*180.) * parameters.waveleng
 #################################
 
 ### ON/OFF
-parameters.MONitor.MONOnOff = False   
+parameters.MONitor.MONOnOff = True   
 
 ### threshold on MON, th is OFF if 0, any other value is ON
 parameters.MONitor.MONThreshold = 0   
 
 ### ON/OFF plotting (MON ToF and Pulse Height) 
-parameters.MONitor.plotMONtofPHS = False  
+parameters.MONitor.plotMONtofPHS = True  
 
 ### in mm, distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
 parameters.MONitor.MONDistance  = 0   
@@ -231,10 +242,10 @@ parameters.plotting.plotReadoutsTimeStamps  = False
 parameters.plotting.plotRawHits             = False
 parameters.plotting.plotHitsTimeStamps      = False
 parameters.plotting.plotHitsTimeStampsVSChannels = False
-parameters.plotting.plotChopperResets       = False
+parameters.plotting.plotChopperResets       = True
 
 # with True disables clustering and mapping for speed reasons, analisys stops at readouts 
-bareReadoutsCalc = True
+bareReadoutsCalc = False
 
 ###############
 ### Instantaneous Rate
@@ -356,7 +367,7 @@ for cont, fileName in enumerate(fileDialogue.fileName):
     # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,parameters.clockTicks.NSperClockTick).check()
     
     ### load data  
-    pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, timeResolutionType='fine', sortByTimeStampsONOFF = True)
+    pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, timeResolutionType='fine', sortByTimeStampsONOFF = False)
     readouts.append(pcap.readouts)
     
     # md  = maps.mapDetector(pcap.readouts, config)
@@ -369,6 +380,23 @@ for cont, fileName in enumerate(fileDialogue.fileName):
     
 
 readouts.checkChopperFreq()
+
+# xax = np.arange(0,len(readouts.PulseT))
+# yax = readouts.PulseT - readouts.PulseT[0]
+
+# fig33445454, ax33545455 = plt.subplots(num=101445,figsize=(12,6), nrows=1, ncols=1)   
+# ax33545455.plot(xax,yax,'+r')
+
+# ax33545455.plot(xax,readouts.timeStamp - readouts.PulseT[0],'+b')
+
+# delta = np.concatenate((np.diff(yax),[0]),axis=0)
+
+
+# ax33545455.plot(xax,delta,'+b')
+
+# aa=np.sort(delta)
+
+# bb = np.diff(readouts.timeStamp)
       
 ####################    
 ### for debug, generate sample readouts
@@ -450,14 +478,15 @@ if bareReadoutsCalc is False:
     eventsArray = events.concatenateEventsInArrayForDebug() 
     ####################
        
-    ####################    
-    ### for debug, generate sample events 2
-    # dd = sdat.sampleEventsMultipleCassettes(parameters.cassettes.cassettes,'./data/')
+    # ####################    
+    # ### for debug, generate sample events 2
+    # Nevents = 10000
+    # dd = sdat.sampleEventsMultipleCassettes()
     # dd.generateGlob(Nevents)
     # events  = dd.events
     # eventsArray = events.concatenateEventsInArrayForDebug()
     # eventsArray = eventsArray[72:100,:]
-    #################### 
+    # ################### 
         
     
     ###############################################################################
@@ -606,8 +635,9 @@ if bareReadoutsCalc is False:
 # ax.grid()
 # ax.set_xlim((-200,200))
 # # figl.suptitle('2FEN_2Hy')
-      
-
+if bareReadoutsCalc is False:     
+    figl566, ax566 = plt.subplots(num=56767,figsize=(6,6), nrows=1, ncols=1) 
+    ax566.plot(np.arange(0,len(events.ToF)),events.ToF/1e9,'b')   
 
 ###############################################################################
 ###############################################################################
