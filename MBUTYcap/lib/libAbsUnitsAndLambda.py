@@ -104,23 +104,34 @@ class calculateAbsUnits():
          self.events.positionZmm = np.round((wireCh0to31 * (self.parameters.configJsonFile.wirePitch*cosi)), decimals = 2) #mm 
              
      def calculateToF(self):
+         
+          allToFsCounter = np.shape(self.events.ToF)[0]
 
           self.events.ToF = self.events.timeStamp - self.events.PulseT
           
           invalidToFs = self.events.ToF < 0
+          
+          invalidToFsCounter1 = np.sum(invalidToFs)
                     
-          if np.sum(invalidToFs) > 0:
+          if invalidToFsCounter1 > 0:
               
-              print('\n \033[1;33m\t WARNING ---> some ToFs are invalid, but corrected with Prev. Pulse Time \033[1;37m')
+              print('\n \033[1;33m\t WARNING ---> %d ToFs (out of %d) are invalid, but corrected with Prev. Pulse Time \033[1;37m' % (invalidToFsCounter1,allToFsCounter))
               
               self.events.ToF[invalidToFs] = self.events.timeStamp[invalidToFs] - self.events.PrevPT[invalidToFs]
+              
+              
+              # self.events.ToF[invalidToFs] = 1000
           
               invalidToFsAgain = self.events.ToF < 0
-          
-              if np.sum(invalidToFsAgain) > 0:
               
-                  print('\n \033[1;33m\t WARNING ---> some ToFs are invalid (with both PulseT and PrevPT), set as Nan! \033[1;37m')
+              invalidToFsCounter2 = np.sum(invalidToFsAgain)
+          
+              if invalidToFsCounter2 > 0:  
+              
+                  print('\n \033[1;33m\t WARNING ---> %d corrected -> %d ToFs (out of %d) are still invalid after correction (with both PulseT and PrevPT), set as Nan! \033[1;37m' % (invalidToFsCounter1-invalidToFsCounter2,invalidToFsCounter2,allToFsCounter))
                   self.events.ToF[invalidToFsAgain] = np.ma.masked # same as np.nan for int64 instead of floats
+                  
+                  # self.events.ToF[invalidToFsAgain] = 1000
           
           # self.events.ToF = np.mod(self.events.timeStamp - T0, self.parameters.plotting.ToFduration)
           
