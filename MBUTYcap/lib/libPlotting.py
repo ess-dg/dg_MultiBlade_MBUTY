@@ -398,7 +398,13 @@ class plottingEvents():
                     fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
                     # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
                     pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires.start,self.allAxis.axWires.stop,self.allAxis.axStrips.stop,self.allAxis.axStrips.start], origin='upper',cmap='viridis')
-                    fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    
+                    #  temporary fix because LogNorm crashes tihe imShow when Log 
+                    try:
+                        fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    except:
+                        print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
+                        
                     # cbar1 =fig2D.colorbar(pos1,ax=ax1)
                     # cbar2.minorticks_on()
                     # ax1.set_aspect('tight')
@@ -407,11 +413,21 @@ class plottingEvents():
                     fig2D.suptitle('DET image')
                     
                     
-                elif orientation == 'horizontal':     
-        
-                    fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(12,6), nrows=1, ncols=2)    
+                elif orientation == 'horizontal':   
+                           
+                    fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(12,6), nrows=1, ncols=2) 
+                    
+                    
+                
                     pos1  = ax1.imshow(np.rot90(h2D,1),aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axStrips.start,self.allAxis.axStrips.stop,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='upper',cmap='viridis')
-                    fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    
+                    #  temporary fix because LogNorm crashes tihe imShow when Log 
+                    try:
+                        fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    except:
+                        print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
+                        
+                        
                     ax1.set_ylabel('Wire ch.')
                     ax1.set_xlabel('Strip ch.')
                     fig2D.suptitle('DET image')
@@ -433,7 +449,13 @@ class plottingEvents():
             
                 fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
                 pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start*1e3,self.allAxis.axToF.stop*1e3,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='lower',cmap='viridis')
-                fig2.colorbar(pos2, ax=ax2)
+                
+                #  temporary fix because LogNorm crashes tihe imShow when Log 
+                try:
+                    fig2.colorbar(pos2, ax=ax2)
+                except:
+                    print('\n --> \033[1;33mWARNING: Cannot plot YToF in Log scale, changed to linear\033[1;37m',end='')
+                
                 ax2.set_ylabel('Wire ch.')
                 ax2.set_xlabel('ToF (ms)')
                 fig2.suptitle('DET ToF')
@@ -456,7 +478,14 @@ class plottingEvents():
                     fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
                     # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
                     pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop,self.allAxis.axStrips_mm.stop,self.allAxis.axStrips_mm.start], origin='upper',cmap='viridis')
-                    fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    
+                    #  temporary fix because LogNorm crashes tihe imShow when Log 
+                    try:
+                        fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    except:
+                        print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
+                        
+                    
                     # cbar1 =fig2D.colorbar(pos1,ax=ax1)
                     # cbar2.minorticks_on()
                     # ax1.set_aspect('tight')
@@ -470,7 +499,14 @@ class plottingEvents():
                     fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
                     # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
                     pos1  = ax1.imshow(np.rot90(h2D,1),aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axStrips_mm.start,self.allAxis.axStrips_mm.stop,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='upper',cmap='viridis')
-                    fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    
+                    #  temporary fix because LogNorm crashes tihe imShow when Log 
+                    try:
+                        fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
+                    except:
+                        print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
+                    
+                    
                     ax1.set_ylabel('Wire coord. (mm)')
                     ax1.set_xlabel('Strip (mm)')
                     fig2D.suptitle('DET image')
@@ -488,7 +524,14 @@ class plottingEvents():
             
                 fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
                 pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start*1e3,self.allAxis.axToF.stop*1e3,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
-                fig2.colorbar(pos2, ax=ax2)
+                
+                #  temporary fix because LogNorm crashes tihe imShow when Log 
+                try:
+                     fig2.colorbar(pos2, ax=ax2)
+                except:
+                     print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
+                
+                
                 ax2.set_ylabel('Wire coord. (mm)')
                 ax2.set_xlabel('ToF (ms)')
                 fig2.suptitle('DET ToF')
@@ -507,7 +550,14 @@ class plottingEvents():
                 
                 figl, axl = plt.subplots(num=103,figsize=(6,6), nrows=1, ncols=1) 
                 posl1  = axl.imshow(h,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axLambda.start,self.allAxis.axLambda.stop,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='lower',cmap='viridis')
-                figl.colorbar(posl1, ax=axl)
+                
+                #  temporary fix because LogNorm crashes tihe imShow when Log 
+                try:
+                     figl.colorbar(posl1, ax=axl)
+                except:
+                     print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
+                
+                
                 axl.set_ylabel('Wire ch.')
                 axl.set_xlabel('wavelength (A)')
                 figl.suptitle('DET wavelength')
@@ -518,7 +568,13 @@ class plottingEvents():
                 
                 figl, axl = plt.subplots(num=103,figsize=(6,6), nrows=1, ncols=1) 
                 posl1  = axl.imshow(h,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axLambda.start,self.allAxis.axLambda.stop,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
-                figl.colorbar(posl1, ax=axl)
+                
+                #  temporary fix because LogNorm crashes tihe imShow when Log 
+                try:
+                     figl.colorbar(posl1, ax=axl)
+                except:
+                     print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
+                                
                 axl.set_ylabel('Wire coord. (mm)')
                 axl.set_xlabel('wavelength (A)')
                 figl.suptitle('DET wavelength')
