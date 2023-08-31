@@ -210,6 +210,34 @@ class readouts():
             print('\t \033[1;33mWARNING: Unable to calculate chopper frequency! \033[1;37m')
             time.sleep(2)
     
+    
+   
+    def checkInvalidToFsInReadouts(self):
+        
+        NumReadouts = np.shape(self.timeStamp)[0]
+        
+        tempToF = self.timeStamp - self.PulseT
+        
+        invalidToFs = tempToF < 0
+        
+        invalidToFsCounter1 = np.sum(invalidToFs)
+        
+        invalidToFsCounter2 = 0
+                  
+        if invalidToFsCounter1 > 0:
+            
+            tempToF2 = self.timeStamp[invalidToFs] - self.PrevPT[invalidToFs]
+            
+            invalidToFsAgain = tempToF2 < 0
+            
+            invalidToFsCounter2 = np.sum(invalidToFsAgain)
+            
+        validToFs  = NumReadouts-invalidToFsCounter2
+        validValid = NumReadouts - invalidToFsCounter1 - invalidToFsCounter2
+        validPrevP = invalidToFsCounter1 - invalidToFsCounter2 
+           
+        print('\n \033[1;33m\t Readouts %d: %d ToFs valid (%d valid, %d PrevPulse corrected) - invalid %d \033[1;37m' % (NumReadouts,validToFs,validValid,validPrevP,invalidToFsCounter2))
+    
 ###############################################################################
 ###############################################################################
 
@@ -279,7 +307,7 @@ class  checkWhich_RingFenHybrid_InFile():
                 
                     print("\tNo. {}:     Ring {}, Fen {}, Hybrid {}".format(cont,int(RR),int(FF),int(HH)))
 
-        
+           
         
 #################################################        
         

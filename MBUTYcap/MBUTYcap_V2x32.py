@@ -374,6 +374,9 @@ for cont, fileName in enumerate(fileDialogue.fileName):
     
 
 readouts.checkChopperFreq()
+
+
+readouts.checkInvalidToFsInReadouts()
       
 ####################    
 ### for debug, generate sample readouts
