@@ -226,6 +226,8 @@ class plotting():
           
           self.coincidenceWS_ONOFF = True
           
+          self.removeInvalidToFs = False
+          
           self.hitogOutBounds = True
           
       def calculateDerivedParam(self):

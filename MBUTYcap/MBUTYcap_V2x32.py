@@ -125,6 +125,8 @@ parameters.fileManagement.fileName = ['freiatest.pcapng']
 parameters.fileManagement.openMode = 'window'
 # parameters.fileManagement.openMode = 'fileName'
 # parameters.fileManagement.openMode = 'latest'
+# parameters.fileManagement.openMode = 'secondLast'
+# parameters.fileManagement.openMode = 'wholeFolder'
 # parameters.fileManagement.openMode = 'sequence'
 
 ###############
@@ -265,6 +267,9 @@ parameters.plotting.plotIMGlog = False
 ### ON/OFF, if  Tof  and Lambdaplot needs to include only events with strip present (2D) is True otherwise all events also without strip set to False
 parameters.plotting.coincidenceWS_ONOFF = True
 
+### ON/OFF, if  invalid ToFs Tofare included in the plots or removed from events 
+parameters.plotting.removeInvalidToFs = True
+
 ### histogram outBounds param set as True as default (Events out of bounds stored in first and last bin)
 parameters.plotting.hitogOutBounds = True
 
@@ -402,7 +407,7 @@ if bareReadoutsCalc is False:
             eventsMON = MONe.events
             
             abMON = absu.calculateAbsUnits(eventsMON, parameters, 'MON')
-            abMON.calculateToF()
+            abMON.calculateToF(parameters.plotting.removeInvalidToFs)
             
             print('\033[1;32m\t MON events: {}\033[1;37m'.format(len(eventsMON.timeStamp)))
             
@@ -466,7 +471,7 @@ if bareReadoutsCalc is False:
     ab = absu.calculateAbsUnits(events, parameters)
     ab.calculatePositionAbsUnit()
     
-    ab.calculateToF()
+    ab.calculateToF(parameters.plotting.removeInvalidToFs)
     
     if parameters.wavelength.calculateLambda is True:
         ab.calculateWavelength()
