@@ -232,8 +232,8 @@ class readouts():
             
             invalidToFsCounter2 = np.sum(invalidToFsAgain)
             
-        validToFs  = NumReadouts-invalidToFsCounter2
-        validValid = NumReadouts - invalidToFsCounter1 - invalidToFsCounter2
+        validToFs  = NumReadouts - invalidToFsCounter2
+        validValid = NumReadouts - invalidToFsCounter1 
         validPrevP = invalidToFsCounter1 - invalidToFsCounter2 
            
         print('\n \033[1;33m\t Readouts %d: %d ToFs valid (%d valid, %d PrevPulse corrected) - invalid %d \033[1;37m' % (NumReadouts,validToFs,validValid,validPrevP,invalidToFsCounter2))
