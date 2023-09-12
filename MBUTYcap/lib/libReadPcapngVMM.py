@@ -309,8 +309,38 @@ class  checkWhich_RingFenHybrid_InFile():
 
            
         
-#################################################        
-        
+#################################################   
+
+
+class MONdata():
+    def __init__(self, buffer, NSperClockTick):
+          
+       # decode into little endian integers
+       PhysicalRing = int.from_bytes(buffer[0:1], byteorder='little')
+       self.Fen     = int.from_bytes(buffer[1:2], byteorder='little')
+       self.Length  = int.from_bytes(buffer[2:4], byteorder='little')
+       timeHI       = int.from_bytes(buffer[4:8], byteorder='little')
+       timeLO       = int.from_bytes(buffer[8:12], byteorder='little')
+       self.Type    = int.from_bytes(buffer[12:13], byteorder='little')
+       self.Channel = int.from_bytes(buffer[13:14], byteorder='little')
+       self.ADC     = int.from_bytes(buffer[14:16], byteorder='little')
+       self.posX    = int.from_bytes(buffer[16:18], byteorder='little')
+       self.posY    = int.from_bytes(buffer[18:20], byteorder='little')
+       
+       #######################
+       #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
+       self.Ring = int(np.floor(PhysicalRing/2))
+       # self.Ring = PhysicalRing
+       #######################
+
+       timeHIns = int(round(timeHI * 1000000000))
+       timeLOns = int(round(timeLO * NSperClockTick))
+       
+       self.timeCoarse  = timeHIns + timeLOns 
+ 
+#################################################
+
+      
 class VMM3A():
     def __init__(self, buffer, NSperClockTick):
                  
@@ -544,6 +574,8 @@ class pcapng_reader_PreAlloc():
 
     def allocateMemory(self):  
         
+        print('...allocating memory...')
+        
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
         
@@ -551,15 +583,15 @@ class pcapng_reader_PreAlloc():
         
         for block in scanner:
     
-           self.counterPackets += 1
-           self.dprint("packet {}".format(self.counterPackets))
+            self.counterPackets += 1
+            self.dprint("packet {}".format(self.counterPackets))
     
-           try:
+            try:
                 packetSize = block.packet_len
                 self.dprint("packetSize {} bytes".format(packetSize))
-           except:
+            except:
                 self.dprint('--> other packet found No. {}'.format(self.counterPackets-self.counterCandidatePackets))
-           else:
+            else:
                 self.counterCandidatePackets += 1
                 packetsSizes = np.append(packetsSizes,packetSize)
                 
@@ -580,8 +612,17 @@ class pcapng_reader_PreAlloc():
         
         ff.close()
         
+        # # quick and drity just file size divided by the single readout is an approx for excess of the readouts, they will be removed afterwards 
+        # numOfReadoutsTotal = self.fileSize/self.singleReadoutSize
+        # self.preallocLength = int(round(numOfReadoutsTotal))
+        # self.dprint('preallocLength {}'.format(self.preallocLength))
+        
+        # print(numOfReadoutsTotal)
+        
         
     def read(self):   
+        
+        print('...reading file...')
         
         self.data = np.zeros((self.preallocLength,15), dtype='int64') 
         
@@ -625,29 +666,19 @@ class pcapng_reader_PreAlloc():
                     if indexDataStart != self.headerSize:
                         print('\n \033[1;31mWARNING ---> ESS cookie is not in position 72! \033[1;37m')
                         
-                    ESSlength  = int.from_bytes(packetData[indexESS+4:indexESS+6], byteorder='little') # bytes    
-                    
-                    PulseThigh = int.from_bytes(packetData[indexESS+8:indexESS+12], byteorder='little')*1000000000
-                    PulseTlow  = int.from_bytes(packetData[indexESS+12:indexESS+16], byteorder='little')*self.NSperClockTick 
-                    PrevPThigh = int.from_bytes(packetData[indexESS+16:indexESS+20], byteorder='little')*1000000000
-                    PrevPTlow  = int.from_bytes(packetData[indexESS+20:indexESS+24], byteorder='little')*self.NSperClockTick 
-                    
-                    #  IMPORTANT if you do int round after sum is off, needs to be done before then sum hi and low
-                    PulseThighR = int(round(PulseThigh))
-                    PulseTlowR  = int(round(PulseTlow))
-                    PrevPThighR = int(round(PrevPThigh))
-                    PrevPTlowR  = int(round(PrevPTlow))
-                    
-                    PulseT = PulseThighR + PulseTlowR
-                    PrevPT = PrevPThighR + PrevPTlowR
+                    # ##########################################
+                    # # UDP ports here not used for now
+                    # indexUDPstart = indexESS-2-8
+                    # portSource  = int.from_bytes(packetData[indexUDPstart:indexUDPstart+2], byteorder='big') 
+                    # portDest    = int.from_bytes(packetData[indexUDPstart+2:indexUDPstart+4], byteorder='big') 
+                    # self.dprint('source: '+str(portSource)+' -> dest: '+str(portDest))
+                    # ##########################################
                 
                     readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
                     # or alternatively
                     # readoutsInPacket = (ESSlength - self.ESSheaderSize) / self.singleReadoutSize
                     
-                    # ESSlength is only 30 if the packet is an ESS packet but empty= 72-42 =30
-                    self.dprint('ESS packet length {} bytes, packetLength {} bytes, readouts in packet {}'.format(ESSlength, packetLength,readoutsInPacket))  
-                
+
                     if (packetLength - indexDataStart) == 0:
                         
                         self.counterEmptyESSpackets += 1
@@ -659,6 +690,25 @@ class pcapng_reader_PreAlloc():
                             print('\n \033[1;31mWARNING ---> something wrong with data bytes dimensions \033[1;37m')
                             break
                         else:
+                            
+                            ESSlength  = int.from_bytes(packetData[indexESS+4:indexESS+6], byteorder='little') # bytes    
+                            
+                            PulseThigh = int.from_bytes(packetData[indexESS+8:indexESS+12], byteorder='little')*1000000000
+                            PulseTlow  = int.from_bytes(packetData[indexESS+12:indexESS+16], byteorder='little')*self.NSperClockTick 
+                            PrevPThigh = int.from_bytes(packetData[indexESS+16:indexESS+20], byteorder='little')*1000000000
+                            PrevPTlow  = int.from_bytes(packetData[indexESS+20:indexESS+24], byteorder='little')*self.NSperClockTick 
+                            
+                            #  IMPORTANT if you do int round after sum is off, needs to be done before then sum hi and low
+                            PulseThighR = int(round(PulseThigh))
+                            PulseTlowR  = int(round(PulseTlow))
+                            PrevPThighR = int(round(PrevPThigh))
+                            PrevPTlowR  = int(round(PrevPTlow))
+                            
+                            PulseT = PulseThighR + PulseTlowR
+                            PrevPT = PrevPThighR + PrevPTlowR
+                          
+                            # ESSlength is only 30 if the packet is an ESS packet but empty= 72-42 =30
+                            self.dprint('ESS packet length {} bytes, packetLength {} bytes, readouts in packet {}'.format(ESSlength, packetLength,readoutsInPacket))  
                         
                             readoutsInPacket = int(readoutsInPacket)
                             self.totalReadoutCount += readoutsInPacket
@@ -969,15 +1019,20 @@ if __name__ == '__main__':
    
    # filePath = './'+"VMM3a.pcapng"
    
-   path = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
+   # path = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
    
-  
+   filePath = '/Users/francescopiscitelli/Desktop/data4Testing/'
+ 
+   
+   file = '20230911_103949_pkts100_intpulser-H0-vmm1ch5-12-18-H1-vmm0ch20-21-22-cfg-0x6_00000.pcapng'
+   
+   filePathAndFileName = filePath+file
    
    # filePath = path+'pcap_for_fra.pcapng'
    # filePath = path+'pcap_for_fra_ch2test.pcapng'
    # filePath = path+'pcap_for_fra_ch2test_take2.pcapng'
    # filePath = path+'pcap_for_fra_coinc.pcapng'
-   filePath = path+'freiatest.pcapng'
+   # filePath = path+'freiatest.pcapng'
    
    # filePath = path+'20211005_091349_morten.pcapng'
    
@@ -1018,10 +1073,21 @@ if __name__ == '__main__':
    
    # r
    
+   # NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
+   
+   # cc = checkWhich_RingFenHybrid_InFile(filePath,NSperClockTick).check()
+   
    NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
-   
-   cc = checkWhich_RingFenHybrid_InFile(filePath,NSperClockTick).check()
-   
+    
+    # cc = checkWhich_RingFenHybrid_InFile(filePath,NSperClockTick).check()
+    
+    
+   # readouts = readouts()
+         
+   pcapng = pcapng_reader_PreAlloc(filePathAndFileName,NSperClockTick,timeResolutionType='fine')
+   pcapng.allocateMemory()
+   pcapng.read()
+    # readouts = pcapng.readouts
 
    
    # pcap = pcapng_reader_PreAlloc(filePath,NSperClockTick)

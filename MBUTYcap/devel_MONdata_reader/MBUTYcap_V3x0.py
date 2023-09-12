@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V2.3 2021/11/24      francescopiscitelli     ######################
+########    V3.0 2023/09/11      francescopiscitelli     ######################
 ###############################################################################
 ###############################################################################
 
@@ -45,7 +45,7 @@ from lib import libReducedFileH5 as saveH5
 ###############################################################################
 profiling = para.profiling()
 print('----------------------------------------------------------------------')
-print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 2.32\033[1;37m')
+print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 3.0\033[1;37m')
 print('----------------------------------------------------------------------')
 plt.close("all")
 ### check version ###
@@ -59,23 +59,7 @@ parameters  = para.parameters(currentPath)
 
 configFilePath  = currentPath+'config/'
 
-# configFileName  = "MB300_AMOR_config1to2.json"
-# configFileName  = "MB300_AMOR_config1to5.json"
-# configFileName  = "MB300_AMOR_config6to10.json"
-# configFileName  = "MB300_AMOR_config11to14.json"
-
-# configFileName  = "MB300_AMOR_config.json"
-
-# configFileName  = "MB300_AMOR_config_12.json"
-
-# configFileName  = "MB300_AMOR_config_rev.json"
-configFileName  = "MB300_FREIA_config.json"
-configFileName  = "MB300_FREIA3_config.json"
-# configFileName  = "MB300_FREIA_config_inverted.json"
-configFileName  = "Utgard_test.json"
-# configFileName  = "Utgard_test_AssCrate.json"
-
-configFileName  = "Utgard_AMOR.json"
+configFileName  = "AMOR.json"
 
 ###############################################################################
 ###############################################################################
@@ -106,17 +90,17 @@ parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataV
 # parameters.fileManagement.sourcePath = 'essdaq@det-efu02:~/pcaps/'
 # parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Documents/DOC/DATA/2021_12_AMOR_PSI/data_VMM/'
 
-parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Documents/DOC/DATA/202308_Utgard_MBnewAMOR_VMM_muons/DATA/'
-
 ###############
 
 parameters.fileManagement.filePath = parameters.fileManagement.destPath 
+
+parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
 
 ### folder and file to open (file can be a list of files)
 # parameters.fileManagement.filePath = parameters.fileManagement.destPath
 parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 parameters.fileManagement.fileName = ['freiatest.pcapng']
-# parameters.fileManagement.fileName = ['test1hyb_MODEext_extInjection_ChopTTLconnect.pcapng']
+parameters.fileManagement.fileName = ['20230908_115642_duration_s_1800_neutrons_00000.pcapng']
 
 # parameters.fileManagement.fileSerials = np.arange(18,28,1)
 
@@ -125,7 +109,7 @@ parameters.fileManagement.fileName = ['freiatest.pcapng']
 ### entire  folder  opend  and analized and cumulated  all togheter 
 ### sequence opens all filens in     parameters.fileManagement.fileSerials and with fileName
 parameters.fileManagement.openMode = 'window'
-# parameters.fileManagement.openMode = 'fileName'
+parameters.fileManagement.openMode = 'fileName'
 # parameters.fileManagement.openMode = 'latest'
 # parameters.fileManagement.openMode = 'secondLast'
 # parameters.fileManagement.openMode = 'wholeFolder'
@@ -230,7 +214,7 @@ parameters.plotting.showStat = 'globalStat'
 
 ###############     
 ### raw plots
-parameters.plotting.plotRawReadouts         = True
+parameters.plotting.plotRawReadouts         = False
 parameters.plotting.plotReadoutsTimeStamps  = False
 parameters.plotting.plotRawHits             = False
 parameters.plotting.plotHitsTimeStamps      = False
@@ -363,7 +347,7 @@ for cont, fileName in enumerate(fileDialogue.fileName):
     # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,parameters.clockTicks.NSperClockTick).check()
     
     ### load data  
-    pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, timeResolutionType='fine', sortByTimeStampsONOFF = True)
+    pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, timeResolutionType='fine', sortByTimeStampsONOFF = True, MONOnOff = parameters.MONitor.MONOnOff, MONdataFormat = config.MONmap.dataFormat, MONring = config.MONmap.RingID)
     readouts.append(pcap.readouts)
     
     # md  = maps.mapDetector(pcap.readouts, config)
