@@ -471,13 +471,13 @@ class checkIfFileExistInFolder():
 ################################################## 
 
 class pcapng_reader():
-    def __init__(self, filePathAndFileName, NSperClockTick, MONOnOff = False , MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True):
+    def __init__(self, filePathAndFileName, NSperClockTick, MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True):
         
         self.readouts = readouts()
      
         try:
             # print('PRE-ALLOC method to load data ...')
-            self.pcapng = pcapng_reader_PreAlloc(filePathAndFileName,NSperClockTick,MONOnOff,MONTTLtype,MONring,timeResolutionType)
+            self.pcapng = pcapng_reader_PreAlloc(filePathAndFileName,NSperClockTick,MONTTLtype,MONring,timeResolutionType)
             self.pcapng.allocateMemory()
             self.pcapng.read()
             self.readouts = self.pcapng.readouts
