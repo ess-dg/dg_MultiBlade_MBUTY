@@ -14,7 +14,7 @@ import sys
 
 # import pandas as pd
 # from lib import libReadPcapngVMM as pcapr
-# from lib import libSampleData as sdat
+from lib import libSampleData as sdat
 # import libSampleData as sdat
 
 
@@ -316,14 +316,13 @@ class read_json_config():
                  
                  cc = mapm[0]
             
-                 self.MONmap.ID      = cc.get("ID")
-                 self.MONmap.TTLtype = cc.get("TTLtype")
-                 self.MONmap.RingID  = cc.get("Ring")
-                 self.MONmap.FenID   = cc.get("Fen")
-                 self.MONmap.hybridID      = cc.get("Hybrid")
+                 self.MONmap.ID     = cc.get("ID")
+                 self.MONmap.RingID = cc.get("Ring")
+                 self.MONmap.FenID  = cc.get("Fen")
+                 self.MONmap.hybridID  = cc.get("Hybrid")
                  self.MONmap.hybridSerial  = cc.get("HybridSerial")
-                 self.MONmap.ASICID     = cc.get("ASIC")
-                 self.MONmap.channel    = cc.get("Channel")
+                 self.MONmap.ASICID    = cc.get("ASIC")
+                 self.MONmap.channel  = cc.get("Channel")
             
                   
 
@@ -550,12 +549,10 @@ class mapMonitor():
 
 if __name__ == '__main__':
 
-   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"AMOR.json"
-   # filePathD = './'+"VMM3a_Freia.pcapng"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MB300_FREIA3_config.json"
+   filePathD = './'+"VMM3a_Freia.pcapng"
 
    config = read_json_config(filePath)
-   
-   # parameters.loadConfigParameters(config)
    
    # config.check_cassetteLabelling()
    

@@ -471,13 +471,13 @@ class checkIfFileExistInFolder():
 ################################################## 
 
 class pcapng_reader():
-    def __init__(self, filePathAndFileName, NSperClockTick, MONOnOff = False , MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True):
+    def __init__(self, filePathAndFileName, NSperClockTick, timeResolutionType = 'fine', sortByTimeStampsONOFF = True):
         
         self.readouts = readouts()
-     
+        
         try:
             # print('PRE-ALLOC method to load data ...')
-            self.pcapng = pcapng_reader_PreAlloc(filePathAndFileName,NSperClockTick,MONOnOff,MONTTLtype,MONring,timeResolutionType)
+            self.pcapng = pcapng_reader_PreAlloc(filePathAndFileName,NSperClockTick,timeResolutionType)
             self.pcapng.allocateMemory()
             self.pcapng.read()
             self.readouts = self.pcapng.readouts
@@ -511,7 +511,7 @@ class pcapng_reader():
 ##################################################  
 
 class pcapng_reader_PreAlloc():
-    def __init__(self, filePathAndFileName, NSperClockTick, MONTTLtype, MONring, timeResolutionType = 'fine'):
+    def __init__(self, filePathAndFileName, NSperClockTick, timeResolutionType = 'fine'):
         
         # number of decimals after comma in seconds, to round the PulseT and PRevPT: 6 means 1us rounding, etc...
         # self.resolution = 9
@@ -519,10 +519,9 @@ class pcapng_reader_PreAlloc():
         # self.timeResolution = 11.25e-9  #s per tick for 88.888888 MHz
         # self.timeResolution = 11.356860963629653e-9  #s per tick ESS for 88.0525 MHz
         self.NSperClockTick = NSperClockTick 
-        # self.MONOnOff   = MONOnOff
-        self.MONTTLtype = MONTTLtype
-        self.MONring    = MONring
+        
         self.timeResolutionType  = timeResolutionType
+        
         self.filePathAndFileName = filePathAndFileName
         
         checkIfFileExistInFolder(self.filePathAndFileName)
@@ -575,21 +574,14 @@ class pcapng_reader_PreAlloc():
 
     def allocateMemory(self):  
         
-        print('allocating memory',end='')
+        print('...allocating memory...')
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
         
         packetsSizes = np.zeros((0),dtype='int64')
         
-        counter = 0
-        
         for block in scanner:
-            
-            counter+=1
-
-            if counter == 1 or np.mod(counter,5000) == 0:
-                print('.',end='')
     
             self.counterPackets += 1
             self.dprint("packet {}".format(self.counterPackets))
@@ -630,7 +622,7 @@ class pcapng_reader_PreAlloc():
         
     def read(self):   
         
-        print('\n',end='')
+        print('...reading file...')
         
         self.data = np.zeros((self.preallocLength,15), dtype='int64') 
         
@@ -687,7 +679,7 @@ class pcapng_reader_PreAlloc():
                     # readoutsInPacket = (ESSlength - self.ESSheaderSize) / self.singleReadoutSize
                     
 
-                    if (packetLength - indexDataStart) == 0: #empty packet 72 bytes 
+                    if (packetLength - indexDataStart) == 0:
                         
                         self.counterEmptyESSpackets += 1
                         self.dprint('empty packet No. {}'.format(self.counterEmptyESSpackets))
@@ -698,8 +690,6 @@ class pcapng_reader_PreAlloc():
                             print('\n \033[1;31mWARNING ---> something wrong with data bytes dimensions \033[1;37m')
                             break
                         else:
-                            
-                            # only read header if there is no emplty packet 
                             
                             ESSlength  = int.from_bytes(packetData[indexESS+4:indexESS+6], byteorder='little') # bytes    
                             
@@ -724,7 +714,6 @@ class pcapng_reader_PreAlloc():
                             self.totalReadoutCount += readoutsInPacket
                             
                             for currentReadout in range(readoutsInPacket):
-                            # for currentReadout in range(1):
                                 
                                 overallDataIndex += 1 
                             
@@ -734,74 +723,25 @@ class pcapng_reader_PreAlloc():
                                 vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
                     
                                 index = overallDataIndex-1
-                                
-                                # IMPORTANT this will load the MON data if comes from VMMs anyhow even if MON is OFF and TTl type is False                                 
-                                if (vmm3.Ring <= 11):
-                                    
-                                    self.data[index, 0] = vmm3.Ring
-                                    self.data[index, 1] = vmm3.Fen
-                                    self.data[index, 2] = vmm3.VMM
-                                    self.data[index, 3] = vmm3.hybrid
-                                    self.data[index, 4] = vmm3.ASIC
-                                    self.data[index, 5] = vmm3.Channel
-                                    self.data[index, 6] = vmm3.ADC
-                                    self.data[index, 7] = vmm3.BC
-                                    self.data[index, 8] = vmm3.OTh
-                                    self.data[index, 9] = vmm3.TDC
-                                    self.data[index, 10] = vmm3.GEO
-                                    self.data[index, 11] = vmm3.timeCoarse
-                                    self.data[index, 12] = PulseT
-                                    self.data[index, 13] = PrevPT
-                                    self.data[index, 14] = vmm3.G0  # if 1 is calibration
+                    
+                                self.data[index, 0] = vmm3.Ring
+                                self.data[index, 1] = vmm3.Fen
+                                self.data[index, 2] = vmm3.VMM
+                                self.data[index, 3] = vmm3.hybrid
+                                self.data[index, 4] = vmm3.ASIC
+                                self.data[index, 5] = vmm3.Channel
+                                self.data[index, 6] = vmm3.ADC
+                                self.data[index, 7] = vmm3.BC
+                                self.data[index, 8] = vmm3.OTh
+                                self.data[index, 9] = vmm3.TDC
+                                self.data[index, 10] = vmm3.GEO
+                                self.data[index, 11] = vmm3.timeCoarse
+                                self.data[index, 12] = PulseT
+                                self.data[index, 13] = PrevPT
+                                self.data[index, 14] = vmm3.G0  # if 1 is calibration
                                 
                                 # self.data[index, 7] = vmm3.timeStamp
-
-                                # print('vmm3:'+str(vmm3.Ring)+'index:'+str(index))
-                                
-                                elif (vmm3.Ring > 11) and (vmm3.Ring != self.MONring) and (self.MONTTLtype is False):
-                                    
-                                    print('\n \033[1;33mWARNING ---> Found Ring that does not belong to either detector or monitor -> check config file, TTLtype shuld be True! \033[1;37m')
-                                
-                                if (self.MONTTLtype is True): # overwrite event with the right MON data format 
-                                    
-                                    if (vmm3.Ring == self.MONring):
-                                    
-                                        mondata = MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
-   
-                                        # index = index+2000
-                                        
-                                        # print('monring:'+str(mondata.Ring)+'index:'+str(index))
-                                        
-                                        self.data[index, 0] = mondata.Ring
-                                        self.data[index, 1] = mondata.Fen
-                                        self.data[index, 2] = 0
-                                        self.data[index, 3] = 0
-                                        self.data[index, 4] = 0
-                                        self.data[index, 5] = mondata.Channel
-                                        self.data[index, 6] = mondata.ADC
-                                        self.data[index, 7] = mondata.posX
-                                        self.data[index, 8] = mondata.posY
-                                        self.data[index, 9] = 0
-                                        self.data[index, 10] = mondata.Type
-                                        self.data[index, 11] = mondata.timeCoarse
-                                        self.data[index, 12] = PulseT
-                                        self.data[index, 13] = PrevPT
-                                        self.data[index, 14] = 0  # if 1 is calibration
-                                    
-                                    elif (self.MONring != 11): 
-                                    
-                                        print('\n \033[1;33mWARNING ---> Ring for Monitor in TTL type not matching, usually Ring is 11! \033[1;37m')
-                                    
-                                # elif (self.MONOnOff is True) and (vmm3.MONTTLtype is False) and (vmm3.Ring == self.MONring):
-                                    
-                                #     print('\n \033[1;31mWARNING ---> TTL type for Monitor not matching! \033[1;37m')
-                                    
-                                # else:
-                                    
-                                #     print('ciao')
-                                    
-                                    
-                                
+                             
                                 self.dprint(" \t Packet: {} ({} bytes), Readout: {}, Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time Coarse {} ns, BC {}, OverTh {}, ADC {}, TDC {}, GEO {} " \
                                             .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeCoarse,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.GEO))
 
@@ -1086,12 +1026,6 @@ if __name__ == '__main__':
    
    file = '20230911_103949_pkts100_intpulser-H0-vmm1ch5-12-18-H1-vmm0ch20-21-22-cfg-0x6_00000.pcapng'
    
-   
-   filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
-   file = '20230823_105243_duration_s_3600_testDetChopMON_00000.pcapng'
-   
-   file = '20230829_113913_duration_s_1800_DetRefurbishedMONandChopp_00002.pcapng'
-   
    filePathAndFileName = filePath+file
    
    # filePath = path+'pcap_for_fra.pcapng'
@@ -1150,10 +1084,10 @@ if __name__ == '__main__':
     
    # readouts = readouts()
          
-   pcapng = pcapng_reader_PreAlloc(filePathAndFileName,NSperClockTick, MONTTLtype = True , MONring = 11, timeResolutionType='fine')
+   pcapng = pcapng_reader_PreAlloc(filePathAndFileName,NSperClockTick,timeResolutionType='fine')
    pcapng.allocateMemory()
    pcapng.read()
-   readouts = pcapng.readouts
+    # readouts = pcapng.readouts
 
    
    # pcap = pcapng_reader_PreAlloc(filePath,NSperClockTick)
@@ -1165,7 +1099,7 @@ if __name__ == '__main__':
    
    
    # readouts = pcap.readouts 
-   readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+   # readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
    
    # tdcs = VMM3A_convertCalibrate_TDCinSec(readouts.TDC, NSperClockTick).TDC_ns
    

@@ -373,7 +373,7 @@ if __name__ == '__main__' :
     
     configFilePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/'+'config/'
     # configFileName  = "MB300_AMOR_config.json"
-    configFileName  = "AMOR.json"
+    configFileName  = "MB300_FREIA3_config.json"
     
     # config = maps.read_json_config(configFilePath+configFileName)
     # # parameters.loadConfigParameters(config)
