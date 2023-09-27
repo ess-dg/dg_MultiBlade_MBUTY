@@ -317,7 +317,7 @@ class read_json_config():
                  cc = mapm[0]
             
                  self.MONmap.ID      = cc.get("ID")
-                 self.MONmap.TTLtype = cc.get("TTLtype")
+                 self.MONmap.TTLtype = bool(cc.get("TTLtype"))
                  self.MONmap.RingID  = cc.get("Ring")
                  self.MONmap.FenID   = cc.get("Fen")
                  self.MONmap.hybridID      = cc.get("Hybrid")

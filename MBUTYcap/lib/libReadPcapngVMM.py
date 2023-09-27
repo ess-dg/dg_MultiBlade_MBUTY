@@ -89,7 +89,7 @@ class readouts():
         
         leng = len(self.timeStamp)
         
-        readoutsArray = np.zeros((leng,12),dtype = 'int64')
+        readoutsArray = np.zeros((leng,15),dtype = 'int64')
         
         readoutsArray[:,0] = self.Ring
         readoutsArray[:,1] = self.Fen
@@ -102,7 +102,10 @@ class readouts():
         readoutsArray[:,8] = self.timeStamp
         readoutsArray[:,9] = self.timeCoarse
         readoutsArray[:,10] = self.TDC
-        readoutsArray[:,11] = self.G0
+        readoutsArray[:,11] = self.G0      # G0
+        readoutsArray[:,12] = self.BC      # POS X for MON
+        readoutsArray[:,13] = self.OTh     # POS Y for MON
+        readoutsArray[:,14] = self.GEO     # type for MON
         
         return readoutsArray
     
@@ -625,6 +628,8 @@ class pcapng_reader_PreAlloc():
         # self.preallocLength = int(round(numOfReadoutsTotal))
         # self.dprint('preallocLength {}'.format(self.preallocLength))
         
+        # self.counterCandidatePackets = numOfReadoutsTotal
+        
         # print(numOfReadoutsTotal)
         
         
@@ -640,6 +645,7 @@ class pcapng_reader_PreAlloc():
         overallDataIndex = 0 
         
         stepsForProgress = int(self.counterCandidatePackets/4)+1  # 4 means 25%, 50%, 75% and 100%
+        
         
         for block in scanner:
             
@@ -761,11 +767,11 @@ class pcapng_reader_PreAlloc():
                                 elif (vmm3.Ring > 11) and (vmm3.Ring != self.MONring) and (self.MONTTLtype is False):
                                     
                                     print('\n \033[1;33mWARNING ---> Found Ring that does not belong to either detector or monitor -> check config file, TTLtype shuld be True! \033[1;37m')
-                                
-                                if (self.MONTTLtype is True): # overwrite event with the right MON data format 
-                                    
+
+                                if self.MONTTLtype is True: # overwrite event with the right MON data format 
+
                                     if (vmm3.Ring == self.MONring):
-                                    
+ 
                                         mondata = MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
    
                                         # index = index+2000
@@ -774,14 +780,14 @@ class pcapng_reader_PreAlloc():
                                         
                                         self.data[index, 0] = mondata.Ring
                                         self.data[index, 1] = mondata.Fen
-                                        self.data[index, 2] = 0
-                                        self.data[index, 3] = 0
-                                        self.data[index, 4] = 0
+                                        self.data[index, 2] = 0   # VMM for MON always 0
+                                        self.data[index, 3] = 0   # hybrid for MON always 0
+                                        self.data[index, 4] = 0   # ASIC for MON always 0
                                         self.data[index, 5] = mondata.Channel
                                         self.data[index, 6] = mondata.ADC
                                         self.data[index, 7] = mondata.posX
                                         self.data[index, 8] = mondata.posY
-                                        self.data[index, 9] = 0
+                                        self.data[index, 9] = 0     # TDC for MON always 0
                                         self.data[index, 10] = mondata.Type
                                         self.data[index, 11] = mondata.timeCoarse
                                         self.data[index, 12] = PulseT
