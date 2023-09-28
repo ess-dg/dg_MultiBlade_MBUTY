@@ -317,15 +317,24 @@ class read_json_config():
                  cc = mapm[0]
             
                  self.MONmap.ID      = cc.get("ID")
-                 self.MONmap.TTLtype = bool(cc.get("TTLtype"))
+   
+                 TTLtypeTemp = (cc.get("TTLtype"))
+                 TTLtypeBool = (TTLtypeTemp == "True") or (TTLtypeTemp == "true") or (TTLtypeTemp == "t") or (TTLtypeTemp == "T") or (TTLtypeTemp == "yes") or (TTLtypeTemp == "1")
+                 
+                 # if TTLtypeBool is True:
+                 #        print("is true")
+                 # else:
+                 #        print("is false")
+
+
+                 self.MONmap.TTLtype = TTLtypeBool
                  self.MONmap.RingID  = cc.get("Ring")
                  self.MONmap.FenID   = cc.get("Fen")
                  self.MONmap.hybridID      = cc.get("Hybrid")
                  self.MONmap.hybridSerial  = cc.get("HybridSerial")
                  self.MONmap.ASICID     = cc.get("ASIC")
                  self.MONmap.channel    = cc.get("Channel")
-            
-                  
+        
 
 ###############################################################################
 ###############################################################################
@@ -545,12 +554,13 @@ class mapMonitor():
             
 
 
+
 ###############################################################################
 ###############################################################################
 
 if __name__ == '__main__':
 
-   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"AMOR.json"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/03_MBUTYcap_VMMtest_Utgard/config/'+"AMOR.json"
    # filePathD = './'+"VMM3a_Freia.pcapng"
 
    config = read_json_config(filePath)
