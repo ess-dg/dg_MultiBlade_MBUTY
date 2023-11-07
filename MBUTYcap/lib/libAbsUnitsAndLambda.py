@@ -205,22 +205,31 @@ class calculateAbsUnits():
             NumInvalid = np.sum(invalidTofs)
             
             if NumInvalid > 0:
-            
-                self.events.Cassette     = self.events.Cassette[~invalidTofs] 
+                
+                # print(np.shape(invalidTofs))
+                
+                if np.shape(self.events.Cassette)[0] != 0:
+                    
+                    self.events.Cassette     = self.events.Cassette[~invalidTofs] 
+                    self.events.multS        = self.events.multS[~invalidTofs] 
+                    self.events.multW        = self.events.multW[~invalidTofs] 
+                    self.events.positionS    = self.events.positionS[~invalidTofs] 
+                    self.events.positionSmm  = self.events.positionSmm[~invalidTofs] 
+                    self.events.positionW    = self.events.positionW[~invalidTofs]  
+                    self.events.positionWmm  = self.events.positionWmm[~invalidTofs] 
+                    self.events.positionZmm  = self.events.positionZmm[~invalidTofs] 
+                    
+                if np.shape(self.events.wavelength)[0] != 0:
+                    self.events.wavelength   = self.events.wavelength[~invalidTofs] 
+                
+                
                 self.events.PHS          = self.events.PHS[~invalidTofs] 
                 self.events.PHW          = self.events.PHW[~invalidTofs] 
                 self.events.PrevPT       = self.events.PrevPT[~invalidTofs] 
                 self.events.PulseT       = self.events.PulseT[~invalidTofs] 
                 self.events.ToF          = self.events.ToF[~invalidTofs] 
-                self.events.multS        = self.events.multS[~invalidTofs] 
-                self.events.multW        = self.events.multW[~invalidTofs] 
-                self.events.positionS    = self.events.positionS[~invalidTofs] 
-                self.events.positionSmm  = self.events.positionSmm[~invalidTofs] 
-                self.events.positionW    = self.events.positionW[~invalidTofs]  
-                self.events.positionWmm  = self.events.positionWmm[~invalidTofs] 
-                self.events.positionZmm  = self.events.positionZmm[~invalidTofs] 
                 self.events.timeStamp    = self.events.timeStamp[~invalidTofs] 
-                self.events.wavelength   = self.events.wavelength[~invalidTofs]  
+ 
                    
                 if condi is True:
                     print('\n \033[1;33m\t %d events removed because of Invalid Tofs (%d 2D and %d 1D) \033[1;37m' % (NumInvalid,NumInvalid2D,NumInvalid1D))
