@@ -301,13 +301,29 @@ class clusterHits():
             # add a line at top [0,0,0,0] not to lose the 1st event
             data = np.concatenate( ( np.zeros((1,np.shape(data)[1]), dtype = 'int64'), data ), axis=0)  #add a line at top not to lose the 1st event
             data[0,0] = -2*TimeWindowMax
+            
+            # print(type(data[0,0]))
  
             # data[:,0] = np.around(data[:,0],decimals=self.resolution) #time rounded at 1us precision is 6 decimals, 7 is 100ns, etc...
 
             deltaTime = np.diff(data[:,0])                    #1st derivative of time 
             deltaTime = np.concatenate(([0],deltaTime),axis=0) #add a zero at top to restore length of vector
+            
+            # print(np.shape(deltaTime))
+            # print(np.shape(data[:,0]))
+            
+            # self.dtim = np.concatenate((data[:,0],deltaTime),axis=1)
+            
+            # self.dtim = np.zeros((np.shape(data)[0],8),dtype='int64')
+            
+            # self.dtim[:,0:4] = data[:,0:4]
+            # self.dtim[:,5] = deltaTime
+            # self.dtim2 = data[:,0]
+           
         
             clusterlogic = (np.absolute(deltaTime) <= TimeWindowRecursive) #is zero when a new cluster starts 
+            
+            # self.dtim[:,6] = clusterlogic
         
             # data1 = np.concatenate((data,clusterlogic[:,None]),axis=1) #this is for debugging 
         
@@ -317,22 +333,30 @@ class clusterHits():
     
             ADCCH = np.zeros((np.shape(data)[0],12),dtype='int64')
     
-            ADCCH[:,0:3] = data[:,0:3]  # first 3 columns as data
-            ADCCH[:,3]   = clusterlogic.astype(int) # col 3 is 0 where a new cluster may start
+            # ADCCH2 = np.zeros((np.shape(data)[0],1),dtype='int64')
     
-            ADCCH[:,4]   = (data[:,3] == 0).astype(int)   # wire  
-            ADCCH[:,5]   = (data[:,3] == 1).astype(int)   # strip 
+            ADCCH[:,0:3] = (data[:,0:3])  # first 3 columns as data
+            ADCCH[:,3]   = (clusterlogic.astype(int)) # col 3 is 0 where a new cluster may start
     
-            ADCCH[:,6]   = data[:,1]*ADCCH[:,4]   # wire ch
-            ADCCH[:,7]   = data[:,1]*ADCCH[:,5]   # strip ch
+            ADCCH[:,4]   = ((data[:,3] == 0).astype(int))   # wire  
+            ADCCH[:,5]   = ((data[:,3] == 1).astype(int))   # strip 
     
-            ADCCH[:,8]   = data[:,2]*ADCCH[:,4]   # wire ADCs 
-            ADCCH[:,9]   = data[:,2]*ADCCH[:,5]   # strip ADCs 
+            ADCCH[:,6]   = (data[:,1]*ADCCH[:,4]).astype(int)   # wire ch
+            ADCCH[:,7]   = (data[:,1]*ADCCH[:,5]).astype(int)   # strip ch
+
+            ADCCH[:,8]   = (data[:,2]*ADCCH[:,4]).astype(int)   # wire ADCs 
+            ADCCH[:,9]   = (data[:,2]*ADCCH[:,5]).astype(int)   # strip ADCs 
     
-            ADCCH[:,10]  =  ADCCH[:,4]*ADCCH[:,6]*ADCCH[:,8]    # weighted position on wires
-            ADCCH[:,11]  =  ADCCH[:,5]*ADCCH[:,7]*ADCCH[:,9]    # weighted position on strips
+            ADCCH[:,10]  =  (ADCCH[:,4]*ADCCH[:,6]*ADCCH[:,8]).astype(int)    # weighted position on wires
+            ADCCH[:,11]  =  (ADCCH[:,5]*ADCCH[:,7]*ADCCH[:,9]).astype(int)   # weighted position on strips
+            
+            # print(ADCCH[0:20,:])
+            
+            # print('asflkasnfciawndhfclaiwcefxbxwemoif')
             
             #################################
+            
+            # self.dtim[:,7] = index
  
             NumClusters = np.shape(index)[0]
             
@@ -345,28 +369,69 @@ class clusterHits():
             self.TPHM[:,0]  = data[index[:,0],0]   # timeStamp      
             self.TPHM[:,1]  = data[index[:,0],4]   # PulseT   
             self.TPHM[:,2]  = data[index[:,0],5]   # PrevPT
+            
+            self.deltaWS = -1*np.ones((NumClusters,2),dtype='int64')
      
             #################################
             
             # add a fake last cluster to make loop up to the very last true cluster
             index = np.concatenate((index,[[np.shape(data)[0]]]),axis=0)
-            ADCCH = np.concatenate((ADCCH,np.zeros((1,12))),axis=0) 
+            
+            ADCCH = np.concatenate((ADCCH,np.zeros((1,12),dtype='int64')),axis=0)
+            
+            # print((ADCCH[0,10]))
+            
+            # print(ADCCH[0:20,:])
 
              #################################
             if  NumClusters >= 0:
                 
+                # NumClusters = 3
+                
                 for kk in range(0,NumClusters,1):
+                    
+                        # print('-------')
+                        
+                        # print(index[kk,0])
+                        
+                        # print(ADCCH[index[kk,0]:index[kk+1,0],:])
                     
                         steps = int(NumClusters/self.intervals)+1    # equivalent as ceil rounding 
                         if np.mod(kk,steps) == 0 or kk == (NumClusters-1):
                             percents = int(round(100.0 * kk / float(NumClusters), 1))
                             print('['+format(percents,'01d') + '%]',end=' ')
                         
-                        clusterq = ADCCH[index[kk,0]:index[kk+1,0],:]
+                        clusterq = (ADCCH[index[kk,0]:index[kk+1,0],:]).astype(int)
+                        
+                        # print(index[kk,0])
+                        # print('---')
+                        # print(clusterq)
+                        
+                        # print(type(clusterq[kk,0]))
+                        # print(type(clusterq[0,1]))
+                        
+                        # tempo = (clusterq[-1,0] - clusterq[0,0])
+                        
+                        # tempo2 = deltaTime[index[kk,0]]
+                        
+                        # print(type(clusterq[-1,0]))
+                        # print(clusterq[-1,0])
+                        # print(clusterq[0,0])
+                        # print(tempo)
+                        # print(tempo2)
+                        
+                        # dddd = ADCCH[index[kk,0],0]
+                        
+                        # print(dddd)
                         
                         acceptWindow = ((clusterq[-1,0] - clusterq[0,0]) <= TimeWindowMax)  #max difference in time between first and last in cluster 
                        
+                        
                         clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort'),:]  #order cluster by ch number
+                        
+                        # tempo2 = clusterq[-1,0] - clusterq[0,0]
+                        
+                        # print(tempo2)
                    
                         is_wire  = clusterq[:,4] == 1
                         is_strip = clusterq[:,5] == 1
@@ -389,6 +454,11 @@ class clusterHits():
                             if (neigw == 1 and neigs == 1):    #if they are neighbour then...
                                 
                                 self.rejCounter[0] = self.rejCounter[0]+1   #counter 2D
+                                
+                                # self.deltaWS[kk,0]  = tempo
+                                # self.deltaWS[kk,1]  = tempo2
+
+                                
                                 
                                 self.TPHM[kk,3]   = ww     #multiuplicity wires
                                 self.TPHM[kk,4]   = ss     #multiuplicity strips
@@ -503,9 +573,14 @@ class clusterHits():
              
              self.rejCounterAll = np.zeros((5),dtype='int64')
              
+             
+             
              for cc in cassettesIDs:
                  
                  self.clusterize1cassette(cc, timeWindow)
+                 
+                 # quick dirty fix 
+                 # self.deltaWS = self.clusterize1cassette.deltaWS
                  
                  self.events.append(self.events1Cass)
                  
