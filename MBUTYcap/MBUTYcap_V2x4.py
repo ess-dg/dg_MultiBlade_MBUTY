@@ -438,8 +438,20 @@ if bareReadoutsCalc is False:
     cc = clu.clusterHits(hits,parameters.plotting.showStat)
     cc.clusterizeManyCassettes(parameters.cassettes.cassettes, parameters.dataReduction.timeWindow)
     events = cc.events
+
     
     deltaTimeWS = cc.deltaTimeClusterWSall
+    
+    # deltaTimeWSc = deltaTimeWS[ np.logical_and(deltaTimeWS[:,0]==7,deltaTimeWS[:,2]==2) , :]
+    
+    # xax = np.arange(-300,300,1)
+    
+    # hitows = hh.histog().hist1D(xax, deltaTimeWSc[:,1])
+
+    
+    # fig334, ax335 = plt.subplots(num=101445,figsize=(12,6), nrows=1, ncols=1)   
+    # ax335.step(xax,hitows,'r')
+    # ax335.set_yscale('log')
     
     ####################    
     ### for debug, events in single array 
