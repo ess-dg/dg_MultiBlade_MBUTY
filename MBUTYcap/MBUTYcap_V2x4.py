@@ -90,7 +90,7 @@ parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataV
 # parameters.fileManagement.sourcePath = 'essdaq@det-efu02:~/pcaps/'
 # parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Documents/DOC/DATA/2021_12_AMOR_PSI/data_VMM/'
 
-parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Documents/DOC/DATA/202308_Utgard_MBnewAMOR_VMM_muons/DATA/'
+# parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Documents/DOC/DATA/202308_Utgard_MBnewAMOR_VMM_muons/DATA/'
 
 ###############
 
@@ -98,7 +98,7 @@ parameters.fileManagement.filePath = parameters.fileManagement.destPath
 
 ### folder and file to open (file can be a list of files)
 # parameters.fileManagement.filePath = parameters.fileManagement.destPath
-parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
+# parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 parameters.fileManagement.fileName = ['freiatest.pcapng']
 # parameters.fileManagement.fileName = ['test1hyb_MODEext_extInjection_ChopTTLconnect.pcapng']
 
@@ -438,6 +438,8 @@ if bareReadoutsCalc is False:
     cc = clu.clusterHits(hits,parameters.plotting.showStat)
     cc.clusterizeManyCassettes(parameters.cassettes.cassettes, parameters.dataReduction.timeWindow)
     events = cc.events
+    
+    deltaTimeWS = cc.deltaTimeClusterWSall
     
     ####################    
     ### for debug, events in single array 

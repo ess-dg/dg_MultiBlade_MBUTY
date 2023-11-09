@@ -247,7 +247,10 @@ class clusterHits():
          self.events = events()
          
          self.events.importDurations(self.hits)
-       
+         
+         self.deltaTimeClusterWSall = np.zeros((0,3),dtype='int64')
+         self.deltaTimeClusterWS    = np.zeros((0,3),dtype='int64')
+         
          
      def clusterize1cassette(self, cassette1ID, timeWindow):
          
@@ -366,11 +369,15 @@ class clusterHits():
             self.PO   = np.zeros((NumClusters,9),dtype='float64')
             
             # filling timeStamp column
-            self.TPHM[:,0]  = data[index[:,0],0]   # timeStamp      
-            self.TPHM[:,1]  = data[index[:,0],4]   # PulseT   
-            self.TPHM[:,2]  = data[index[:,0],5]   # PrevPT
+            self.TPHM[:,0]  = data[index[:,0],0].astype(int)    # timeStamp      
+            self.TPHM[:,1]  = data[index[:,0],4].astype(int)    # PulseT   
+            self.TPHM[:,2]  = data[index[:,0],5].astype(int)    # PrevPT
             
-            self.deltaWS = -1*np.ones((NumClusters,2),dtype='int64')
+            # print(type(self.TPHM[0,0]))
+            
+            self.deltaTimeClusterWS = -1*np.ones((NumClusters,3),dtype='int64')
+            
+            self.deltaTimeClusterWS[:,0] = cassette1ID*np.ones((NumClusters),dtype='int64')
      
             #################################
             
@@ -385,8 +392,6 @@ class clusterHits():
 
              #################################
             if  NumClusters >= 0:
-                
-                # NumClusters = 3
                 
                 for kk in range(0,NumClusters,1):
                     
@@ -410,8 +415,6 @@ class clusterHits():
                         # print(type(clusterq[kk,0]))
                         # print(type(clusterq[0,1]))
                         
-                        # tempo = (clusterq[-1,0] - clusterq[0,0])
-                        
                         # tempo2 = deltaTime[index[kk,0]]
                         
                         # print(type(clusterq[-1,0]))
@@ -424,9 +427,10 @@ class clusterHits():
                         
                         # print(dddd)
                         
-                        acceptWindow = ((clusterq[-1,0] - clusterq[0,0]) <= TimeWindowMax)  #max difference in time between first and last in cluster 
-                       
+                        self.deltaTimeClusterWS[kk,1] = (clusterq[-1,0] - clusterq[0,0])
                         
+                        acceptWindow = ((clusterq[-1,0] - clusterq[0,0]) <= TimeWindowMax)  #max difference in time between first and last in cluster 
+                                          
                         clusterq = clusterq[clusterq[:,1].argsort(kind='quicksort'),:]  #order cluster by ch number
                         
                         # tempo2 = clusterq[-1,0] - clusterq[0,0]
@@ -452,13 +456,10 @@ class clusterHits():
                             neigs = (mmaxs - mmins) == (ss-1)
                             
                             if (neigw == 1 and neigs == 1):    #if they are neighbour then...
+                            
+                                self.deltaTimeClusterWS[kk,2] = 2 #2D
                                 
                                 self.rejCounter[0] = self.rejCounter[0]+1   #counter 2D
-                                
-                                # self.deltaWS[kk,0]  = tempo
-                                # self.deltaWS[kk,1]  = tempo2
-
-                                
                                 
                                 self.TPHM[kk,3]   = ww     #multiuplicity wires
                                 self.TPHM[kk,4]   = ss     #multiuplicity strips
@@ -478,6 +479,8 @@ class clusterHits():
                             neigw = (mmaxw - mminw) == (ww-1)    #if event repated is rejected because neigw is 1 even if the same wire is repeated and should be 2 
                            
                             if (neigw == 1):    #if they are neighbour then...
+                            
+                                self.deltaTimeClusterWS[kk,2] = 1   #1D
                     
                                 self.rejCounter[2] = self.rejCounter[2]+1                #counter 1D
 
@@ -572,16 +575,15 @@ class clusterHits():
              checkCassIDs.checkIfRepeatedIDs(cassettesIDs)
              
              self.rejCounterAll = np.zeros((5),dtype='int64')
-             
-             
-             
+
              for cc in cassettesIDs:
                  
                  self.clusterize1cassette(cc, timeWindow)
                  
-                 # quick dirty fix 
-                 # self.deltaWS = self.clusterize1cassette.deltaWS
+                 # print(self.deltaTimeClusterWS)
                  
+                 self.deltaTimeClusterWSall = np.concatenate((self.deltaTimeClusterWSall,self.deltaTimeClusterWS),axis=0)
+
                  self.events.append(self.events1Cass)
                  
                  self.rejCounterAll += self.rejCounter
