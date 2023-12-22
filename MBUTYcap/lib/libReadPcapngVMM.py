@@ -467,6 +467,7 @@ class checkIfFileExistInFolder():
             fileName = temp2[1]
             print('\n \033[1;31m---> File: '+fileName+' DOES NOT EXIST \033[1;37m')
             print('\n ---> in folder: '+filePath+' \n')
+            print('\n NOTE: file name must contain extension, e.g. *.pcapng\n')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
             sys.exit()

@@ -155,6 +155,7 @@ class pcapConverter():
               
               print('\n \033[1;31m---> File: ' + pcapFileNameExt + ' DOES NOT EXIST \033[1;37m')
               print('\n ---> in folder: ' + pcapFilePath + ' \n')
+              print('\n NOTE: file name must contain extension, e.g. *.pcapng\n')
               print(' ---> Exiting ... \n')
               print('------------------------------------------------------------- \n')
               sys.exit()
@@ -240,11 +241,17 @@ class dumpToPcapngUtil():
                 
             ###############################   
             
+            temp = self.fileName.split('.',1)
+
             if fileNameOnly is False:
+                if len(temp) > 1:
+                    self.fileName = temp[0]
                 fileFull =  file1+file2+'_'+self.fileName+'_'+currentAcqStr+fileExt
             else:
-                fileFull = self.destPath+self.fileName+fileExt
-        
+                if len(temp) == 1:
+                    fileFull = self.destPath+self.fileName+fileExt
+                else:
+                    fileFull = self.destPath+self.fileName
             
             temp = os.system(command1+commandDetails+' -w '+fileFull)
             

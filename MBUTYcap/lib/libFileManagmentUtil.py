@@ -86,6 +86,7 @@ class fileDialogue():
            if os.path.exists(self.filePath+fn) is False:
               print(' \033[1;31m---> File: '+fn+' DOES NOT EXIST \033[1;37m')
               print('  ---> in folder: '+self.filePath+' -> ... it will be skipped!')
+              print('NOTE: file name must contain extension, e.g. *.pcapng')
               # print(' ---> Exiting ... \n')
               # print('------------------------------------------------------------- \n')
               # sys.exit()

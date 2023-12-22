@@ -80,7 +80,7 @@ parameters.loadConfigParameters(config)
 ### ON/OFF if you want dump and open file on same computer, it saves in ./data a file testData.pcapng and overwrites it every time 
 parameters.dumpSettings.auto = True 
 
-parameters.dumpSettings.interface     = 'ens2f0'
+parameters.dumpSettings.interface     = 'ens2'
 
 parameters.dumpSettings.typeOfCapture = 'packets'
 parameters.dumpSettings.quantity      =  500      #packets
@@ -120,7 +120,7 @@ parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/D
 # parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 # parameters.fileManagement.fileName = ['freiatest.pcapng']
 parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
-
+# parameters.fileManagement.fileName = ['tempo.pcapng']
 # parameters.fileManagement.fileSerials = np.arange(18,28,1)
 
 ### valid otions: 'window','fileName', 'latest', 'secondLast', 'wholeFolder', 'sequence' 
@@ -141,8 +141,8 @@ parameters.fileManagement.thresholdFileName = 'MB300L_thresholds.xlsx'
 
 ###############
 ### path to  Tshark, in case you open a pcap  it gets converted into pcapng 
-# parameters.fileManagement.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
-parameters.fileManagement.pathToTshark = '/usr/sbin/'
+parameters.fileManagement.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
+# parameters.fileManagement.pathToTshark = '/usr/sbin/'
 
 ###############
 ### save a hdf file with clusters (reduced file)
