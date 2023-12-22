@@ -25,18 +25,19 @@ from lib import libParameters as para
 class fileDialogue():
     def __init__(self, parameters):
         
-        self.openMode  = parameters.fileManagement.openMode
-        self.filePath  = parameters.fileManagement.filePath
+        self.openMode     = parameters.fileManagement.openMode
+        self.filePath     = parameters.fileManagement.filePath
         self.fileSerials  = parameters.fileManagement.fileSerials
-        
-        self.fileName  = parameters.fileManagement.fileName
-        
-        # add extension if not in fileName
-        if len(self.fileName.split('.',1)) == 1:
-            self.fileName = self.fileName+'.pcapng'
+        self.fileName     = parameters.fileManagement.fileName
         
         if isinstance(self.fileName, list) is False:
             self.fileName = [self.fileName]
+            
+        for kk, ff  in enumerate(self.fileName):
+             # add extension if not in fileName
+             if len(ff.split('.',1)) == 1:
+                 self.fileName[kk] = self.fileName[kk]+'.pcapng'
+
         
     def openFile(self):
         
