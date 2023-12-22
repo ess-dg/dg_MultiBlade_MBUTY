@@ -27,9 +27,13 @@ class fileDialogue():
         
         self.openMode  = parameters.fileManagement.openMode
         self.filePath  = parameters.fileManagement.filePath
+        self.fileSerials  = parameters.fileManagement.fileSerials
         
         self.fileName  = parameters.fileManagement.fileName
-        self.fileSerials  = parameters.fileManagement.fileSerials
+        
+        # add extension if not in fileName
+        if len(self.fileName.split('.',1)) == 1:
+            self.fileName = self.fileName+'.pcapng'
         
         if isinstance(self.fileName, list) is False:
             self.fileName = [self.fileName]
