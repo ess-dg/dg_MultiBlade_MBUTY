@@ -1,0 +1,10 @@
+Install pacing package in anaconda 
+Python >=3.9 
+pip install python-pcapng
+
+
+Pip install
+
+	flatbuffers
+        configargparse
+        confluent_kafka

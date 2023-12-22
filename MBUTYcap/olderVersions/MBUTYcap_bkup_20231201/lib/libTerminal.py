@@ -162,6 +162,7 @@ class pcapConverter():
 ############################################################################### 
     
 class dumpToPcapngUtil():
+
     def __init__(self, pathToTshark, interface='en0', destPath='./', fileName='temp'):
 
         if os.path.isfile(pathToTshark+'tshark') is False:
@@ -179,7 +180,7 @@ class dumpToPcapngUtil():
         self.destPath     = destPath
         self.fileName     = fileName
  
-    def dump(self,typeOfCapture='packets',extraArgs=100,numOfFiles=1,delay=0,fileNameOnly=False):
+    def dump(self,typeOfCapture='packets',extraArgs=100,numOfFiles=1,delay=0):
         
         # delay in seconds 
         delay = int(round(delay)) 
@@ -214,7 +215,7 @@ class dumpToPcapngUtil():
                 
                 print('by packets -> {} packets'.format(extraArgs))
                 
-                numOfPackets   = extraArgs
+                numOfPackets = extraArgs
                 commandDetails = ' -c '+str(numOfPackets)
                 
                 file2    = 'pkts'+str(numOfPackets)
@@ -223,7 +224,7 @@ class dumpToPcapngUtil():
                 
                 print('by file size -> {} kbytes'.format(extraArgs))
                 
-                sizekbytes     = extraArgs
+                sizekbytes = extraArgs
                 commandDetails = ' -a filesize:'+str(sizekbytes)
                 
                 file2    = 'size_kb_'+str(sizekbytes)
@@ -233,18 +234,14 @@ class dumpToPcapngUtil():
                 
                 print('by duration -> {} s'.format(extraArgs))
                 
-                duration_s     = extraArgs
+                duration_s = extraArgs
                 commandDetails = ' -a duration:'+str(duration_s)
                 
                 file2    = 'duration_s_'+str(duration_s)
                 
             ###############################   
             
-            if fileNameOnly is False:
-                fileFull =  file1+file2+'_'+self.fileName+'_'+currentAcqStr+fileExt
-            else:
-                fileFull = self.destPath+self.fileName+fileExt
-        
+            fileFull =  file1+file2+'_'+self.fileName+'_'+currentAcqStr+fileExt
             
             temp = os.system(command1+commandDetails+' -w '+fileFull)
             

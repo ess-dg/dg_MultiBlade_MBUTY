@@ -46,31 +46,12 @@ class profiling():
            
 ###############################################################################
 
-class dumpSettings():
-    def __init__(self,currentPath='./'):
-        
-        self.auto = False
-        
-        self.interface = 'p4p1'
-        
-        self.destTestData  = currentPath+'data/'
-        
-        self.typeOfCapture = 'packets'
-        
-        self.quantity   = 500
-        
-        self.numOfFiles = 1
-        self.delay      = 0
-        
-        self.fileName   = 'testData'
-
 class fileManagement():
       def __init__(self, currentPath='./'):
   
             self.sync = False
             
-            # self.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
-            self.pathToTshark = '/usr/sbin/'
+            self.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
             
             self.currentPath = currentPath
             
@@ -317,11 +298,9 @@ class parameters():
         
         self.configJsonFile = configJsonFile(self.config)
         
-        self.dumpSettings   = dumpSettings(self.fileManagement.currentPath)
+        self.cassettes = cassettes(self.configJsonFile)
         
-        self.cassettes      = cassettes(self.configJsonFile)
-         
-        self.clockTicks     = clockTicks()
+        self.clockTicks = clockTicks()
         
         self.dataReduction  = dataReduction()
         
