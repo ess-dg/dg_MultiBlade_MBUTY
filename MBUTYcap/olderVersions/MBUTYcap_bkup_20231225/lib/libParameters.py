@@ -83,9 +83,6 @@ class fileManagement():
                      
             self.configFilePath = self.currentPath+'config/'
             self.configFileName = 'temp.json'
-                        
-            self.calibFilePath  = self.currentPath+'calib/'
-            self.calibFileName  = 'temp.json'
             
             self.thresholdFilePath = self.currentPath+'config/'
             self.thresholdFileName = 'temp.xlsx'
@@ -186,7 +183,7 @@ class dataReduction():
     def __init__(self):
         
 
-          self.timeWindow = 0.5e-6  #s default is 3us for clustering
+          self.timeWindow = 3e-6  #s default is 3us for clustering
           
           # not implented yet
           # overflowcorr      = True   #ON/OFF (does not affect the MONITOR)
@@ -200,8 +197,6 @@ class dataReduction():
           self.softThresholdType = 'off'
           
           self.softThArray = np.zeros((0))
-          
-          self.calibrateVMM_ADC_ONOFF = False
 
          
     def createThArrays(self, cassettes, parameters):      
@@ -211,7 +206,7 @@ class dataReduction():
 class pulseHeigthSpect():
     def __init__(self):
         
-          self.plotPHS    = False
+          self.plotPHS = False
           self.plotPHSlog = False
           self.energyBins = 128
           self.maxEnerg   = 70e3

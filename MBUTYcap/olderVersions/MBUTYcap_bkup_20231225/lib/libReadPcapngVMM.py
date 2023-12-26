@@ -442,33 +442,17 @@ class VMM3A_convertCalibrate_TDC_ns():
 class VMM3A_calibrate_ADC():  
     def __init__(self,ADC,ADC_offset=0,ADC_slope=1):      
             
-        # accepts either arrays or single scalars as ADC 
-        
         ADC_calibrated = np.around(( ADC - ADC_offset ) * ADC_slope)
         
         aboveLimit = ADC_calibrated > 1023
         belowLimit = ADC_calibrated < 0
         
-        if type(ADC) is int:
-            
-            if aboveLimit == True:
-                ADC_calibrated = 1023
-            elif belowLimit == True:
-                ADC_calibrated = 0
-           
-            self.ADC_calibrated  = int(ADC_calibrated)
-                
-        else:            
-            if np.any(aboveLimit == True):
-                ADC_calibrated[aboveLimit] = 1023
-            elif np.any(belowLimit == True):
-                ADC_calibrated[belowLimit] = 0
-                
-            self.ADC_calibrated  = ADC_calibrated.astype('int64')
-            
+        if np.any(aboveLimit == True):
+            ADC_calibrated[aboveLimit] = 1023
+        elif np.any(belowLimit == True):
+            ADC_calibrated[belowLimit] = 0
         
- 
-        
+        self.ADC_calibrated  = ADC_calibrated.astype('int64')
         
 ###############################################################################
 ###############################################################################

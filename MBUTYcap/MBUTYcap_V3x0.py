@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V2.5 2023/12/17      francescopiscitelli     ######################
+########    V3.0 2023/12/26      francescopiscitelli     ######################
 ###############################################################################
 ###############################################################################
 #  includes streaming from kafka 
@@ -32,6 +32,7 @@ from lib import libTerminal as ta
 from lib import libPlotting as plo
 from lib import libEventsSoftThresholds as thre
 from lib import libReducedFileH5 as saveH5
+from lib import libVMMcalibration as cal 
 
 # from lib import libKafkaReader as kaf
 
@@ -41,14 +42,14 @@ from lib import libReducedFileH5 as saveH5
 # STILL TO IMPLEMENT:
 #     - save reduced data - almost done 
 #     - monitor lambda
-#     - TDC and ADC calibration 
+#     - TDC calibration 
 #     - now the mon events  stay in the events array,they need  to be taken out 
 
 ###############################################################################
 ###############################################################################
 profiling = para.profiling()
 print('----------------------------------------------------------------------')
-print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 2.5\033[1;37m')
+print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 3.0\033[1;37m')
 print('----------------------------------------------------------------------')
 plt.close("all")
 ### check version ###
@@ -78,7 +79,7 @@ parameters.loadConfigParameters(config)
 ### FILE MANAGMENT  PARAMETERS:
 #################################
 ### ON/OFF if you want dump and open file on same computer, it saves in ./data a file testData.pcapng and overwrites it every time 
-parameters.dumpSettings.auto = True 
+parameters.dumpSettings.auto = False 
 
 parameters.dumpSettings.interface     = 'ens2'
 
@@ -135,14 +136,19 @@ parameters.fileManagement.openMode = 'window'
 # parameters.fileManagement.openMode = 'sequence'
 
 ###############
+### path to calibration file
+parameters.fileManagement.calibFilePath = parameters.fileManagement.currentPath+'calib/'
+parameters.fileManagement.calibFileName = 'AMOR_calib_20231111002842.json'
+
+###############
 ### path to threshold  file
 parameters.fileManagement.thresholdFilePath = parameters.fileManagement.currentPath+'config/'
 parameters.fileManagement.thresholdFileName = 'MB300L_thresholds.xlsx'
 
 ###############
 ### path to  Tshark, in case you open a pcap  it gets converted into pcapng 
-#parameters.fileManagement.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
-parameters.fileManagement.pathToTshark = '/usr/sbin/'
+parameters.fileManagement.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
+# parameters.fileManagement.pathToTshark = '/usr/sbin/'
 
 ###############
 ### save a hdf file with clusters (reduced file)
@@ -158,6 +164,9 @@ parameters.fileManagement.reducedCompressionHDFL  = 9    # gzip compression leve
 ###############################################################################
 ### ANALISYS PARAMETERS:
 #################################
+
+### calibration VMM ADC
+parameters.dataReduction.calibrateVMM_ADC_ONOFF = True
 
 ### cassettes to clusterize and to plot, if empty the cassettes in the config file are taken as default
 # parameters.cassettes.cassettes = [1,2,3,4,5,6]
@@ -292,7 +301,7 @@ parameters.pulseHeigthSpect.plotPHS = True
 parameters.pulseHeigthSpect.plotPHSlog = False
 
 parameters.pulseHeigthSpect.energyBins = 128
-parameters.pulseHeigthSpect.maxEnerg   = 1025
+parameters.pulseHeigthSpect.maxEnerg   = 1550
 
 ### plot the PHS correaltion wires vs strips
 parameters.pulseHeigthSpect.plotPHScorrelation = False
@@ -420,8 +429,9 @@ for cont, fileName in enumerate(fileDialogue.fileName):
 
 readouts.checkChopperFreq()
 
-
 readouts.checkInvalidToFsInReadouts()
+
+
       
 ####################    
 ### for debug, generate sample readouts
@@ -436,6 +446,20 @@ readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
 ####################
 
 if bareReadoutsCalc is False:
+    
+    ###########################################################################
+    ### calibration ADC
+    if parameters.dataReduction.calibrateVMM_ADC_ONOFF is True:
+        calib = cal.read_json_calib(parameters.fileManagement.calibFilePath+parameters.fileManagement.calibFileName,config)
+    
+        if calib.calibFlag is True:
+            ca = cal.calibrate(readouts,config,calib)
+            ca.calibrateADC()
+            readouts = ca.readouts
+        
+            # readouts_array = readoutsOut.concatenateReadoutsInArrayForDebug()
+
+    ########################################################################### 
     
     
     md  = maps.mapDetector(readouts, config)
