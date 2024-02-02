@@ -239,6 +239,10 @@ class dumpToPcapngUtil():
                 
                 file2    = 'duration_s_'+str(duration_s)
                 
+            else:
+                print(' \033[1;31mERROR ... \033[1;37m type of capture '+typeOfCapture+' not supported or typo! -> exiting!')
+                sys.exit()
+                
             ###############################   
             
             temp = self.fileName.split('.',1)
