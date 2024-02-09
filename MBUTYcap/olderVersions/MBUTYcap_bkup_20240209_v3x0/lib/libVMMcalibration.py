@@ -268,37 +268,29 @@ class calibrate():
             
             selRF  = np.logical_and(self.readouts.Ring == Ring , self.readouts.Fen == Fen)
             selHyb = np.logical_and(selRF, self.readouts.hybrid == Hybrid )
+        
+            selVmm0 = np.logical_and( self.readouts.ASIC == 0, selHyb)
             
-            if self.config.DETparameters.operationMode == 'normal':
-                selVmm0 = np.logical_and( self.readouts.ASIC == 0, selHyb)
+            # test 
+            # if Ring == 0 and Hybrid == 3:
                 
-                # test 
-                # if Ring == 0 and Hybrid == 3:
-                    
-                #     temp.vmm0.ADCoffset = np.zeros((64,))
-                #     temp.vmm0.ADCslope  = 10000*np.ones((64,))
-    
-                cal0 = calibrateVMMasic(self.readouts.ADC[selVmm0],self.readouts.Channel[selVmm0],temp.vmm0.ADCoffset,temp.vmm0.ADCslope,vmm=0)
-                
-                self.readouts.ADC[selVmm0] = cal0.ADCout
-                
-            elif self.config.DETparameters.operationMode == 'clustered':
-                cal0 = calibrateVMMasic(self.readouts.ADC,self.readouts.Channel,temp.vmm0.ADCoffset,temp.vmm0.ADCslope,vmm=0)
-                self.readouts.ADC = cal0.ADCout
+            #     temp.vmm0.ADCoffset = np.zeros((64,))
+            #     temp.vmm0.ADCslope  = 10000*np.ones((64,))
+
+            cal0 = calibrateVMMasic(self.readouts.ADC[selVmm0],self.readouts.Channel[selVmm0],temp.vmm0.ADCoffset,temp.vmm0.ADCslope,vmm=0)
+            
+            self.readouts.ADC[selVmm0] = cal0.ADCout
             
             # print(self.readouts.ADC[selVmm0])
             # print(cal0.ADCout)
             # # self.deb = np.concatenate(self.readouts.ADC[selVmm0],cal0.ADCout)
             # # print(cal0.ADCout)
             
-            if self.config.DETparameters.operationMode == 'normal':
-                selVmm1 = np.logical_and( self.readouts.ASIC == 1, selHyb)
-                cal1 = calibrateVMMasic(self.readouts.ADC[selVmm1],self.readouts.Channel[selVmm1],temp.vmm1.ADCoffset,temp.vmm1.ADCslope,vmm=1)
-                self.readouts.ADC[selVmm1] = cal1.ADCout
-            elif self.config.DETparameters.operationMode == 'clustered':
-                cal1 = calibrateVMMasic(self.readouts.ADC1,self.readouts.Channel1,temp.vmm1.ADCoffset,temp.vmm1.ADCslope,vmm=1)
-                self.readouts.ADC1 = cal1.ADCout
+            selVmm1 = np.logical_and( self.readouts.ASIC == 1, selHyb)
             
+            cal1 = calibrateVMMasic(self.readouts.ADC[selVmm1],self.readouts.Channel[selVmm1],temp.vmm1.ADCoffset,temp.vmm1.ADCslope,vmm=1)
+            
+            self.readouts.ADC[selVmm1] = cal1.ADCout
       
   
 ###############################################################################

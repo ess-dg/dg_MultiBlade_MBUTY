@@ -1,0 +1,31 @@
+{
+	"Detector": "test",
+	
+	"operationMode" : "clustered",
+
+	"cassettes" : 1,
+	
+	"orientation" : "horizontal",
+
+	"Cassette2ElectronicsConfig" : [
+		{"ID" : 0, "Ring" : 0, "Fen" : 2, "Hybrid" : 0}
+	],
+	
+	"ChannelMapping" : [
+        	{"WireASIC" : 1, "StripASIC" : 0}
+    ],    	
+
+	"wires"  : 32,
+	"strips" : 64,
+
+	"wirePitch_mm" : 4,
+	"stripPitch_mm" : 4,
+
+	"bladesInclination_deg" : 5,
+	"offset1stWires_mm" : 11,
+
+	"Monitor" : [
+		{"ID" : 99,  "TTLtype" : "True", "Ring" : 11, "Fen" : 0, "Hybrid" : 0, "ASIC" : 0, "Channel" : 1}
+	] 
+
+}

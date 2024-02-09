@@ -7,26 +7,25 @@ Created on Wed Aug 25 10:46:16 2021
 """
 
 import numpy as np
+import time
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-# import time
 
+from lib import libReadPcapngVMM as pcapr
 from lib import libSampleData as sdat
 from lib import libMapping as maps
 from lib import libCluster as clu
 from lib import libAbsUnitsAndLambda as absu
 from lib import libHistograms as hh
 from lib import libParameters as para
-# from lib import libReadPcapngVMM as pcapr
 
-
+# import libReadPcapngVMM as pcapr
 # import libSampleData as sdat
 # import libMapping as maps
 # import libCluster as clu
 # import libAbsUnitsAndLambda as absu
 # import libHistograms as hh
 # import libParameters as para
-# import libReadPcapngVMM as pcapr
 
 ###############################################################################
 ###############################################################################
@@ -98,17 +97,13 @@ class plottingReadouts():
             
             sel = sel1 & sel2 & sel3
             
+            asic0  = self.readouts.ASIC == 0
+            asic1  = self.readouts.ASIC == 1
+            
             # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
             
-            if self.config.DETparameters.operationMode == 'normal':
-                asic0  = self.readouts.ASIC == 0
-                asic1  = self.readouts.ASIC == 1
-                self.histo0 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel & asic0])
-                self.histo1 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel & asic1])
-                
-            elif self.config.DETparameters.operationMode == 'clustered':
-                self.histo0 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel])
-                self.histo1 = hh.histog().hist1D(self.xbins, self.readouts.Channel1[sel])
+            self.histo0 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel & asic0])
+            self.histo1 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel & asic1])
         
     def plotChRaw(self,hybrids): 
         
@@ -140,16 +135,13 @@ class plottingReadouts():
             
             sel = sel1 & sel2 & sel3
             
-            if self.config.DETparameters.operationMode == 'normal':
-                asic0  = self.readouts.ASIC == 0
-                asic1  = self.readouts.ASIC == 1
-                self.timeStamp0 = self.readouts.timeStamp[sel & asic0]
-                self.timeStamp1 = self.readouts.timeStamp[sel & asic1]
-                
-            elif self.config.DETparameters.operationMode == 'clustered':
-                self.timeStamp0 = self.readouts.timeStamp[sel]
-                self.timeStamp1 = self.timeStamp0
+            asic0  = self.readouts.ASIC == 0
+            asic1  = self.readouts.ASIC == 1
             
+            # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
+            
+            self.timeStamp0 = self.readouts.timeStamp[sel & asic0]
+            self.timeStamp1 = self.readouts.timeStamp[sel & asic1]
             
     def plotTimeStamps(self,hybrids):
         
@@ -216,19 +208,15 @@ class plottingHits():
         
         cass = self.hits.Cassette == cassette1ID
         
-        if self.config.DETparameters.operationMode == 'normal':
-            wires  = self.hits.WorS == 0
-            strips = self.hits.WorS == 1
-            wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
-            self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
-            self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
-            
-        elif self.config.DETparameters.operationMode == 'clustered':
-            wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.parameters.configJsonFile.numOfWires)
-            self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
-            self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass])
+        wires  = self.hits.WorS == 0
+        strips = self.hits.WorS == 1
         
-
+        wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
+        
+        self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
+        self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
+        
+        
     def plotChRaw(self,cassettes): 
         
         self.ploth = preparePlotMatrix(1003, 2, len(cassettes))
@@ -251,26 +239,19 @@ class plottingHits():
              
         sel = self.hits.Cassette == cassette1ID
         
-        if self.config.DETparameters.operationMode == 'normal':
-            isWire   = self.hits.WorS == 0
-            isStrip  = self.hits.WorS == 1
-            
-            # wireCh0to31 = np.mod(self.hits.WiresStrips[sel & isWire],self.parameters.configJsonFile.numOfWires)
-            
-            self.timeStampW = self.hits.timeStamp[sel] * isWire[sel]
-            self.timeStampS = self.hits.timeStamp[sel] * isStrip[sel]
-            
-            # self.timeStampW[self.timeStampW == 0] = np.ma.masked # same as np.nan for int64 instead of floats   
-            # self.timeStampS[self.timeStampS == 0] = np.ma.masked # same as np.nan for int64 instead of floats
- 
-        elif self.config.DETparameters.operationMode == 'clustered':
-            
-            self.timeStampW = self.hits.timeStamp[sel] 
-            self.timeStampS = self.hits.timeStamp[sel] 
-            
+        isWire   = self.hits.WorS == 0
+        isStrip  = self.hits.WorS == 1
+        
+        # wireCh0to31 = np.mod(self.hits.WiresStrips[sel & isWire],self.parameters.configJsonFile.numOfWires)
+        
+        self.timeStampW = self.hits.timeStamp[sel] * isWire[sel]
+        self.timeStampS = self.hits.timeStamp[sel] * isStrip[sel]
+        
+        # self.timeStampW[self.timeStampW == 0] = np.ma.masked # same as np.nan for int64 instead of floats   
+        # self.timeStampS[self.timeStampS == 0] = np.ma.masked # same as np.nan for int64 instead of floats
+        
         self.timeStampW = np.ma.masked_where(self.timeStampW == 0,    self.timeStampW) 
         self.timeStampS = np.ma.masked_where(self.timeStampS == 0,    self.timeStampS) 
-            
         
     def extractTimeStampAndCh1Cass(self,cassette1ID):
            
@@ -278,21 +259,14 @@ class plottingHits():
         
         sel = self.hits.Cassette == cassette1ID
         
-        if self.config.DETparameters.operationMode == 'normal':
-            isWire   = self.hits.WorS == 0
-            isStrip  = self.hits.WorS == 1
-            
-            wireCh0to31 = np.mod(self.hits.WiresStrips,self.parameters.configJsonFile.numOfWires) 
-            
-            self.WireCh  = np.round((wireCh0to31[sel]+10) * isWire[sel])
-            self.StripCh = np.round((self.hits.WiresStrips[sel]+20) * isStrip[sel])
-   
-        elif self.config.DETparameters.operationMode == 'clustered':
-            wireCh0to31 = np.mod(self.hits.WiresStrips1,self.parameters.configJsonFile.numOfWires) 
-            
-            self.WireCh  = np.round((wireCh0to31[sel]+10))
-            self.StripCh = np.round((self.hits.WiresStrips[sel]+20))
-            
+        isWire   = self.hits.WorS == 0
+        isStrip  = self.hits.WorS == 1
+        
+        wireCh0to31 = np.mod(self.hits.WiresStrips,self.parameters.configJsonFile.numOfWires) 
+        
+        self.WireCh  = np.round((wireCh0to31[sel]+10) * isWire[sel])
+        self.StripCh = np.round((self.hits.WiresStrips[sel]+20) * isStrip[sel])
+        
         self.WireCh[self.WireCh == 0]   = np.ma.masked # same as np.nan for int64 instead of floats   
         self.StripCh[self.StripCh == 0] = np.ma.masked # same as np.nan for int64 instead of floats
         

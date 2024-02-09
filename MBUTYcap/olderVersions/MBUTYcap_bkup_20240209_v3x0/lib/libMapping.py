@@ -9,14 +9,13 @@ Created on Fri Aug 20 09:14:18 2021
 import numpy as np
 import json
 import os
+
 import sys
 
 # import pandas as pd
-from lib import libReadPcapngVMM as pcapr
+# from lib import libReadPcapngVMM as pcapr
 # from lib import libSampleData as sdat
 # import libSampleData as sdat
-
-# import libReadPcapngVMM as pcapr
 
 
 # NOTE: THIS SUPPORTS ONLY 1 MONITOR
@@ -32,19 +31,16 @@ class hits():
         self.Cassette    = np.zeros((0), dtype = datype)
         self.ADC         = np.zeros((0), dtype = datype)
         self.timeStamp   = np.zeros((0), dtype = datype)
-        self.WorS        = -1*np.ones((0), dtype = datype)
-        self.WiresStrips = -1*np.ones((0), dtype = datype)
+        self.WorS        = np.zeros((0), dtype = datype)
+        self.WiresStrips = np.zeros((0), dtype = datype)
         self.PulseT      = np.zeros((0), dtype = datype)
         self.PrevPT      = np.zeros((0), dtype = datype)
         self.Durations   = np.zeros((0), dtype = datype)
         self.Duration    = np.zeros((1), dtype = datype)
-        self.WiresStrips1= -1*np.ones((0), dtype = datype)
-        self.ADC1        = np.zeros((0), dtype = datype)
         
     def importReadouts(self,readouts):    
         
         self.ADC       = readouts.ADC
-        self.ADC1      = readouts.ADC1
         self.timeStamp = readouts.timeStamp
         self.PulseT    = readouts.PulseT
         self.PrevPT    = readouts.PrevPT
@@ -58,10 +54,9 @@ class hits():
         # self.WorS = np.copy(readouts.ASIC)
         self.WorS = -1*np.ones((leng), dtype = 'int64') 
         
-        self.Cassette     = -1*np.ones((leng), dtype = 'int64')        
+        self.Cassette    = -1*np.ones((leng), dtype = 'int64')        
 
-        self.WiresStrips  = -1*np.ones((leng), dtype = 'int64')
-        self.WiresStrips1 = -1*np.ones((leng), dtype = 'int64')
+        self.WiresStrips = -1*np.ones((leng), dtype = 'int64')
         
     def append(self, hit):
         
@@ -72,8 +67,6 @@ class hits():
         self.WiresStrips = np.concatenate((self.WiresStrips, hit.WiresStrips), axis=0)
         self.PulseT      = np.concatenate((self.PulseT, hit.PulseT), axis=0)
         self.PrevPT      = np.concatenate((self.PrevPT, hit.PrevPT), axis=0)
-        self.ADC1         = np.concatenate((self.ADC1, hit.ADC1), axis=0)
-        self.WiresStrips1 = np.concatenate((self.WiresStrips1, hit.WiresStrips1), axis=0)
         
         self.Durations   = np.append(self.Durations, hit.Durations)
         self.Duration    = self.Duration+hit.Duration
@@ -82,7 +75,7 @@ class hits():
         
         leng = len(self.WiresStrips)
         
-        hitsArray = np.zeros((leng,9),dtype = 'int64')
+        hitsArray = np.zeros((leng,7),dtype = 'int64')
         
         hitsArray[:,0] = self.timeStamp
         hitsArray[:,1] = self.Cassette
@@ -91,8 +84,6 @@ class hits():
         hitsArray[:,4] = self.ADC
         hitsArray[:,5] = self.PulseT
         hitsArray[:,6] = self.PrevPT
-        hitsArray[:,7] = self.WiresStrips1
-        hitsArray[:,8] = self.ADC1
 
         return hitsArray
    
@@ -110,11 +101,8 @@ class extractHitsPortion():
         hitsEx.WiresStrips = hits.WiresStrips[start:stop]
         hitsEx.PulseT    = hits.PulseT[start:stop]
         hitsEx.PrevPT    = hits.PrevPT[start:stop]
-        hitsEx.ADC1         = hits.ADC1[start:stop]
-        hitsEx.WiresStrips1 = hits.WiresStrips1[start:stop]
         
         return hitsEx
-    
 
 ###############################################################################
 ###############################################################################   
@@ -154,8 +142,6 @@ class DETparameters():
     def __init__(self):
         
         self.name     = None
-        
-        self.operationMode = 'empty'
         
         self.orientation = 'vertical'
         
@@ -206,7 +192,6 @@ class read_json_config():
         self.get_allParameters()
         
         self.print_DETname()
-        self.print_check_operationMode()
         
         self.check_cassetteLabelling()
               
@@ -231,16 +216,6 @@ class read_json_config():
     def print_DETname(self):
         print('\033[1;36mConfiguration for Detector: {}\033[1;37m'.format(self.DETparameters.name))
         
-    def print_check_operationMode(self):
-    
-        if self.DETparameters.operationMode == "normal" or self.DETparameters.operationMode == "clustered":
-            print('\033[1;36mOperation Mode: {}\033[1;37m'.format(self.DETparameters.operationMode))
-        else:
-            print('\n\t\033[1;31mERROR: Operation mode (found {}) can only be either normal or clustered -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.DETparameters.operationMode),end='') 
-            sys.exit()
- 
-            
-        
     def get_DETname(self):
         self.DETparameters.name = self.conf.get('Detector')
         return self.DETparameters.name
@@ -254,7 +229,6 @@ class read_json_config():
         self.DETparameters.offset1stWires  = float(self.conf.get('offset1stWires_mm'))
         self.DETparameters.numOfCassettes  = self.conf.get('cassettes')
         self.DETparameters.orientation     = self.conf.get('orientation')
-        self.DETparameters.operationMode   = self.conf.get('operationMode')
         
     def get_DETmap(self):  
         self.DETmap.cassettesMap = self.conf.get('Cassette2ElectronicsConfig')
@@ -323,7 +297,7 @@ class read_json_config():
         # temp = temp[0]
         
         if temp is not None:
-            # self.channelMap.AdapterType = temp.get("AdapterType")
+            self.channelMap.AdapterType = temp.get("AdapterType")
             self.channelMap.WireASIC    = temp.get("WireASIC")
             self.channelMap.StripASIC   = temp.get("StripASIC")
  
@@ -374,16 +348,15 @@ class mapDetector():
         self.debug    = False
         
         self.readouts = readouts 
-        self.config   = config
-
+        
         self.hits = hits()
         self.hits.importReadouts(self.readouts)
    
-           
+        self.config = config
+                
     def initCatData(self):    # debug
-
         if self.debug:
-            self.catData = np.zeros((len(self.readouts.Ring),10), dtype = 'int64')
+            self.catData = np.zeros((len(self.readouts.Ring),8), dtype = 'int64')
             self.catData[:,0] = self.hits.Cassette
             self.catData[:,1] = self.readouts.Ring
             self.catData[:,2] = self.readouts.Fen
@@ -392,8 +365,6 @@ class mapDetector():
             self.catData[:,5] = self.readouts.Channel
             self.catData[:,6] = self.hits.WiresStrips
             self.catData[:,7] = self.hits.WorS
-            self.catData[:,8] = self.readouts.Channel1
-            self.catData[:,9] = self.hits.WiresStrips1
             # self.catData[:,8] = self.hits.WiresStripsGlob
             
     def dprint(self, msg):
@@ -451,111 +422,60 @@ class mapDetector():
     def mapChannels(self):
         
         
-        # if  self.config.channelMap.AdapterType is None:
-        #     print('\t \033[1;33mWARNING: No adapter type in json config file, used reverse as default. Wires on ASIC 1 and Strips on ASIC 0', end=' ')
-        #     self.config.channelMap.AdapterType = 'reverse'
-        # else:    
-        #     if self.config.channelMap.AdapterType != 'straight' and self.config.channelMap.AdapterType != 'reverse':
-        #         print('\t \033[1;33mWARNING: Adapter type can only be straight or reverse, check json config file, used reverse as default.', end=' ')
-        #         self.config.channelMap.AdapterType = 'reverse'
+        if  self.config.channelMap.AdapterType is None:
+            print('\t \033[1;33mWARNING: No adapter type in json config file, used straight as default. Wires on ASIC 0 and Strips on ASIC 1', end=' ')
+            self.config.channelMap.AdapterType = 'straight'
+        else:    
+            if self.config.channelMap.AdapterType != 'straight' and self.config.channelMap.AdapterType != 'reverse':
+                print('\t \033[1;33mWARNING: Adapter type can only be straight or reverse, check json config file, used straight as default.', end=' ')
+                self.config.channelMap.AdapterType = 'straight'
        
         if self.config.channelMap.WireASIC == self.config.channelMap.StripASIC:
-            print('\t \033[1;31mWARNING: Wires and strips on same ASIC in config file ---> exiting!', end=' ')
-            sys.exit()
+            print('\t \033[1;33mWARNING: Wires and strips on same ASIC', end=' ')
             
-        # if self.config.channelMap.WireASIC == 1 and self.config.channelMap.StripASIC == 0 and self.config.channelMap.AdapterType == 'straight' :
-        #     print('\t \033[1;33mWARNING: Usually with straight adapter, wires are on ASIC 0 and strips on ASIC 1', end=' ')
-        #     sys.exit()
-        # if self.config.channelMap.WireASIC == 0 and self.config.channelMap.StripASIC == 1 and self.config.channelMap.AdapterType == 'reverse' :
-        #    print('\t \033[1;33mWARNING: Usually with reverse adapter, wires are on ASIC 1 and strips on ASIC 0', end=' ')
-        #    sys.exit()
+        if self.config.channelMap.WireASIC == 1 and self.config.channelMap.StripASIC == 0 and self.config.channelMap.AdapterType == 'straight' :
+            print('\t \033[1;33mWARNING: Usually with straight adapter, wires are on ASIC 0 and strips on ASIC 1', end=' ')
+        if self.config.channelMap.WireASIC == 0 and self.config.channelMap.StripASIC == 1 and self.config.channelMap.AdapterType == 'reverse' :
+           print('\t \033[1;33mWARNING: Usually with reverse adapter, wires are on ASIC 1 and strips on ASIC 0', end=' ')
+         
         
-        #  here we define the adapter type if VMM1 is on wires the oprder o channels is reversed for strips 
-        if self.config.channelMap.WireASIC == 0 and self.config.channelMap.StripASIC == 1 :
-            AdapterType = 'straight'
-        if self.config.channelMap.WireASIC == 1 and self.config.channelMap.StripASIC == 0 :
-            AdapterType = 'reverse'
+        #  wires
+        sel1 = self.readouts.ASIC == self.config.channelMap.WireASIC 
+        sel2 = self.readouts.Channel >= 16
+        sel3 = self.readouts.Channel <= 47
         
-        if self.config.DETparameters.operationMode == 'normal':
+        selectionWires  = sel1 & sel2 & sel3
+        
+        if self.config.channelMap.AdapterType == 'straight':
+            self.hits.WiresStrips[selectionWires] = 31 - (self.readouts.Channel[selectionWires] - 16)
+        elif self.config.channelMap.AdapterType == 'reverse':   
+            self.hits.WiresStrips[selectionWires] = self.readouts.Channel[selectionWires] - 16
+
+        # self.hits.WiresStrips[~selectionWires] = np.ma.masked # same as np.nan for int64 instead of floats
+        
+        # after mapping wires are 0 and strips 1 
+        self.hits.WorS[selectionWires] = 0 
+        
+        # strips
+        sel1s = self.readouts.ASIC == self.config.channelMap.StripASIC 
+        sel2s = self.readouts.Channel >= 0
+        sel3s = self.readouts.Channel <= 63
+        
+        selectionStrips  = sel1s & sel2s & sel3s
+        
+        if self.config.channelMap.AdapterType == 'straight':
+            self.hits.WiresStrips[selectionStrips] = self.readouts.Channel[selectionStrips]
+        elif self.config.channelMap.AdapterType == 'reverse':  
+            self.hits.WiresStrips[selectionStrips] = 63 - self.readouts.Channel[selectionStrips]
             
-                #############
-                #  wires
-                sel1 = self.readouts.ASIC == self.config.channelMap.WireASIC 
-                sel2 = self.readouts.Channel >= 16
-                sel3 = self.readouts.Channel <= 47
-                
-                selectionWires  = sel1 & sel2 & sel3
-                
-                if AdapterType == 'straight':
-                    self.hits.WiresStrips[selectionWires] = 31 - (self.readouts.Channel[selectionWires] - 16)
-                elif AdapterType == 'reverse':   
-                    self.hits.WiresStrips[selectionWires] = self.readouts.Channel[selectionWires] - 16
-        
-                # self.hits.WiresStrips[~selectionWires] = np.ma.masked # same as np.nan for int64 instead of floats
-                
-                # after mapping wires are 0 and strips 1 
-                self.hits.WorS[selectionWires] = 0 
-                
-                #############
-                # strips
-                sel1s = self.readouts.ASIC == self.config.channelMap.StripASIC 
-                sel2s = self.readouts.Channel >= 0
-                sel3s = self.readouts.Channel <= 63
-                
-                selectionStrips  = sel1s & sel2s & sel3s
-                
-                if AdapterType == 'straight':
-                    self.hits.WiresStrips[selectionStrips] = self.readouts.Channel[selectionStrips]
-                elif AdapterType == 'reverse':  
-                    self.hits.WiresStrips[selectionStrips] = 63 - self.readouts.Channel[selectionStrips]
-                    
-                # after mapping wires are 0 and strips 1 
-                self.hits.WorS[selectionStrips] = 1 
-        
-        #############
+        # after mapping wires are 0 and strips 1 
+        self.hits.WorS[selectionStrips] = 1 
         
         # if some ch of vmm are not used then nan, it is not a wire or strip 
         # self.hits.WorS[~selectionWires & ~selectionStrips] = np.ma.masked # same as np.nan for int64 instead of floats
         
         # self.hits.WorS[~selectionWires & ~selectionStrips] = -1
         
-        elif self.config.DETparameters.operationMode == 'clustered':
-            
-            #############
-            #  wires
-            if self.config.channelMap.WireASIC == 0:
-                sel2 = self.readouts.Channel >= 16
-                sel3 = self.readouts.Channel <= 47
-            elif self.config.channelMap.WireASIC == 1:
-                sel2 = self.readouts.Channel1 >= 16
-                sel3 = self.readouts.Channel1 <= 47
-            
-            selectionWires  = sel2 & sel3
-            
-            # always for any adapter the wirestips1 is for wires !!! 
-            if self.config.channelMap.WireASIC == 0:
-                self.hits.WiresStrips1[selectionWires] = 31 - (self.readouts.Channel[selectionWires] - 16)
-            elif self.config.channelMap.WireASIC == 1: 
-                self.hits.WiresStrips1[selectionWires] = self.readouts.Channel1[selectionWires] - 16
-  
-            #############
-            # strips
-            if self.config.channelMap.StripASIC == 0:  
-                sel2s = self.readouts.Channel >= 0
-                sel3s = self.readouts.Channel <= 63
-            elif self.config.channelMap.StripASIC == 1:
-                sel2s = self.readouts.Channel1 >= 0
-                sel3s = self.readouts.Channel1 <= 63
-            
-            selectionStrips  = sel2s & sel3s
-            
-            # always for any adapter the wirestips is for strips !!! 
-            if self.config.channelMap.StripASIC == 1:
-                self.hits.WiresStrips[selectionStrips] = self.readouts.Channel1[selectionStrips]
-            elif self.config.channelMap.StripASIC == 0:  
-                self.hits.WiresStrips[selectionStrips] = 63 - self.readouts.Channel[selectionStrips]
-      
-            
     def mapChannelsGlob(self):
         
         self.mapChannels()
@@ -574,28 +494,17 @@ class mapDetector():
         
                   # in this case the order is the arrangement in the json file 
         for k, cass in enumerate(self.config.DETparameters.cassInConfig): 
-            
-            index = k
-            
-            if self.config.DETparameters.operationMode == 'normal':
-                selection = np.logical_and( self.hits.Cassette == cass , self.hits.WorS == 0 ) #  wires is WorS = 0
-                self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
-            elif self.config.DETparameters.operationMode == 'clustered':
-                selection = self.hits.Cassette == cass
-                if self.config.channelMap.WireASIC == 0:
-                   self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
-                elif self.config.channelMap.WireASIC == 1: 
-                   self.hits.WiresStrips1[selection] = self.hits.WiresStrips1[selection] + index*self.config.DETparameters.numOfWires
+            selection = np.logical_and( self.hits.Cassette == cass , self.hits.WorS == 0 ) #  wires is WorS = 0
             
             #  IMPORTANT NOTE 
             #  if just add +32 every cassette in json config does not matter the ID
-            # index = k
+            index = k
             #  if the cassette ID drives the position in the space, 1 is the bottom cassette or the most left 
             # index = cass-1
             #  if the cassette ID drives the position in the space, 0 is the bottom cassette or the most left 
             # index = cass
                 
-            
+            self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
         
     
     def mappAllCassAndChannels(self):
@@ -651,29 +560,10 @@ class mapMonitor():
 
 if __name__ == '__main__':
 
-   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/config/'+"test.json"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/03_MBUTYcap_VMMtest_Utgard/config/'+"AMOR.json"
    # filePathD = './'+"VMM3a_Freia.pcapng"
 
    config = read_json_config(filePath)
-   
-   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
-   file = 'sampleData_NormalMode.pcapng'
-   file = 'sampleData_ClusteredMode.pcapng'
-   
-   filePathAndFileName = filePath+file
-   
-   NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
-   
-   pcapng = pcapr.pcapng_reader(filePathAndFileName, NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode)
-
-    
-   readouts = pcapng.readouts
-   readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
-   
-   md  = mapDetector(readouts, config)
-   md.mappAllCassAndChannelsGlob()
-   hits = md.hits
-   hitsArray  = hits.concatenateHitsInArrayForDebug()
    
    # parameters.loadConfigParameters(config)
    

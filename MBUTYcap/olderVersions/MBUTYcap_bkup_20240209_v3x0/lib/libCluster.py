@@ -11,20 +11,19 @@ import time
 import sys
 
 
+from lib import libReadPcapngVMM as pcapr
 from lib import libSampleData as sdat
 from lib import libMapping as maps
 from lib import libHistograms as hh
+from lib import libPlotting as plo
 from lib import libParameters as para
 
-from lib import libReadPcapngVMM as pcapr
-# from lib import libPlotting as plo
-
+# import libReadPcapngVMM as pcapr
 # import libSampleData as sdat
 # import libMapping as maps
 # import libHistograms as hh
-# import libParameters as para
-# import libReadPcapngVMM as pcapr
 # import libPlotting as plo
+# import libParameters as para
 
 
 # NOTE  IF YOU CLUSTERIZE AGAIN THE SAME CASSETTE -> exit
@@ -188,40 +187,6 @@ class events():
                         
         return eventsArray
     
-
-    def importClusteredHits(self,hits,config):
-        
-        self.importDurations(hits)
-        
-        self.Nevents          = np.shape(hits.timeStamp)[0]
-        self.NeventsNotRejAll = self.Nevents
-        self.NeventsNotRej2D  = self.Nevents
-        
-        self.Cassette     = hits.Cassette
-        self.CassettedIDs = np.unique(hits.Cassette)
-        
-        if config.channelMap.WireASIC == 0:
-            self.positionW    = hits.WiresStrips
-            self.PHW          = hits.ADC
-        elif config.channelMap.WireASIC == 1:
-            self.positionW    = hits.WiresStrips1
-            self.PHW          = hits.ADC1
-            
-        if config.channelMap.StripASIC == 1:
-            self.positionS    = hits.WiresStrips1
-            self.PHS          = hits.ADC1
-        elif config.channelMap.StripASIC == 0:
-            self.positionS    = hits.WiresStrips
-            self.PHS          = hits.ADC
-            
-        self.multW = -1*np.ones((self.Nevents), dtype = 'int64') 
-        self.multS = -1*np.ones((self.Nevents), dtype = 'int64') 
-        
-        self.timeStamp = hits.timeStamp    
-        self.PulseT    = hits.PulseT
-        self.PrevPT    = hits.PrevPT
-        
-        print("\n\t N of not rejected events in clustered mode (2D) %d " % (self.Nevents))
 
 ###############################################################################
 ###############################################################################
@@ -721,140 +686,107 @@ class hitsMON2events():
 ###############################################################################
 
 if __name__ == '__main__':
-    
-    filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/config/'+"test.json"
-    # filePathD = './'+"VMM3a_Freia.pcapng"
 
-    config = maps.read_json_config(filePath)
-    
-    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
-    file = 'sampleData_NormalMode.pcapng'
-    file = 'sampleData_ClusteredMode.pcapng'
-    
-    filePathAndFileName = filePath+file
-    
-    NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
-    
-    pcapng = pcapr.pcapng_reader(filePathAndFileName, NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode)
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MB300_FREIA_config.json"
+   filePathD = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'+'freia_1k_pkts_ng.pcapng'
+   
+   tProfilingStart = time.time()
 
+   parameters = para.parameters('./')
+   
+   config = maps.read_json_config(filePath)
+   parameters.loadConfigParameters(config)
+
+   parameters.cassettes.cassettes = [1]
+   
+   # name = config.get_DetectorName()
+   # config.get_cassettesInConfig()
+   
+   # config.get_cassID2RingFenHybrid(5)
+   # print(config.RingID, config.FenID, config.hybridID)
+   # config.get_cassID2RingFenHybrid(55)
+   # print(config.RingID, config.FenID, config.hybridID)
+   # config.get_cassID2RingFenHybrid(1)
+   # print(config.RingID, config.FenID, config.hybridID)
+   
+   # config.get_cassID2RingFenHybrid([1,41])
+   
+
+   
+   # pr = pcapr.pcap_reader(filePathD)
+   #   #  # pr.debug = True
+   # pr.read()
+   # vmm1 = pr.readouts
+   
+   # vmm2 = sdat.sampleData()
+   # vmm2.fill()
+
+   # cassettes = [1,2,3,4,5]
+
+   # re  = maps.mapDetector(vmm1, filePath)
+   #    # re.debug = False
+   #    # re.initCatData()
+
+   # re.mappAllCassAndChannels_GlobalCoord(cassettes)
+   # hits = re.hits
+   
+   Nhits = 1e4
+   cassettes = [1]
      
-    readouts = pcapng.readouts
-    readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+   bb = sdat.sampleHitsMultipleCassettes(cassettes,'./data/')
+   bb.generateGlob(Nhits)
+   
+   hitsArray = bb.hits.concatenateHitsInArrayForDebug()
+   
+   hits = bb.hits
+   
+   ## # # # # # # # # # #  
+   # aa = sdat.sampleReadouts2()
+   # aa.fill()
+   # readouts = aa.readouts
+   
+   # # map data
+   # md  = maps.mapDetector(readouts, config)
+   # md.mappAllCassAndChannelsGlob()
+   # hits = md.hits
+   ## # # # # # # # # # #
+   # cc = clusterHits(hits) 
+   
+   # allEvents= events()
+   # aa, bb = cc.clusterize1cassette(1,2e-6)
+   
+   # allEvents.append(cc.events)
+   
+   # dd = np.loadtxt('dataset1_large_Sorting=True_Filtering=False_Clustered.txt',dtype='float64',delimiter=' ')
+   
+   
+   # aa1, bb1 = cc.clusterize1cassette(3,2e-6)
+   
+   # allEvents.append(cc.events)
+   
+   showStat = 'globalStat'
+   
+   cc = clusterHits(hits, showStat)
+   
+   # cc.checkIfRepeatedIDs([1,1,2,3,56])
+   
+   # cc.clusterize1cassette(1,2e-6)
+   
+   cc.clusterizeManyCassettes([1], 3e-6)
+   
+   
+   
+   events =  cc.events
+   
+   eventsArray = events.concatenateEventsInArrayForDebug()
+   
+   allAxis = hh.allAxis()
+   allAxis.createAllAxis(parameters)
+   
+   # pp = plo.plottingEvents(events,allAxis)
     
-    md  = maps.mapDetector(readouts, config)
-    md.mappAllCassAndChannelsGlob()
-    hits = md.hits
-    hitsArray  = hits.concatenateHitsInArrayForDebug()
-    
-    # cc = clusterHits(hits,showStat='globalStat')
-    # cc.clusterizeManyCassettes([33], 0.5e-6)
-    # events = cc.events
-    
-    ev = events()
-    ev.importClusteredHits(hits,config)
-
-    eventsArray = ev.concatenateEventsInArrayForDebug() 
-
-   # filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MB300_FREIA_config.json"
-   # filePathD = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'+'freia_1k_pkts_ng.pcapng'
-   
-   # tProfilingStart = time.time()
-
-   # parameters = para.parameters('./')
-   
-   # config = maps.read_json_config(filePath)
-   # parameters.loadConfigParameters(config)
-
-   # parameters.cassettes.cassettes = [1]
-   
-   # # name = config.get_DetectorName()
-   # # config.get_cassettesInConfig()
-   
-   # # config.get_cassID2RingFenHybrid(5)
-   # # print(config.RingID, config.FenID, config.hybridID)
-   # # config.get_cassID2RingFenHybrid(55)
-   # # print(config.RingID, config.FenID, config.hybridID)
-   # # config.get_cassID2RingFenHybrid(1)
-   # # print(config.RingID, config.FenID, config.hybridID)
-   
-   # # config.get_cassID2RingFenHybrid([1,41])
-   
-
-   
-   # # pr = pcapr.pcap_reader(filePathD)
-   # #   #  # pr.debug = True
-   # # pr.read()
-   # # vmm1 = pr.readouts
-   
-   # # vmm2 = sdat.sampleData()
-   # # vmm2.fill()
-
-   # # cassettes = [1,2,3,4,5]
-
-   # # re  = maps.mapDetector(vmm1, filePath)
-   # #    # re.debug = False
-   # #    # re.initCatData()
-
-   # # re.mappAllCassAndChannels_GlobalCoord(cassettes)
-   # # hits = re.hits
-   
-   # Nhits = 1e4
-   # cassettes = [1]
-     
-   # bb = sdat.sampleHitsMultipleCassettes(cassettes,'./data/')
-   # bb.generateGlob(Nhits)
-   
-   # hitsArray = bb.hits.concatenateHitsInArrayForDebug()
-   
-   # hits = bb.hits
-   
-   # ## # # # # # # # # # #  
-   # # aa = sdat.sampleReadouts2()
-   # # aa.fill()
-   # # readouts = aa.readouts
-   
-   # # # map data
-   # # md  = maps.mapDetector(readouts, config)
-   # # md.mappAllCassAndChannelsGlob()
-   # # hits = md.hits
-   # ## # # # # # # # # # #
-   # # cc = clusterHits(hits) 
-   
-   # # allEvents= events()
-   # # aa, bb = cc.clusterize1cassette(1,2e-6)
-   
-   # # allEvents.append(cc.events)
-   
-   # # dd = np.loadtxt('dataset1_large_Sorting=True_Filtering=False_Clustered.txt',dtype='float64',delimiter=' ')
+   # pp.plotXYToF(logScale = False, absUnits = False)
    
    
-   # # aa1, bb1 = cc.clusterize1cassette(3,2e-6)
-   
-   # # allEvents.append(cc.events)
-   
-   # showStat = 'globalStat'
-   
-   # cc = clusterHits(hits, showStat)
-   
-   # # cc.checkIfRepeatedIDs([1,1,2,3,56])
-   
-   # # cc.clusterize1cassette(1,2e-6)
-   
-   # cc.clusterizeManyCassettes([1], 3e-6)
-   
-   
-   
-   # events =  cc.events
-   
-   # eventsArray = events.concatenateEventsInArrayForDebug()
-   
-   # allAxis = hh.allAxis()
-   # allAxis.createAllAxis(parameters)
-   
-   # # pp = plo.plottingEvents(events,allAxis)
-    
-   # # pp.plotXYToF(logScale = False, absUnits = False)
-   
-   
-   # tElapsedProfiling = time.time() - tProfilingStart
-   # print('\n Completed in %.2f s' % tElapsedProfiling) 
+   tElapsedProfiling = time.time() - tProfilingStart
+   print('\n Completed in %.2f s' % tElapsedProfiling) 

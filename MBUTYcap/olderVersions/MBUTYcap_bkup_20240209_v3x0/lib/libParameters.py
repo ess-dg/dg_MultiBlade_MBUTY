@@ -6,15 +6,14 @@ Created on Fri Sep  3 11:34:33 2021
 @author: francescopiscitelli
 """
 
+from lib import libMapping as maps
+# import libMapping as maps
 import numpy as np
-# import os
+import os
 import sys
 import time
 from lib import libEventsSoftThresholds as thre
-from lib import libMapping as maps
-
 # import libEventsSoftThresholds as thre
-# import libMapping as maps
 
 ###############################################################################
 
@@ -121,8 +120,6 @@ class configJsonFile():
               
               self.detectorName = 'empty'
               
-              self.operationMode = 'empty'
-              
               self.numOfCassettes = 0
               
               self.orientation = 'empty'
@@ -141,13 +138,11 @@ class configJsonFile():
               
           else:
               
-              self.detectorName   = config.DETparameters.name
-               
+              self.detectorName = config.DETparameters.name
+              
               self.numOfCassettes = config.DETparameters.numOfCassettes
               
-              self.operationMode  = config.DETparameters.operationMode
-              
-              self.orientation    = config.DETparameters.orientation
+              self.orientation = config.DETparameters.orientation
                         
               #  by default the cassettes are the ones present in the json file 
               self.cassInConfig = config.DETparameters.cassInConfig
@@ -402,7 +397,7 @@ if __name__ == '__main__' :
     
     # parameters2  = parameters('/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/')
     
-    configFilePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/'+'config/'
+    configFilePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/'+'config/'
     # configFileName  = "MB300_AMOR_config.json"
     configFileName  = "AMOR.json"
     

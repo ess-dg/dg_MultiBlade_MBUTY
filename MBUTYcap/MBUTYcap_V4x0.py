@@ -49,7 +49,7 @@ from lib import libVMMcalibration as cal
 ###############################################################################
 profiling = para.profiling()
 print('----------------------------------------------------------------------')
-print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 3.0\033[1;37m')
+print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 4.0\033[1;37m')
 print('----------------------------------------------------------------------')
 plt.close("all")
 ### check version ###
@@ -64,6 +64,8 @@ parameters  = para.parameters(currentPath)
 configFilePath  = currentPath+'config/'
 
 configFileName  = "AMOR.json"
+
+# configFileName  = "test.json"
 
 ###############################################################################
 ###############################################################################
@@ -84,7 +86,7 @@ parameters.dumpSettings.auto = False
 parameters.dumpSettings.interface     = 'ens2'
 
 parameters.dumpSettings.typeOfCapture = 'packets'
-parameters.dumpSettings.quantity      =  500      #packets
+parameters.dumpSettings.quantity      =  100      #packets
 
 # parameters.dumpSettings.typeOfCapture = 'duration'
 # parameters.dumpSettings.quantity      = 1   #seconds
@@ -97,31 +99,28 @@ parameters.fileManagement.sync = False
 
 ### from ... to  ... rsync the data
 
-# test setup
 parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
 parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataVMM/'
-# parameters.fileManagement.destPath   = currentPath+'data/'
-
-# AMOR
-# parameters.fileManagement.sourcePath = 'essdaq@172.30.244.203:~/pcaps/'
-# parameters.fileManagement.sourcePath = 'essdaq@det-efu02:~/pcaps/'
-# parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Documents/DOC/DATA/2021_12_AMOR_PSI/data_VMM/'
-
-# parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Documents/DOC/DATA/202308_Utgard_MBnewAMOR_VMM_muons/DATA/'
+# parameters.fileManagement.destPath   
 
 ###############
 
 parameters.fileManagement.filePath = parameters.fileManagement.destPath 
 
+# parameters.fileManagement.filePath = currentPath+'data/'
 
-parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
+# parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
+
+# parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
+# parameters.fileManagement.fileName = [ 'sampleData_NormalMode.pcapng']
+# parameters.fileManagement.fileName = [ 'sampleData_ClusteredMode.pcapng']
 
 ### folder and file to open (file can be a list of files)
-# parameters.fileManagement.filePath = parameters.fileManagement.destPath
+
 # parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 # parameters.fileManagement.fileName = ['freiatest.pcapng']
-parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
-# parameters.fileManagement.fileName = ['tempo.pcapng']
+# parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
+
 # parameters.fileManagement.fileSerials = np.arange(18,28,1)
 
 ### valid otions: 'window','fileName', 'latest', 'secondLast', 'wholeFolder', 'sequence' 
@@ -147,8 +146,8 @@ parameters.fileManagement.thresholdFileName = 'MB300L_thresholds.xlsx'
 
 ###############
 ### path to  Tshark, in case you open a pcap  it gets converted into pcapng 
-parameters.fileManagement.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
-# parameters.fileManagement.pathToTshark = '/usr/sbin/'
+# parameters.fileManagement.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
+parameters.fileManagement.pathToTshark = '/usr/sbin/'
 
 ###############
 ### save a hdf file with clusters (reduced file)
@@ -166,7 +165,7 @@ parameters.fileManagement.reducedCompressionHDFL  = 9    # gzip compression leve
 #################################
 
 ### calibration VMM ADC
-parameters.dataReduction.calibrateVMM_ADC_ONOFF = True
+parameters.dataReduction.calibrateVMM_ADC_ONOFF = False
 
 ### cassettes to clusterize and to plot, if empty the cassettes in the config file are taken as default
 # parameters.cassettes.cassettes = [1,2,3,4,5,6]
@@ -197,7 +196,7 @@ parameters.wavelength.distance = 8000
 parameters.wavelength.calculateLambda = False
 
 ### ON/OFF plot X vs Lambda 2D plot
-parameters.wavelength.plotXLambda   = False
+parameters.wavelength.plotXLambda     = False
 ### ON/OFF integrated over single cassettes
 parameters.wavelength.plotLambdaDistr = False
 
@@ -220,13 +219,13 @@ parameters.wavelength.chopperPickUpDelay =  13.5/(2.*180.) * parameters.waveleng
 #################################
 
 ### ON/OFF
-parameters.MONitor.MONOnOff = True   
+parameters.MONitor.MONOnOff = False   
 
 ### threshold on MON, th is OFF if 0, any other value is ON
 parameters.MONitor.MONThreshold = 0   
 
 ### ON/OFF plotting (MON ToF and Pulse Height) 
-parameters.MONitor.plotMONtofPHS = True  
+parameters.MONitor.plotMONtofPHS = False  
 
 ### in mm, distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
 parameters.MONitor.MONDistance  = 0   
@@ -234,6 +233,10 @@ parameters.MONitor.MONDistance  = 0
 ###############################################################################
 ### PLOTTING PARAMETERS:
 #################################
+
+###############
+# with True disables clustering and mapping for speed reasons, analisys stops at readouts 
+bareReadoutsCalc = False
 
 ###############     
 ### show stat during clustering, option  'globalStat'  stat for all cassettes together, 
@@ -249,9 +252,6 @@ parameters.plotting.plotRawHits             = False
 parameters.plotting.plotHitsTimeStamps      = False
 parameters.plotting.plotHitsTimeStampsVSChannels = False
 parameters.plotting.plotChopperResets       = False
-
-# with True disables clustering and mapping for speed reasons, analisys stops at readouts 
-bareReadoutsCalc = False
 
 ###############
 ### Instantaneous Rate
@@ -277,13 +277,13 @@ parameters.plotting.positionReconstruction = 'W.max-S.max'
 parameters.plotting.plotABSunits = False
  
 ### plot XY and XToF in log scale 
-parameters.plotting.plotIMGlog = False
+parameters.plotting.plotIMGlog   = False
 
 ### ON/OFF, if  Tof  and Lambdaplot needs to include only events with strip present (2D) is True otherwise all events also without strip set to False
 parameters.plotting.coincidenceWS_ONOFF = True
 
 ### ON/OFF, if  invalid ToFs Tofare included in the plots or removed from events 
-parameters.plotting.removeInvalidToFs = True
+parameters.plotting.removeInvalidToFs   = True
 
 ### histogram outBounds param set as True as default (Events out of bounds stored in first and last bin)
 parameters.plotting.hitogOutBounds = True
@@ -301,7 +301,7 @@ parameters.pulseHeigthSpect.plotPHS = True
 parameters.pulseHeigthSpect.plotPHSlog = False
 
 parameters.pulseHeigthSpect.energyBins = 128
-parameters.pulseHeigthSpect.maxEnerg   = 1550
+parameters.pulseHeigthSpect.maxEnerg   = 1700
 
 ### plot the PHS correaltion wires vs strips
 parameters.pulseHeigthSpect.plotPHScorrelation = False
@@ -397,9 +397,8 @@ for cont, fileName in enumerate(fileDialogue.fileName):
         
     ### check which Ring, Fen and Hybrid is present in the selected File 
     # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,parameters.clockTicks.NSperClockTick).check()
-    
     ### load data  
-    pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = True)
+    pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = True, operationMode=config.DETparameters.operationMode)
     readouts.append(pcap.readouts)
     
 
@@ -431,8 +430,6 @@ readouts.checkChopperFreq()
 
 readouts.checkInvalidToFsInReadouts()
 
-
-      
 ####################    
 ### for debug, generate sample readouts
 # aa = sdat.sampleReadouts_2()
@@ -516,25 +513,29 @@ if bareReadoutsCalc is False:
     # hitsArray = hits.concatenateHitsInArrayForDebug()
     ####################
     
-    ###############################################################################
-    ### clusterize
-    cc = clu.clusterHits(hits,parameters.plotting.showStat)
-    cc.clusterizeManyCassettes(parameters.cassettes.cassettes, parameters.dataReduction.timeWindow)
-    events = cc.events
+    if config.DETparameters.operationMode == 'normal':
+        ###############################################################################
+        ### clusterize
+        cc = clu.clusterHits(hits,parameters.plotting.showStat)
+        cc.clusterizeManyCassettes(parameters.cassettes.cassettes, parameters.dataReduction.timeWindow)
+        events = cc.events
+        deltaTimeWS = cc.deltaTimeClusterWSall
+        
+        # deltaTimeWSc = deltaTimeWS[ np.logical_and(deltaTimeWS[:,0]==7,deltaTimeWS[:,2]==2) , :]
+        
+        # xax = np.arange(-300,300,1)
+        
+        # hitows = hh.histog().hist1D(xax, deltaTimeWSc[:,1])
 
-    
-    deltaTimeWS = cc.deltaTimeClusterWSall
-    
-    # deltaTimeWSc = deltaTimeWS[ np.logical_and(deltaTimeWS[:,0]==7,deltaTimeWS[:,2]==2) , :]
-    
-    # xax = np.arange(-300,300,1)
-    
-    # hitows = hh.histog().hist1D(xax, deltaTimeWSc[:,1])
-
-    
-    # fig334, ax335 = plt.subplots(num=101445,figsize=(12,6), nrows=1, ncols=1)   
-    # ax335.step(xax,hitows,'r')
-    # ax335.set_yscale('log')
+        
+        # fig334, ax335 = plt.subplots(num=101445,figsize=(12,6), nrows=1, ncols=1)   
+        # ax335.step(xax,hitows,'r')
+        # ax335.set_yscale('log')
+        
+    elif  config.DETparameters.operationMode == 'clustered':  
+        ### do not clusterize
+        events = clu.events()
+        events.importClusteredHits(hits,config)
     
     ####################    
     ### for debug, events in single array 
@@ -604,13 +605,14 @@ parameters.HistNotification()
 
 ######################
 ### readouts
+
 if (parameters.plotting.plotRawReadouts  or  parameters.plotting.plotReadoutsTimeStamps) is True:
     plread = plo.plottingReadouts(readouts, config)
     if parameters.plotting.plotRawReadouts is True:
         plread.plotChRaw(parameters.cassettes.cassettes)
     if parameters.plotting.plotReadoutsTimeStamps is True:
         plread.plotTimeStamps(parameters.cassettes.cassettes)
-        
+            
 if parameters.plotting.plotChopperResets is True:
     plread1 = plo.plottingReadouts(readouts, config)
     plread1.plotChoppResets()

@@ -1,7 +1,5 @@
 {
-	"Detector": "MB.FREIA",
-	
-    "operationMode" : "normal",
+	"Detector": "MB300.FREIA",
 
 	"cassettes" : 32,
 	
@@ -43,7 +41,7 @@
 	],
 	
 	"ChannelMapping" : [
-        	{"WireASIC" : 0, "StripASIC" : 1}
+        	{"AdapterType" : "straight", "WireASIC" : 0, "StripASIC" : 1}
     ],
 
 	"wires"  : 32,

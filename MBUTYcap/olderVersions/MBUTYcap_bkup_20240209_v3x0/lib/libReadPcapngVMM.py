@@ -32,8 +32,6 @@ class readouts():
         self.ASIC    = -1*np.ones((0), dtype = datype)
         self.Channel = -1*np.ones((0), dtype = datype)
         self.ADC     = -1*np.ones((0), dtype = datype)
-        self.Channel1 = -1*np.ones((0), dtype = datype)
-        self.ADC1     = -1*np.ones((0), dtype = datype)     
         self.timeStamp   = np.zeros((0), dtype = datype)
         self.timeCoarse  = np.zeros((0), dtype = datype)
         self.BC      = -1*np.ones((0), dtype = datype)
@@ -61,8 +59,6 @@ class readouts():
         self.PulseT     = data[:,12]
         self.PrevPT     = data[:,13]
         self.G0         = data[:,14]
-        self.Channel1   = data[:,15]
-        self.ADC1       = data[:,16]
 
     # def list(self):
     #     print("Rings {}".format(self.Ring))
@@ -77,8 +73,6 @@ class readouts():
         self.ASIC     = np.concatenate((self.ASIC, reado.ASIC), axis=0)
         self.Channel  = np.concatenate((self.Channel, reado.Channel), axis=0)
         self.ADC      = np.concatenate((self.ADC, reado.ADC), axis=0)
-        self.Channel1 = np.concatenate((self.Channel1, reado.Channel1), axis=0)
-        self.ADC1     = np.concatenate((self.ADC1, reado.ADC1), axis=0)
         self.timeStamp  = np.concatenate((self.timeStamp, reado.timeStamp), axis=0)
         self.BC      = np.concatenate((self.BC, reado.BC), axis=0)
         self.OTh     = np.concatenate((self.OTh, reado.OTh), axis=0)
@@ -95,7 +89,7 @@ class readouts():
         
         leng = len(self.timeStamp)
         
-        readoutsArray = np.zeros((leng,17),dtype = 'int64')
+        readoutsArray = np.zeros((leng,15),dtype = 'int64')
         
         readoutsArray[:,0] = self.Ring
         readoutsArray[:,1] = self.Fen
@@ -108,12 +102,10 @@ class readouts():
         readoutsArray[:,8] = self.timeStamp
         readoutsArray[:,9] = self.timeCoarse
         readoutsArray[:,10] = self.TDC
-        readoutsArray[:,11] = self.G0      # G0 also for MON
+        readoutsArray[:,11] = self.G0      # G0
         readoutsArray[:,12] = self.BC      # POS X for MON
         readoutsArray[:,13] = self.OTh     # POS Y for MON
         readoutsArray[:,14] = self.GEO     # type for MON
-        readoutsArray[:,15] = self.Channel1 # for clustered mode 
-        readoutsArray[:,16] = self.ADC1     # for clustered mode 
         
         return readoutsArray
     
@@ -129,15 +121,13 @@ class readouts():
         self.ASIC      =  self.ASIC[indexes]
         self.Channel   =  self.Channel[indexes]
         self.ADC       =  self.ADC[indexes]
-        self.Channel1  =  self.Channel1[indexes]
-        self.ADC1      =  self.ADC1[indexes]
         self.BC        =  self.BC[indexes]
         self.OTh       =  self.OTh[indexes]
         self.TDC       =  self.TDC[indexes]
         self.GEO       =  self.GEO[indexes]
         self.PulseT    =  self.PulseT[indexes]
         self.PrevPT    =  self.PrevPT[indexes]
-        self.timeCoarse = self.timeCoarse[indexes]
+        self.timeCoarse =  self.timeCoarse[indexes]
         self.G0        =  self.G0[indexes]
         
     def calculateDuration(self):
@@ -158,136 +148,46 @@ class readouts():
     def calculateTimeStampWithTDC(self,NSperClockTick,time_offset=0,time_slope=1):
         
          self.timeStamp = self.timeCoarse + VMM3A_convertCalibrate_TDC_ns(self.TDC,NSperClockTick,time_offset,time_slope).TDC_ns
-
-    ###############
-
+    
     def checkIfCalibrationMode(self):
         
         flag = False
         
         if np.any(self.G0 == 1) :
             
-              flag = True
+             flag = True
             
-              print('\n\t\033[1;33mWARNING: calibration latency mode data found in READOUTS.\033[1;37m',end='') 
-              time.sleep(1)
+             print('\n\t\033[1;33mWARNING: calibration latency mode found in READOUTS.\033[1;37m',end='') 
+             time.sleep(1)
              
         return flag     
     
-    def checkIfClusteredMode(self):
-        
-        flag = False
-        
-        if np.any(self.G0 == 2) :
-            
-              flag = True
-            
-              print('\n\t\033[1;33mWARNING: clustered mode data found in READOUTS, whereas you selected normal hit mode!\033[1;37m',end='') 
-              time.sleep(1)
              
-        return flag     
-    
-    def checkIfNormalHitMode(self):
-        
-        flag = False
-        
-        if np.any(self.G0 == 0) :
-            
-              flag = True
-            
-              print('\n\t\033[1;33mWARNING: normal hit mode data found in READOUTS, whereas you selected clustered mode!\033[1;37m',end='') 
-              time.sleep(1)
-             
-        return flag     
-    
-     ###############        
             
     def removeCalibrationData(self):
         
          print('--> removing latency calib data from readouts ...')
         
-         CalibData = self.G0 == 1
+         noCalibData = self.G0 == 0
         
-         self.Ring    = self.Ring[~CalibData]
-         self.Fen     = self.Fen[~CalibData]
-         self.VMM     = self.VMM[~CalibData]
-         self.hybrid  = self.hybrid[~CalibData]
-         self.ASIC    = self.ASIC[~CalibData]
-         self.Channel = self.Channel[~CalibData]
-         self.ADC     = self.ADC[~CalibData]
-         self.Channel1 = self.Channel1[CalibData]
-         self.ADC1     = self.ADC1[~CalibData]
-         self.timeStamp   = self.timeStamp[~CalibData]
-         self.timeCoarse  = self.timeCoarse[~CalibData]
-         self.BC      = self.BC[~CalibData]
-         self.OTh     = self.OTh[~CalibData]
-         self.TDC     = self.TDC[~CalibData]
-         self.GEO     = self.GEO[~CalibData]
-         self.G0      = self.G0[~CalibData]
-         self.PulseT  = self.PulseT[~CalibData]
-         self.PrevPT  = self.PrevPT[~CalibData]
-         
-         removedNum = np.sum(CalibData)
-         return removedNum 
-         
-    def removeClusteredData(self):
-             
-        print('--> removing clustered data from readouts ...')
-       
-        ClusterData = self.G0 == 2
-       
-        self.Ring    = self.Ring[~ClusterData]
-        self.Fen     = self.Fen[~ClusterData]
-        self.VMM     = self.VMM[~ClusterData]
-        self.hybrid  = self.hybrid[~ClusterData]
-        self.ASIC    = self.ASIC[~ClusterData]
-        self.Channel = self.Channel[~ClusterData]
-        self.ADC     = self.ADC[~ClusterData]
-        self.Channel1 = self.Channel1[~ClusterData]
-        self.ADC1     = self.ADC1[~ClusterData]
-        self.timeStamp   = self.timeStamp[~ClusterData]
-        self.timeCoarse  = self.timeCoarse[~ClusterData]
-        self.BC      = self.BC[~ClusterData]
-        self.OTh     = self.OTh[~ClusterData]
-        self.TDC     = self.TDC[~ClusterData]
-        self.GEO     = self.GEO[~ClusterData]
-        self.G0      = self.G0[~ClusterData]
-        self.PulseT  = self.PulseT[~ClusterData]
-        self.PrevPT  = self.PrevPT[~ClusterData]
+         self.Ring    = self.Ring[noCalibData]
+         self.Fen     = self.Fen[noCalibData]
+         self.VMM     = self.VMM[noCalibData]
+         self.hybrid  = self.hybrid[noCalibData]
+         self.ASIC    = self.ASIC[noCalibData]
+         self.Channel = self.Channel[noCalibData]
+         self.ADC     = self.ADC[noCalibData]
+         self.timeStamp   = self.timeStamp[noCalibData]
+         self.timeCoarse  = self.timeCoarse[noCalibData]
+         self.BC      = self.BC[noCalibData]
+         self.OTh     = self.OTh[noCalibData]
+         self.TDC     = self.TDC[noCalibData]
+         self.GEO     = self.GEO[noCalibData]
+         self.G0      = self.G0[noCalibData]
+         self.PulseT    = self.PulseT[noCalibData]
+         self.PrevPT    = self.PrevPT[noCalibData]
         
-        removedNum = np.sum(ClusterData)
-        return removedNum 
-        
-    def removeNormalHitData(self):
-               
-        print('--> removing normal hit data from readouts ...')
-       
-        NormalHitData = self.G0 == 0
-       
-        self.Ring    = self.Ring[~NormalHitData]
-        self.Fen     = self.Fen[~NormalHitData]
-        self.VMM     = self.VMM[~NormalHitData]
-        self.hybrid  = self.hybrid[~NormalHitData]
-        self.ASIC    = self.ASIC[~NormalHitData]
-        self.Channel = self.Channel[~NormalHitData]
-        self.ADC     = self.ADC[~NormalHitData]
-        self.Channel1 = self.Channel1[~NormalHitData]
-        self.ADC1     = self.ADC1[~NormalHitData]
-        self.timeStamp   = self.timeStamp[~NormalHitData]
-        self.timeCoarse  = self.timeCoarse[~NormalHitData]
-        self.BC      = self.BC[~NormalHitData]
-        self.OTh     = self.OTh[~NormalHitData]
-        self.TDC     = self.TDC[~NormalHitData]
-        self.GEO     = self.GEO[~NormalHitData]
-        self.G0      = self.G0[~NormalHitData]
-        self.PulseT  = self.PulseT[~NormalHitData]
-        self.PrevPT  = self.PrevPT[~NormalHitData]
-        
-        removedNum = np.sum(NormalHitData)
-        return removedNum 
-        
-    ###############
-    
+  
     def checkChopperFreq(self):  
         
         try:
@@ -340,7 +240,6 @@ class readouts():
         validPrevP = invalidToFsCounter1 - invalidToFsCounter2 
            
         print('\n \033[1;33m\t Readouts %d: %d ToFs valid (%d valid, %d PrevPulse corrected) - invalid %d \033[1;37m' % (NumReadouts,validToFs,validValid,validPrevP,invalidToFsCounter2))
- 
     
 ###############################################################################
 ###############################################################################
@@ -354,9 +253,9 @@ class checkInstrumentID():
         self.printa = True
         
         if ID == self.FREIAID:
-             print('found FREIA data stream')
+             print('found Freia data stream')
         elif ID == self.EstiaID:
-             print('found ESTIA data stream')
+             print('found Estia data stream')
         elif ID == self.AMORID:
              print('found AMOR data stream')
         else:
@@ -444,78 +343,7 @@ class MONdata():
  
 #################################################
 
-class VMM3A_modes():
-    def __init__(self, buffer):
-        
-        self.G0 = -1
-        
-        # hybrid   = int.from_bytes(buffer[17:18], byteorder='little')
-        
-        G0GEO   = int.from_bytes(buffer[16:17], byteorder='little')
-    
-        G0temp  = (G0GEO & 0xC0) >> 6     #extract only first two MSB and shift right by 6
-        
-        G1 = (G0temp & 0x1)          #bit 6 - if 0 either calib or normal mode, if 1 clustered mode 
-        G2 = (G0temp & 0x2) >> 1     #bit 7 - if 1 calib or 0 normal mode, if bit 6 is 0
-        
-        if G1 == 1:
-            # print('clustered mode')
-            self.G0 = 2
-        elif G1 == 0:
-            if G2 == 1: 
-                # print('calibration mode')
-                self.G0 = 1
-            elif G2 == 0: 
-                # print('normal hit mode')
-                self.G0 = 0
-
-
-class VMM3Aclustered():
-    def __init__(self, buffer, NSperClockTick):
-                 
-        # decode into little endian integers
-        PhysicalRing = int.from_bytes(buffer[0:1], byteorder='little')
-        self.Fen     = int.from_bytes(buffer[1:2], byteorder='little')
-        self.Length  = int.from_bytes(buffer[2:4], byteorder='little')
-        timeHI       = int.from_bytes(buffer[4:8], byteorder='little')
-        timeLO       = int.from_bytes(buffer[8:12], byteorder='little')
-        
-        # ADC0temp    = int.from_bytes(buffer[12:14], byteorder='little')
-        # ADC1temp    = int.from_bytes(buffer[14:16], byteorder='little')
-        
-        self.ADC      = int.from_bytes(buffer[12:14], byteorder='little')
-        self.ADC1     = int.from_bytes(buffer[14:16], byteorder='little')
-        G0GEO         = int.from_bytes(buffer[16:17], byteorder='little')
-        self.hybrid   = int.from_bytes(buffer[17:18], byteorder='little')
-        self.Channel  = int.from_bytes(buffer[18:19], byteorder='little')
-        self.Channel1 = int.from_bytes(buffer[19:20], byteorder='little')
-        
-        #######################
-        #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
-        self.Ring = int(np.floor(PhysicalRing/2))
-        # self.Ring = PhysicalRing
-        #######################
-
-        # self.ADC0     = ADC0temp & 0x7FFF  #extract only 15 LSB
-        # self.ADC1     = ADC1temp & 0x7FFF  #extract only 15 LSB
-        
-        modes         = VMM3A_modes(buffer)
-        self.G0       = modes.G0
-
-        self.GEO      = G0GEO & 0x3F
-        
-        timeHIns = int(round(timeHI * 1000000000))
-        timeLOns = int(round(timeLO * NSperClockTick))
-
-        self.timeCoarse  = timeHIns + timeLOns
-        
-        self.VMM  = -1
-        self.ASIC = -1
-        self.BC   = -1
-        self.OTh  = 1
-        self.TDC  = 0
-        
-   
+      
 class VMM3A():
     def __init__(self, buffer, NSperClockTick):
                  
@@ -532,9 +360,6 @@ class VMM3A():
         self.VMM     = int.from_bytes(buffer[18:19], byteorder='little')
         self.Channel = int.from_bytes(buffer[19:20], byteorder='little')
         
-        self.Channel1 = -1
-        self.ADC1     = -1
-        
         #######################
         #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
         self.Ring = int(np.floor(PhysicalRing/2))
@@ -544,10 +369,7 @@ class VMM3A():
         self.ADC      = OTADC & 0x3FF  #extract only 10 LSB
         self.OTh      = OTADC >> 15    #extract only 1 MSB
 
-        # self.G0       = G0GEO >> 7
-        modes         = VMM3A_modes(buffer)
-        self.G0       = modes.G0
-        
+        self.G0       = G0GEO >> 7
         self.GEO      = G0GEO & 0x3F
         
         self.ASIC     =  self.VMM & 0x1           #extract only LSB
@@ -669,20 +491,20 @@ class checkIfFileExistInFolder():
 ################################################## 
 
 class pcapng_reader():
-    def __init__(self, filePathAndFileName, NSperClockTick, MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, operationMode = 'normal'):
+    def __init__(self, filePathAndFileName, NSperClockTick, MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True):
         
         self.readouts = readouts()
      
         try:
             # print('PRE-ALLOC method to load data ...')
-            self.pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
+            self.pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype,MONring,filePathAndFileName,timeResolutionType,kafkaStream = False)
             self.pcapng.allocateMemory()
             self.pcapng.read()
             self.readouts = self.pcapng.readouts
             
         except:
             # print('\n... PRE-ALLOC method failed, trying APPEND method to load data ...')
-            print('\n\033[1;31m... PRE-ALLOC method failed, exiting ...\033[1;37m')
+            print('\n... PRE-ALLOC method failed, exiting ...')
             
             sys.exit()
             
@@ -709,7 +531,7 @@ class pcapng_reader():
 ##################################################  
 
 class pcapng_reader_PreAlloc():
-    def __init__(self, NSperClockTick, MONTTLtype, MONring, filePathAndFileName = '', timeResolutionType = 'fine', operationMode = 'normal', kafkaStream = False):
+    def __init__(self, NSperClockTick, MONTTLtype, MONring, filePathAndFileName = '', timeResolutionType = 'fine', kafkaStream = False):
         
         # self.timeResolution = 11.25e-9  #s per tick for 88.888888 MHz
         # self.timeResolution = 11.356860963629653e-9  #s per tick ESS for 88.0525 MHz
@@ -718,10 +540,6 @@ class pcapng_reader_PreAlloc():
         self.MONTTLtype          = MONTTLtype
         self.MONring             = MONring
         self.timeResolutionType  = timeResolutionType
-        
-        # operation mode is either normal hit or clustered mode
-        # in normal hit G0 is 0 and 1 for calib mode, or G0 is 2 for clustered mode 
-        self.operationMode       = operationMode
         
         ##########################################################
         
@@ -839,7 +657,7 @@ class pcapng_reader_PreAlloc():
         
         print('\n',end='')
         
-        self.data = np.zeros((self.preallocLength,17), dtype='int64') 
+        self.data = np.zeros((self.preallocLength,15), dtype='int64') 
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
@@ -890,52 +708,24 @@ class pcapng_reader_PreAlloc():
         
         self.readouts.transformInReadouts(datanew)
         
-        ############
-          
+
         # self.readouts.calculateTimeStamp(self.NSperClockTick)
-        if self.operationMode == 'normal':
-            if self.timeResolutionType == 'fine':
-                self.readouts.calculateTimeStampWithTDC(self.NSperClockTick)
-            elif self.timeResolutionType == 'coarse':
-                self.readouts.timeStamp = self.readouts.timeCoarse       
-        elif self.operationMode == 'clustered': 
-            # tere is no time fine in clustered mode is already one sigle time 
-                    self.readouts.timeStamp = self.readouts.timeCoarse
+        if self.timeResolutionType == 'fine':
+            self.readouts.calculateTimeStampWithTDC(self.NSperClockTick)
+        elif self.timeResolutionType == 'coarse':
+            self.readouts.timeStamp = self.readouts.timeCoarse
+
+        flag = self.readouts.checkIfCalibrationMode()
         
-        ############
-        
-        print('\ndata loaded - found {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.totalReadoutCount, self.counterPackets,self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))    
-        
-        flag = self.readouts.checkIfCalibrationMode() 
         if flag is True: 
-            removedNum = self.readouts.removeCalibrationData()
-            print('removed {} calibration readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum)) 
-            self.totalReadoutCount = self.totalReadoutCount-removedNum
-                  
-                  
-        if self.operationMode == 'normal':
- 
-            flag = self.readouts.checkIfClusteredMode()
-            if flag is True: 
-                removedNum = self.readouts.removeClusteredData()
-                print('removed {} normal readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
-                self.totalReadoutCount = self.totalReadoutCount-removedNum
-                
-        elif self.operationMode == 'clustered': 
-                 
-             flag = self.readouts.checkIfNormalHitMode()
-             if flag is True: 
-                 removedNum = self.readouts.removeNormalHitData()
-                 print('removed {} clustered readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
-                 self.totalReadoutCount = self.totalReadoutCount-removedNum
- 
-        ############
+            self.readouts.removeCalibrationData()
         
         # self.readouts.timeStamp  = self.readouts.timeCoarse  + VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset=100e-9,time_slope=1).TDC_s
        
         # self.readouts.TDC =  VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset=100e-9,time_slope=1).TDC_s
         
-       
+        print('\ndata loaded - found {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.totalReadoutCount, self.counterPackets,self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))    
+        # print('\n')
         
         ff.close()
         
@@ -1021,26 +811,7 @@ class pcapng_reader_PreAlloc():
                        indexStart = indexDataStart + self.singleReadoutSize * currentReadout
                        indexStop  = indexDataStart + self.singleReadoutSize * (currentReadout + 1)
            
-                       if self.operationMode == 'normal':  # expected G0 is 0 or 1 
-                           vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
-                           # vmm3.G0 = 2
-                       elif self.operationMode == 'clustered':  # expected G0 is 2
-                           vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
-                           vmm3.G0 = 2
-                       else:
-                           print('\n\t\033[1;33mWARNING: Operation mode (G0) is not one of these: normal hit or clustered mode!\033[1;37m',end='') 
-                       
-                       # mode = VMM3A_modes(packetData[indexStart:indexStop])
-                       # G0   = mode.G0
-                       # if G0 == 0 or G0 == 1:  # normal hit mode or calibration mode 
-                       #      vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
-                       # elif G0 == 2: # clustered mode 
-                       #      # print('clustered')
-                       #      vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
-                       # else:
-                       #      print('\n\t\033[1;33mWARNING: Found (G0=-1) Operation mode which is not one of these three: Normal hit mode or calibration or clustered mode!\033[1;37m',end='') 
-                       
-                       # vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
+                       vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
            
                        index = self.overallDataIndex-1
                        
@@ -1062,9 +833,7 @@ class pcapng_reader_PreAlloc():
                            self.data[index, 12] = PulseT
                            self.data[index, 13] = PrevPT
                            self.data[index, 14] = vmm3.G0  # if 1 is calibration
-                           self.data[index, 15] = vmm3.Channel1
-                           self.data[index, 16] = vmm3.ADC1
-   
+                       
                        # self.data[index, 7] = vmm3.timeStamp
 
                        # print('vmm3:'+str(vmm3.Ring)+'index:'+str(index))
@@ -1098,8 +867,6 @@ class pcapng_reader_PreAlloc():
                                self.data[index, 12] = PulseT
                                self.data[index, 13] = PrevPT
                                self.data[index, 14] = 0  # if 1 is calibration
-                               self.data[index, 15] = -1
-                               self.data[index, 16] = -1
                            
                            elif (self.MONring != 11): 
                            
@@ -1364,10 +1131,6 @@ if __name__ == '__main__':
    filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
    file = '20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng'
    
-   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
-   file = 'sampleData_NormalMode.pcapng'
-   # file = 'sampleData_ClusteredMode.pcapng'
-   
    filePathAndFileName = filePath+file
    
    # filePath = path+'pcap_for_fra.pcapng'
@@ -1425,9 +1188,8 @@ if __name__ == '__main__':
     
     
    # readouts = readouts()
-   # pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine', operationMode='normal')
-
-   pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine', operationMode='normal')
+         
+   pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine')
    pcapng.allocateMemory()
    pcapng.read()
    readouts = pcapng.readouts

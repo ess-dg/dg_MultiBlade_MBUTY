@@ -1,7 +1,5 @@
 {
-	"Detector": "MB.AMOR",
-	
-	"operationMode" : "normal",
+	"Detector": "AMOR",
 
 	"cassettes" : 14,
 	
@@ -25,7 +23,7 @@
 	],
 	
 	"ChannelMapping" : [
-        	{"WireASIC" : 1, "StripASIC" : 0}
+        	{"AdapterType" : "reverse", "WireASIC" : 1, "StripASIC" : 0}
     ],    	
 
 	"wires"  : 32,

@@ -8,6 +8,8 @@
 ###############################################################################
 #  includes streaming from kafka 
 
+# import random 
+
 import numpy as np
 import time
 import os
@@ -271,12 +273,6 @@ allAxis.createAllAxis(parameters)
 
 ###############################################################################
 ###############################################################################
-### sync the data folder from remote computer to local folder 
-if parameters.fileManagement.sync is True:
-    transferData = ta.transferDataUtil()
-    transferData.syncData(parameters.fileManagement.sourcePath, parameters.fileManagement.destPath)   
-###############################################################################
-###############################################################################
 ### select data
 # fileDialogue = fd.fileDialogue(parameters)
 # fileDialogue.openFile()
@@ -286,13 +282,86 @@ if parameters.fileManagement.sync is True:
 ### initialize readouts 
 # readouts = pcapr.readouts()
 
+xax = np.linspace(0,63,64)
 
-stream = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, nOfPackets = 5, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, testing = True)
-# readouts.append(pcap.readouts)
+histo0 = np.ones((64))*1000
+histo1 = np.ones((64))*1000
 
-readouts = stream.readouts
+Nrows = 2
+Ncols = 1
+
+plt.ion()
+
+# figHandle, axHandle = plt.subplots(num=1, figsize=(12,12), nrows=Nrows, ncols=Ncols, sharex='col', sharey='row')
+# axHandle.shape      = (Nrows,Ncols)
+# axHandle            = np.atleast_2d(axHandle)
+
+figHandle, axHandle = plt.subplots(figsize=(10, 8))
+
+# histo0 = np.ones((64))*np.random.randint(100, size=(64))*100
+
+line0, = axHandle.plot(xax,histo0,color='b') 
+
+k = 0
+
+cassette1ID = 5
+
+# line0 = axHandle[0][k].bar(xax,histo0,0.8,color='b') 
+# line1 = axHandle[1][k].bar(xax,histo1,0.8,color='r')
+
+# line0, = axHandle[0][k].plot(xax,histo0,color='b') 
+# line1, = axHandle[1][k].plot(xax,histo1,color='r')
+
+# axHandle[0][k].set_xlabel('ASIC 0 ch no.')
+# axHandle[1][k].set_xlabel('ASIC 1 ch no.')
+# axHandle[0][k].set_title('hyb.'+str(k)) 
+
+config.get_cassID2RingFenHybrid(cassette1ID)
+
+cont = 0 
+
+while True:
     
+    cont += 1
+    print('--->'+str(cont))
+    
+    stream = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, testing = True)
+
+    readouts = stream.readouts
+
+    # readouts.append(pcap.readouts)
+    
+    sel1 = readouts.Ring   == config.cassMap.RingID
+    sel2 = readouts.Fen    == config.cassMap.FenID
+    sel3 = readouts.hybrid == config.cassMap.hybridID
+    
+    sel = sel1 & sel2 & sel3
+    
+    asic0  = readouts.ASIC == 0
+    asic1  = readouts.ASIC == 1
+    
+    histo0 = hh.histog().hist1D(xax, readouts.Channel[sel & asic0])
+    
+    # histo1 = hh.histog().hist1D(xax, readouts.Channel[sel & asic1])
+    
+    # histo0 = np.ones((64))*np.random.randint(100, size=(64))*np.random.randint(100, size=(1))
+    
+    print(histo0)
+
+    line0.set_xdata(xax)
+    line0.set_ydata(histo0)
+    # line1.set_xdata(xax)
+    # line1.set_ydata(histo1)
+    
+    figHandle.canvas.draw()
+    figHandle.canvas.flush_events()
+    time.sleep(0.5)
+    
+    del readouts
   
+
+
+# readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
 
 # readouts.checkChopperFreq()
 # readouts.checkInvalidToFsInReadouts()
