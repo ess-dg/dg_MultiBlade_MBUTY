@@ -1026,7 +1026,7 @@ class pcapng_reader_PreAlloc():
                            # vmm3.G0 = 2
                        elif self.operationMode == 'clustered':  # expected G0 is 2
                            vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
-                           vmm3.G0 = 2
+                           # vmm3.G0 = 2
                        else:
                            print('\n\t\033[1;33mWARNING: Operation mode (G0) is not one of these: normal hit or clustered mode!\033[1;37m',end='') 
                        
