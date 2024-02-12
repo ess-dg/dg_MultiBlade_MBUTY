@@ -107,7 +107,7 @@ parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataV
 
 parameters.fileManagement.filePath = parameters.fileManagement.destPath 
 
-# parameters.fileManagement.filePath = currentPath+'data/'
+parameters.fileManagement.filePath = currentPath+'data/'
 
 # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
 

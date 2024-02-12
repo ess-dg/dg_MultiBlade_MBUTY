@@ -184,13 +184,16 @@ class events():
            eventsArray[:,10] = self.ToF
         if np.shape(self.wavelength)[0]>0:
            eventsArray[:,11] = self.wavelength
-        
-                        
-        return eventsArray
     
+        return eventsArray
 
     def importClusteredHits(self,hits,config):
+
+        checkCassIDs.checkIfRepeatedIDs(config.DETparameters.cassInConfig)
         
+        for cassette1ID in config.DETparameters.cassInConfig:
+            present = checkCassIDs.checkIfPresentInHits(hits,cassette1ID)
+            
         self.importDurations(hits)
         
         self.Nevents          = np.shape(hits.timeStamp)[0]
@@ -203,25 +206,105 @@ class events():
         if config.channelMap.WireASIC == 0:
             self.positionW    = hits.WiresStrips
             self.PHW          = hits.ADC
+            self.multW        = hits.mult0
         elif config.channelMap.WireASIC == 1:
             self.positionW    = hits.WiresStrips1
             self.PHW          = hits.ADC1
+            self.multW        = hits.mult1
             
         if config.channelMap.StripASIC == 1:
             self.positionS    = hits.WiresStrips1
             self.PHS          = hits.ADC1
+            self.multS        = hits.mult1
         elif config.channelMap.StripASIC == 0:
             self.positionS    = hits.WiresStrips
             self.PHS          = hits.ADC
+            self.multS        = hits.mult0
             
-        self.multW = -1*np.ones((self.Nevents), dtype = 'int64') 
-        self.multS = -1*np.ones((self.Nevents), dtype = 'int64') 
-        
+        # self.multW = -1*np.ones((self.Nevents), dtype = 'int64') 
+        # self.multS = -1*np.ones((self.Nevents), dtype = 'int64') 
+
         self.timeStamp = hits.timeStamp    
         self.PulseT    = hits.PulseT
         self.PrevPT    = hits.PrevPT
         
+        self.removeUnmappedCassettes()
+        self.removeUnmappedChannels()
+
         print("\n\t N of not rejected events in clustered mode (2D) %d " % (self.Nevents))
+        
+    def removeUnmappedCassettes(self):
+            
+        remove = self.Cassette == -1 
+        
+        self.Cassette     = self.Cassette[~remove]
+        self.CassettedIDs = np.unique(self.Cassette)
+        
+        self.positionW    = self.positionW[~remove] 
+        self.positionS    = self.positionS[~remove]
+        
+        self.timeStamp = self.timeStamp[~remove]
+        
+        self.PulseT = self.PulseT[~remove] 
+        self.PrevPT = self.PrevPT[~remove]
+        
+        self.PHW = self.PHW[~remove]
+        self.PHS = self.PHS[~remove]
+        
+        self.multW = self.multW[~remove] 
+        self.multS = self.multS[~remove]
+        
+        if np.shape(self.positionWmm)[0] > 0:
+            self.positionWmm  = self.positionWmm[~remove]
+            self.positionSmm  = self.positionSmm[~remove]
+            self.positionZmm  = self.positionZmm[~remove] 
+            
+        if np.shape(self.wavelength)[0] > 0:
+            self.wavelength   = self.wavelength[~remove]
+            
+        if np.shape(self.ToF)[0] > 0:
+            self.ToF          = self.ToF[~remove]
+        
+        self.Nevents          = np.shape(self.timeStamp)[0]
+        self.NeventsNotRejAll = self.Nevents
+        self.NeventsNotRej2D  = self.Nevents
+        
+    def removeUnmappedChannels(self):
+                
+            remove = self.positionW == -1 
+            
+            self.Cassette     = self.Cassette[~remove]
+            self.CassettedIDs = np.unique(self.Cassette)
+            
+            self.positionW    = self.positionW[~remove] 
+            self.positionS    = self.positionS[~remove]
+            
+            self.timeStamp = self.timeStamp[~remove]
+            
+            self.PulseT = self.PulseT[~remove] 
+            self.PrevPT = self.PrevPT[~remove]
+            
+            self.PHW = self.PHW[~remove]
+            self.PHS = self.PHS[~remove]
+            
+            self.multW = self.multW[~remove] 
+            self.multS = self.multS[~remove]
+            
+            if np.shape(self.positionWmm)[0] > 0:
+                self.positionWmm  = self.positionWmm[~remove]
+                self.positionSmm  = self.positionSmm[~remove]
+                self.positionZmm  = self.positionZmm[~remove] 
+                
+            if np.shape(self.wavelength)[0] > 0:
+                self.wavelength   = self.wavelength[~remove]
+                
+            if np.shape(self.ToF)[0] > 0:
+                self.ToF          = self.ToF[~remove]
+            
+            self.Nevents          = np.shape(self.timeStamp)[0]
+            self.NeventsNotRejAll = self.Nevents
+            self.NeventsNotRej2D  = self.Nevents
+    
 
 ###############################################################################
 ###############################################################################

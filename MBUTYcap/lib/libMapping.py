@@ -40,6 +40,8 @@ class hits():
         self.Duration    = np.zeros((1), dtype = datype)
         self.WiresStrips1= -1*np.ones((0), dtype = datype)
         self.ADC1        = np.zeros((0), dtype = datype)
+        self.mult0       = np.zeros((0), dtype = datype)
+        self.mult1       = np.zeros((0), dtype = datype)
         
     def importReadouts(self,readouts):    
         
@@ -48,6 +50,8 @@ class hits():
         self.timeStamp = readouts.timeStamp
         self.PulseT    = readouts.PulseT
         self.PrevPT    = readouts.PrevPT
+        self.mult0     = readouts.mult0
+        self.mult1     = readouts.mult1
         
         self.Durations = readouts.Durations
         self.Duration  = np.sum(readouts.Durations)
@@ -74,6 +78,8 @@ class hits():
         self.PrevPT      = np.concatenate((self.PrevPT, hit.PrevPT), axis=0)
         self.ADC1         = np.concatenate((self.ADC1, hit.ADC1), axis=0)
         self.WiresStrips1 = np.concatenate((self.WiresStrips1, hit.WiresStrips1), axis=0)
+        self.mult0        = np.concatenate((self.mult0, hit.mult0), axis=0)
+        self.mult1        = np.concatenate((self.mult1, hit.mult1), axis=0)
         
         self.Durations   = np.append(self.Durations, hit.Durations)
         self.Duration    = self.Duration+hit.Duration
@@ -82,7 +88,7 @@ class hits():
         
         leng = len(self.WiresStrips)
         
-        hitsArray = np.zeros((leng,9),dtype = 'int64')
+        hitsArray = np.zeros((leng,11),dtype = 'int64')
         
         hitsArray[:,0] = self.timeStamp
         hitsArray[:,1] = self.Cassette
@@ -93,6 +99,8 @@ class hits():
         hitsArray[:,6] = self.PrevPT
         hitsArray[:,7] = self.WiresStrips1
         hitsArray[:,8] = self.ADC1
+        hitsArray[:,9] = self.mult0
+        hitsArray[:,10] = self.mult1
 
         return hitsArray
    
@@ -112,6 +120,8 @@ class extractHitsPortion():
         hitsEx.PrevPT    = hits.PrevPT[start:stop]
         hitsEx.ADC1         = hits.ADC1[start:stop]
         hitsEx.WiresStrips1 = hits.WiresStrips1[start:stop]
+        hitsEx.mult0        = hits.mult0[start:stop]
+        hitsEx.mult1        = hits.mult1[start:stop]
         
         return hitsEx
     

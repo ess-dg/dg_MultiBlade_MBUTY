@@ -1,7 +1,7 @@
 {
 	"Detector": "test",
 	
-	"operationMode" : "clustered",
+	"operationMode" : "normal",
 
 	"cassettes" : 1,
 	

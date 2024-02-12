@@ -1,5 +1,5 @@
 
-buffer = int.to_bytes(0xff00ff00ff00ff00ff00ff00ff00ff003f00ff00, length=20, byteorder='big')
+buffer = int.to_bytes(0xff00ff00ff00ff00ff00ff00ff00ff003f00ff00, length=20, byteorder='little')
 
 G0 = -1
    
@@ -42,3 +42,13 @@ elif G1 == 0:
     elif G2 == 0: 
         print('normal hit mode')
         G0 = 0
+        
+#  #  #  #  #  #  #  #  #  #  # 
+        
+temp = int.to_bytes(0xafa5, length=2, byteorder='little')
+
+ADC0temp = int.from_bytes(temp, byteorder='little')
+
+mult0    = (ADC0temp & 0xE000) >> 13
+
+print(bin(mult0))

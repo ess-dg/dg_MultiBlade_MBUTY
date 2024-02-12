@@ -44,6 +44,8 @@ class readouts():
         self.PulseT    = np.zeros((0), dtype = datype)
         self.PrevPT    = np.zeros((0), dtype = datype)
         self.Durations = np.zeros((0), dtype = datype)
+        self.mult0     = np.zeros((0), dtype = datype)
+        self.mult1     = np.zeros((0), dtype = datype)
                
     def transformInReadouts(self, data):
         self.Ring       = data[:,0]
@@ -63,6 +65,8 @@ class readouts():
         self.G0         = data[:,14]
         self.Channel1   = data[:,15]
         self.ADC1       = data[:,16]
+        self.mult0      = data[:,17]
+        self.mult1      = data[:,18]
 
     # def list(self):
     #     print("Rings {}".format(self.Ring))
@@ -89,6 +93,8 @@ class readouts():
         self.PrevPT  = np.concatenate((self.PrevPT, reado.PrevPT), axis=0)
         self.timeCoarse = np.concatenate((self.timeCoarse, reado.timeCoarse), axis=0)
         self.Durations  = np.append(self.Durations, reado.Durations)
+        self.mult0     = np.concatenate((self.mult0, reado.mult0), axis=0)
+        self.mult1     = np.concatenate((self.mult1, reado.mult1), axis=0)
        
               
     def concatenateReadoutsInArrayForDebug(self):
@@ -139,6 +145,8 @@ class readouts():
         self.PrevPT    =  self.PrevPT[indexes]
         self.timeCoarse = self.timeCoarse[indexes]
         self.G0        =  self.G0[indexes]
+        self.mult0     =  self.mult0[indexes]
+        self.mult1     =  self.mult1[indexes]
         
     def calculateDuration(self):
          
@@ -226,6 +234,8 @@ class readouts():
          self.G0      = self.G0[~CalibData]
          self.PulseT  = self.PulseT[~CalibData]
          self.PrevPT  = self.PrevPT[~CalibData]
+         self.mult0  = self.mult0[~CalibData]
+         self.mult1  = self.mult1[~CalibData]
          
          removedNum = np.sum(CalibData)
          return removedNum 
@@ -254,6 +264,8 @@ class readouts():
         self.G0      = self.G0[~ClusterData]
         self.PulseT  = self.PulseT[~ClusterData]
         self.PrevPT  = self.PrevPT[~ClusterData]
+        self.mult0   = self.mult0[~ClusterData]
+        self.mult1   = self.mult1[~ClusterData]
         
         removedNum = np.sum(ClusterData)
         return removedNum 
@@ -282,6 +294,8 @@ class readouts():
         self.G0      = self.G0[~NormalHitData]
         self.PulseT  = self.PulseT[~NormalHitData]
         self.PrevPT  = self.PrevPT[~NormalHitData]
+        self.mult0   = self.mult0[~NormalHitData]
+        self.mult1   = self.mult1[~NormalHitData]
         
         removedNum = np.sum(NormalHitData)
         return removedNum 
@@ -480,11 +494,11 @@ class VMM3Aclustered():
         timeHI       = int.from_bytes(buffer[4:8], byteorder='little')
         timeLO       = int.from_bytes(buffer[8:12], byteorder='little')
         
-        # ADC0temp    = int.from_bytes(buffer[12:14], byteorder='little')
-        # ADC1temp    = int.from_bytes(buffer[14:16], byteorder='little')
+        ADC0temp    = int.from_bytes(buffer[12:14], byteorder='little')
+        ADC1temp    = int.from_bytes(buffer[14:16], byteorder='little')
         
-        self.ADC      = int.from_bytes(buffer[12:14], byteorder='little')
-        self.ADC1     = int.from_bytes(buffer[14:16], byteorder='little')
+        # self.ADC      = int.from_bytes(buffer[12:14], byteorder='little')
+        # self.ADC1     = int.from_bytes(buffer[14:16], byteorder='little')
         G0GEO         = int.from_bytes(buffer[16:17], byteorder='little')
         self.hybrid   = int.from_bytes(buffer[17:18], byteorder='little')
         self.Channel  = int.from_bytes(buffer[18:19], byteorder='little')
@@ -496,8 +510,11 @@ class VMM3Aclustered():
         # self.Ring = PhysicalRing
         #######################
 
-        # self.ADC0     = ADC0temp & 0x7FFF  #extract only 15 LSB
-        # self.ADC1     = ADC1temp & 0x7FFF  #extract only 15 LSB
+        self.ADC      = ADC0temp & 0x1FFF  #extract only 13 LSB
+        self.ADC1     = ADC1temp & 0x1FFF  #extract only 13 LSB
+        
+        self.mult0    = (ADC0temp & 0xE000) >> 13 #extract only 3 MSB
+        self.mult1    = (ADC1temp & 0xE000) >> 13 #extract only 3 MSB
         
         modes         = VMM3A_modes(buffer)
         self.G0       = modes.G0
@@ -534,6 +551,8 @@ class VMM3A():
         
         self.Channel1 = -1
         self.ADC1     = -1
+        self.mult0    = -1
+        self.mult1    = -1
         
         #######################
         #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
@@ -746,7 +765,7 @@ class pcapng_reader_PreAlloc():
             
         else:    
             
-            self.data = np.zeros((0,15), dtype='int64') 
+            self.data = np.zeros((0,19), dtype='int64') 
             self.stepsForProgress = 1
             self.mainHeaderSize   = 0
     
@@ -839,7 +858,7 @@ class pcapng_reader_PreAlloc():
         
         print('\n',end='')
         
-        self.data = np.zeros((self.preallocLength,17), dtype='int64') 
+        self.data = np.zeros((self.preallocLength,19), dtype='int64') 
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
@@ -1064,6 +1083,8 @@ class pcapng_reader_PreAlloc():
                            self.data[index, 14] = vmm3.G0  # if 1 is calibration
                            self.data[index, 15] = vmm3.Channel1
                            self.data[index, 16] = vmm3.ADC1
+                           self.data[index, 17] = vmm3.mult0
+                           self.data[index, 18] = vmm3.mult1
    
                        # self.data[index, 7] = vmm3.timeStamp
 
@@ -1100,6 +1121,8 @@ class pcapng_reader_PreAlloc():
                                self.data[index, 14] = 0  # if 1 is calibration
                                self.data[index, 15] = -1
                                self.data[index, 16] = -1
+                               self.data[index, 17] = -1
+                               self.data[index, 18] = -1
                            
                            elif (self.MONring != 11): 
                            
@@ -1364,9 +1387,9 @@ if __name__ == '__main__':
    filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
    file = '20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng'
    
-   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
+   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    file = 'sampleData_NormalMode.pcapng'
-   # file = 'sampleData_ClusteredMode.pcapng'
+   file = 'sampleData_ClusteredMode.pcapng'
    
    filePathAndFileName = filePath+file
    
@@ -1427,7 +1450,7 @@ if __name__ == '__main__':
    # readouts = readouts()
    # pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine', operationMode='normal')
 
-   pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine', operationMode='normal')
+   pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine', operationMode='clustered')
    pcapng.allocateMemory()
    pcapng.read()
    readouts = pcapng.readouts
