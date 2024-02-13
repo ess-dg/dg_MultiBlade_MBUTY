@@ -187,6 +187,9 @@ class events():
     
         return eventsArray
 
+
+# from here is relevant for clustered hits 
+
     def importClusteredHits(self,hits,config):
 
         checkCassIDs.checkIfRepeatedIDs(config.DETparameters.cassInConfig)
@@ -234,78 +237,53 @@ class events():
         print("\n\t N of not rejected events in clustered mode (2D) %d " % (self.Nevents))
         
     def removeUnmappedCassettes(self):
+        
+        print('\n\t--> checking/removing unmapped cassettes from events ...')
             
         remove = self.Cassette == -1 
+        self.removeData(remove)
+
+    def removeUnmappedChannels(self):
         
-        self.Cassette     = self.Cassette[~remove]
+        print('\t--> checking/removing unmapped channels from events ...')
+                
+        remove = self.positionW == -1 
+        self.removeData(remove)
+    
+    def removeData(self, toBeRemoved):
+        
+        self.Cassette     = self.Cassette[~toBeRemoved]
         self.CassettedIDs = np.unique(self.Cassette)
         
-        self.positionW    = self.positionW[~remove] 
-        self.positionS    = self.positionS[~remove]
+        self.positionW    = self.positionW[~toBeRemoved] 
+        self.positionS    = self.positionS[~toBeRemoved]
         
-        self.timeStamp = self.timeStamp[~remove]
+        self.timeStamp = self.timeStamp[~toBeRemoved]
         
-        self.PulseT = self.PulseT[~remove] 
-        self.PrevPT = self.PrevPT[~remove]
+        self.PulseT = self.PulseT[~toBeRemoved] 
+        self.PrevPT = self.PrevPT[~toBeRemoved]
         
-        self.PHW = self.PHW[~remove]
-        self.PHS = self.PHS[~remove]
+        self.PHW = self.PHW[~toBeRemoved]
+        self.PHS = self.PHS[~toBeRemoved]
         
-        self.multW = self.multW[~remove] 
-        self.multS = self.multS[~remove]
+        self.multW = self.multW[~toBeRemoved] 
+        self.multS = self.multS[~toBeRemoved]
         
         if np.shape(self.positionWmm)[0] > 0:
-            self.positionWmm  = self.positionWmm[~remove]
-            self.positionSmm  = self.positionSmm[~remove]
-            self.positionZmm  = self.positionZmm[~remove] 
+            self.positionWmm  = self.positionWmm[~toBeRemoved]
+            self.positionSmm  = self.positionSmm[~toBeRemoved]
+            self.positionZmm  = self.positionZmm[~toBeRemoved] 
             
         if np.shape(self.wavelength)[0] > 0:
-            self.wavelength   = self.wavelength[~remove]
+            self.wavelength   = self.wavelength[~toBeRemoved]
             
         if np.shape(self.ToF)[0] > 0:
-            self.ToF          = self.ToF[~remove]
+            self.ToF          = self.ToF[~toBeRemoved]
         
         self.Nevents          = np.shape(self.timeStamp)[0]
         self.NeventsNotRejAll = self.Nevents
         self.NeventsNotRej2D  = self.Nevents
         
-    def removeUnmappedChannels(self):
-                
-            remove = self.positionW == -1 
-            
-            self.Cassette     = self.Cassette[~remove]
-            self.CassettedIDs = np.unique(self.Cassette)
-            
-            self.positionW    = self.positionW[~remove] 
-            self.positionS    = self.positionS[~remove]
-            
-            self.timeStamp = self.timeStamp[~remove]
-            
-            self.PulseT = self.PulseT[~remove] 
-            self.PrevPT = self.PrevPT[~remove]
-            
-            self.PHW = self.PHW[~remove]
-            self.PHS = self.PHS[~remove]
-            
-            self.multW = self.multW[~remove] 
-            self.multS = self.multS[~remove]
-            
-            if np.shape(self.positionWmm)[0] > 0:
-                self.positionWmm  = self.positionWmm[~remove]
-                self.positionSmm  = self.positionSmm[~remove]
-                self.positionZmm  = self.positionZmm[~remove] 
-                
-            if np.shape(self.wavelength)[0] > 0:
-                self.wavelength   = self.wavelength[~remove]
-                
-            if np.shape(self.ToF)[0] > 0:
-                self.ToF          = self.ToF[~remove]
-            
-            self.Nevents          = np.shape(self.timeStamp)[0]
-            self.NeventsNotRejAll = self.Nevents
-            self.NeventsNotRej2D  = self.Nevents
-    
-
 ###############################################################################
 ###############################################################################
 

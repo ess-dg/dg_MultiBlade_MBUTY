@@ -101,7 +101,7 @@ class readouts():
         
         leng = len(self.timeStamp)
         
-        readoutsArray = np.zeros((leng,17),dtype = 'int64')
+        readoutsArray = np.zeros((leng,19),dtype = 'int64')
         
         readoutsArray[:,0] = self.Ring
         readoutsArray[:,1] = self.Fen
@@ -120,6 +120,8 @@ class readouts():
         readoutsArray[:,14] = self.GEO     # type for MON
         readoutsArray[:,15] = self.Channel1 # for clustered mode 
         readoutsArray[:,16] = self.ADC1     # for clustered mode 
+        readoutsArray[:,17] = self.mult0    # for clustered mode 
+        readoutsArray[:,18] = self.mult1    # for clustered mode 
         
         return readoutsArray
     
@@ -211,94 +213,49 @@ class readouts():
      ###############        
             
     def removeCalibrationData(self):
-        
          print('--> removing latency calib data from readouts ...')
-        
          CalibData = self.G0 == 1
-        
-         self.Ring    = self.Ring[~CalibData]
-         self.Fen     = self.Fen[~CalibData]
-         self.VMM     = self.VMM[~CalibData]
-         self.hybrid  = self.hybrid[~CalibData]
-         self.ASIC    = self.ASIC[~CalibData]
-         self.Channel = self.Channel[~CalibData]
-         self.ADC     = self.ADC[~CalibData]
-         self.Channel1 = self.Channel1[CalibData]
-         self.ADC1     = self.ADC1[~CalibData]
-         self.timeStamp   = self.timeStamp[~CalibData]
-         self.timeCoarse  = self.timeCoarse[~CalibData]
-         self.BC      = self.BC[~CalibData]
-         self.OTh     = self.OTh[~CalibData]
-         self.TDC     = self.TDC[~CalibData]
-         self.GEO     = self.GEO[~CalibData]
-         self.G0      = self.G0[~CalibData]
-         self.PulseT  = self.PulseT[~CalibData]
-         self.PrevPT  = self.PrevPT[~CalibData]
-         self.mult0  = self.mult0[~CalibData]
-         self.mult1  = self.mult1[~CalibData]
-         
+         self.removeData(CalibData)
          removedNum = np.sum(CalibData)
          return removedNum 
          
     def removeClusteredData(self):
-             
         print('--> removing clustered data from readouts ...')
-       
         ClusterData = self.G0 == 2
-       
-        self.Ring    = self.Ring[~ClusterData]
-        self.Fen     = self.Fen[~ClusterData]
-        self.VMM     = self.VMM[~ClusterData]
-        self.hybrid  = self.hybrid[~ClusterData]
-        self.ASIC    = self.ASIC[~ClusterData]
-        self.Channel = self.Channel[~ClusterData]
-        self.ADC     = self.ADC[~ClusterData]
-        self.Channel1 = self.Channel1[~ClusterData]
-        self.ADC1     = self.ADC1[~ClusterData]
-        self.timeStamp   = self.timeStamp[~ClusterData]
-        self.timeCoarse  = self.timeCoarse[~ClusterData]
-        self.BC      = self.BC[~ClusterData]
-        self.OTh     = self.OTh[~ClusterData]
-        self.TDC     = self.TDC[~ClusterData]
-        self.GEO     = self.GEO[~ClusterData]
-        self.G0      = self.G0[~ClusterData]
-        self.PulseT  = self.PulseT[~ClusterData]
-        self.PrevPT  = self.PrevPT[~ClusterData]
-        self.mult0   = self.mult0[~ClusterData]
-        self.mult1   = self.mult1[~ClusterData]
-        
+        self.removeData(ClusterData)
         removedNum = np.sum(ClusterData)
         return removedNum 
         
     def removeNormalHitData(self):
-               
         print('--> removing normal hit data from readouts ...')
-       
         NormalHitData = self.G0 == 0
-       
-        self.Ring    = self.Ring[~NormalHitData]
-        self.Fen     = self.Fen[~NormalHitData]
-        self.VMM     = self.VMM[~NormalHitData]
-        self.hybrid  = self.hybrid[~NormalHitData]
-        self.ASIC    = self.ASIC[~NormalHitData]
-        self.Channel = self.Channel[~NormalHitData]
-        self.ADC     = self.ADC[~NormalHitData]
-        self.Channel1 = self.Channel1[~NormalHitData]
-        self.ADC1     = self.ADC1[~NormalHitData]
-        self.timeStamp   = self.timeStamp[~NormalHitData]
-        self.timeCoarse  = self.timeCoarse[~NormalHitData]
-        self.BC      = self.BC[~NormalHitData]
-        self.OTh     = self.OTh[~NormalHitData]
-        self.TDC     = self.TDC[~NormalHitData]
-        self.GEO     = self.GEO[~NormalHitData]
-        self.G0      = self.G0[~NormalHitData]
-        self.PulseT  = self.PulseT[~NormalHitData]
-        self.PrevPT  = self.PrevPT[~NormalHitData]
-        self.mult0   = self.mult0[~NormalHitData]
-        self.mult1   = self.mult1[~NormalHitData]
-        
+        self.removeData(NormalHitData)     
         removedNum = np.sum(NormalHitData)
         return removedNum 
+    
+    def removeData(self, toBeRemoved):
+        
+        self.Ring    = self.Ring[~toBeRemoved]
+        self.Fen     = self.Fen[~toBeRemoved]
+        self.VMM     = self.VMM[~toBeRemoved]
+        self.hybrid  = self.hybrid[~toBeRemoved]
+        self.ASIC    = self.ASIC[~toBeRemoved]
+        self.Channel = self.Channel[~toBeRemoved]
+        self.ADC     = self.ADC[~toBeRemoved]
+        self.Channel1 = self.Channel1[~toBeRemoved]
+        self.ADC1     = self.ADC1[~toBeRemoved]
+        self.timeStamp   = self.timeStamp[~toBeRemoved]
+        self.timeCoarse  = self.timeCoarse[~toBeRemoved]
+        self.BC      = self.BC[~toBeRemoved]
+        self.OTh     = self.OTh[~toBeRemoved]
+        self.TDC     = self.TDC[~toBeRemoved]
+        self.GEO     = self.GEO[~toBeRemoved]
+        self.G0      = self.G0[~toBeRemoved]
+        self.PulseT  = self.PulseT[~toBeRemoved]
+        self.PrevPT  = self.PrevPT[~toBeRemoved]
+        self.mult0   = self.mult0[~toBeRemoved]
+        self.mult1   = self.mult1[~toBeRemoved]
+        
         
     ###############
     
