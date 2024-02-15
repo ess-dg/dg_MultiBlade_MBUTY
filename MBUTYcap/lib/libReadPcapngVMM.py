@@ -178,8 +178,12 @@ class readouts():
         if np.any(self.G0 == 1) :
             
               flag = True
+              
+              qty = np.sum(self.G0 == 1)
+              
+              total = np.shape(self.G0)[0]
             
-              print('\n\t\033[1;33mWARNING: calibration latency mode data found in READOUTS.\033[1;37m',end='') 
+              print('\n\t\033[1;33mWARNING: {} calibration latency mode data found in READOUTS {}.\033[1;37m'.format(qty,total),end='')
               time.sleep(1)
              
         return flag     
@@ -191,8 +195,12 @@ class readouts():
         if np.any(self.G0 == 2) :
             
               flag = True
+              
+              qty = np.sum(self.G0 == 2)
+              
+              total = np.shape(self.G0)[0]
             
-              print('\n\t\033[1;33mWARNING: clustered mode data found in READOUTS, whereas you selected normal hit mode!\033[1;37m',end='') 
+              print('\n\t\033[1;33mWARNING: {} clustered mode data found in READOUTS {}, whereas you selected normal hit mode!\033[1;37m'.format(qty,total),end='') 
               time.sleep(1)
              
         return flag     
@@ -204,8 +212,12 @@ class readouts():
         if np.any(self.G0 == 0) :
             
               flag = True
+              
+              qty = np.sum(self.G0 == 0)
+              
+              total = np.shape(self.G0)[0]
             
-              print('\n\t\033[1;33mWARNING: normal hit mode data found in READOUTS, whereas you selected clustered mode!\033[1;37m',end='') 
+              print('\n\t\033[1;33mWARNING: {} normal hit mode data found in READOUTS {}, whereas you selected clustered mode!\033[1;37m'.format(qty,total),end='')
               time.sleep(1)
              
         return flag     
@@ -424,21 +436,23 @@ class VMM3A_modes():
         
         G0GEO   = int.from_bytes(buffer[16:17], byteorder='little')
     
-        G0temp  = (G0GEO & 0xC0) >> 6     #extract only first two MSB and shift right by 6
+        temp  = (G0GEO & 0xC0) >> 6     #extract only first two MSB and shift right by 6
         
-        G1 = (G0temp & 0x1)          #bit 6 - if 0 either calib or normal mode, if 1 clustered mode 
-        G2 = (G0temp & 0x2) >> 1     #bit 7 - if 1 calib or 0 normal mode, if bit 6 is 0
+        geoBit6 = (temp & 0x1)          #bit 6 - if 0 either calib or normal mode, if 1 clustered mode 
+        geoBit7 = (temp & 0x2) >> 1     #bit 7 - if 1 calib or 0 normal mode, if bit 6 is 0
         
-        if G1 == 1:
+        if geoBit6 == 1:
             # print('clustered mode')
             self.G0 = 2
-        elif G1 == 0:
-            if G2 == 1: 
+        elif geoBit6 == 0:
+            if geoBit7 == 1: 
                 # print('calibration mode')
                 self.G0 = 1
-            elif G2 == 0: 
+            elif geoBit7 == 0: 
                 # print('normal hit mode')
                 self.G0 = 0
+                
+        # self.G0 =  geoBit7      
 
 
 class VMM3Aclustered():
