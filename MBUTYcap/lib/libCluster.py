@@ -661,7 +661,7 @@ class clusterHits():
                     print(" \t 1D: percentage of  wires fired per event: %.1f%% (1), %.1f%% (2), %.1f%% (3), %.1f%% (4), %.1f%% (5) \n" % (100*multi.wirefire1D[1],100*multi.wirefire1D[2],100*multi.wirefire1D[3],100*multi.wirefire1D[4],100*multi.wirefire1D[5])); 
             
             else:
-                    print("\t N of candidates: %d -> not rejected events %d (2D: %d, 1D: %d)" % (Ncandidates,NeventsNotRejAll,rejCounter[0],rejCounter[2]))
+                    print("\n\t N of candidates: %d -> not rejected events %d (2D: %d, 1D: %d)" % (Ncandidates,NeventsNotRejAll,rejCounter[0],rejCounter[2]))
                     
                 
 
