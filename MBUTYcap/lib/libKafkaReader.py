@@ -91,7 +91,8 @@ class kafka_reader_preAlloc():
         
         self.readouts = pcapr.readouts()
         
-        self.rea = pcapr.pcapng_reader_PreAlloc(self.NSperClockTick,self.MONTTLtype,self.MONring,kafkaStream = True)
+        self.rea = pcapr.pcapng_reader_PreAlloc(self.NSperClockTick, self.MONTTLtype, self.MONring, self.timeResolutionType, self.operationMode, kafkaStream = True)
+            
         
         #############################
         
