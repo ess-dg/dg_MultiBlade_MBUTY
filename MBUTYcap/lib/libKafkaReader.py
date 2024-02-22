@@ -27,7 +27,7 @@ import sys
 from lib import libReadPcapngVMM as pcapr
 from lib import libKafkaRX as krx 
 from lib import libKafkaRawReadoutMessage as rawmsg
-# 
+
 # import libReadPcapngVMM as pcapr
 # import libKafkaRX as krx 
 # import libKafkaRawReadoutMessage as rawmsg
@@ -36,13 +36,13 @@ from lib import libKafkaRawReadoutMessage as rawmsg
 ###############################################################################
 
 class  kafka_reader():
-    def __init__(self, NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, testing = False):
+    def __init__(self, NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = False):
         
         self.readouts = pcapr.readouts()
                 
         try:
 
-            self.kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets, broker, topic, MONTTLtype, MONring, timeResolutionType,testing)
+            self.kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets, broker, topic, MONTTLtype, MONring, timeResolutionType,operationMode,testing)
             self.kaf.allocateMemory()
             self.kaf.read()
             
@@ -72,7 +72,7 @@ class  kafka_reader():
 
 
 class kafka_reader_preAlloc():
-    def __init__(self, NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine',testing=False):
+    def __init__(self, NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine',operationMode='normal',testing=False):
                 
         self.NSperClockTick = NSperClockTick 
         self.nOfPackets     = nOfPackets
@@ -80,7 +80,8 @@ class kafka_reader_preAlloc():
         self.topic          = topic 
         self.MONTTLtype     = MONTTLtype
         self.MONring        = MONring
-        self.timeResolutionType    = timeResolutionType
+        self.timeResolutionType  = timeResolutionType
+        self.operationMode       = operationMode
 
         #############################
         
@@ -133,7 +134,7 @@ class kafka_reader_preAlloc():
             consumer.assign(topic_partitions)
                          
         self.rea.overallDataIndex = 0 
-        self.rea.data             = np.zeros((self.preallocLength,15), dtype='int64') 
+        self.rea.data             = np.zeros((self.preallocLength,19), dtype='int64') 
         
         self.rea.stepsForProgress = int(self.rea.counterCandidatePackets/4)+1  # 4 means 25%, 50%, 75% and 100%
         
@@ -155,15 +156,18 @@ class kafka_reader_preAlloc():
                             bytesGens = bytesGen()
                             packetLength = bytesGens.packetLength
                             packetData   = bytesGens.packetData
+                            
+                            
                        
                         
                     except:
                         self.dprint('--> other packet found')
                             
                     else:
-  
+                        
+ 
                         self.rea.extractFromBytes(packetData,packetLength)
-                
+                        
   
         print('[100%]',end=' ') 
 
@@ -191,21 +195,12 @@ class kafka_reader_preAlloc():
         
         self.readouts.transformInReadouts(datanew)
         
-
-        # self.readouts.calculateTimeStamp(self.NSperClockTick)
-        if self.timeResolutionType == 'fine':
-            self.readouts.calculateTimeStampWithTDC(self.NSperClockTick)
-        elif self.timeResolutionType == 'coarse':
-            self.readouts.timeStamp = self.readouts.timeCoarse
-
-        flag = self.readouts.checkIfCalibrationMode()
-        
-        if flag is True: 
-            self.readouts.removeCalibrationData()
-        
-    
+        self.rea.timeAdjustedWithResolution()
+                    
         print('\nkafka stream loaded - {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.rea.totalReadoutCount, self.rea.counterPackets,self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))    
         # print('\n')
+        
+        self.rea.removeOtherDataTypes()
         
 class bytesGen():
     def __init__(self):
@@ -215,11 +210,17 @@ class bytesGen():
         
         # self.packetData   = b"\x00\x00\x45\x53\x53\x72"+bytearray([1] * self.packetLength-6)
         
-        # dataPath='../data/'
+       
         
-        dataPath='./data/'
+        dataPath='../data/'
         
-        # dataPath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develKafka/data/'
+        # dataPath='./data/'
+        
+        # print(dataPath)
+        
+        # dataPath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
+        
+        # print(dataPath)
         
         with open(dataPath+'outputBinary1pkt', 'rb') as f: 
             temp =  self.packetData =  f.read()
@@ -251,16 +252,16 @@ if __name__ == "__main__":
     
     NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
     
-    aa = kafka_reader(NSperClockTick, nOfPackets = 1, testing=True)
+    # aa = kafka_reader(NSperClockTick, nOfPackets = 1, testing=True)
     
-    rr = aa.readouts
+    # rr = aa.readouts
     
-    rrarr = rr.concatenateReadoutsInArrayForDebug()
+    # rrarr = rr.concatenateReadoutsInArrayForDebug()
     
     
-    # kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets=1)
-    # kaf.allocateMemory()
-    # kaf.read()
+    kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets=1,testing=True)
+    kaf.allocateMemory()
+    kaf.read()
     
     
     

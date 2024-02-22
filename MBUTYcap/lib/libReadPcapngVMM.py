@@ -882,6 +882,24 @@ class pcapng_reader_PreAlloc():
         
         ############
           
+        self.timeAdjustedWithResolution()
+        
+        ############
+        
+        print('\ndata loaded - found {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.totalReadoutCount, self.counterPackets,self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))    
+
+        ############
+        
+        # self.readouts.timeStamp  = self.readouts.timeCoarse  + VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset=100e-9,time_slope=1).TDC_s
+       
+        # self.readouts.TDC =  VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset=100e-9,time_slope=1).TDC_s
+        
+        self.removeOtherDataTypes()
+        
+        ff.close()
+        
+    def timeAdjustedWithResolution(self):
+        
         # self.readouts.calculateTimeStamp(self.NSperClockTick)
         if self.operationMode == 'normal':
             if self.timeResolutionType == 'fine':
@@ -891,10 +909,8 @@ class pcapng_reader_PreAlloc():
         elif self.operationMode == 'clustered': 
             # tere is no time fine in clustered mode is already one sigle time 
                     self.readouts.timeStamp = self.readouts.timeCoarse
-        
-        ############
-        
-        print('\ndata loaded - found {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.totalReadoutCount, self.counterPackets,self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))    
+
+    def removeOtherDataTypes(self):
         
         flag = self.readouts.checkIfCalibrationMode() 
         if flag is True: 
@@ -918,16 +934,6 @@ class pcapng_reader_PreAlloc():
                  removedNum = self.readouts.removeNormalHitData()
                  print('removed {} clustered readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
                  self.totalReadoutCount = self.totalReadoutCount-removedNum
- 
-        ############
-        
-        # self.readouts.timeStamp  = self.readouts.timeCoarse  + VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset=100e-9,time_slope=1).TDC_s
-       
-        # self.readouts.TDC =  VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset=100e-9,time_slope=1).TDC_s
-        
-       
-        
-        ff.close()
         
         
     def extractFromBytes(self,packetData,packetLength):
@@ -936,7 +942,7 @@ class pcapng_reader_PreAlloc():
         
         self.dprint('index where ESS word starts {}'.format(indexESS))
         #  it should be always 44 = 42+2
-   
+     
         if indexESS == -1:
            # this happens if it not an ESS packet 
            self.counterNonESSpackets += 1
@@ -966,7 +972,6 @@ class pcapng_reader_PreAlloc():
            # or alternatively
            # readoutsInPacket = (ESSlength - self.ESSheaderSize) / self.singleReadoutSize
            
-
            if (packetLength - indexDataStart) == 0: #empty packet 72 bytes 
                
                self.counterEmptyESSpackets += 1
@@ -1004,6 +1009,7 @@ class pcapng_reader_PreAlloc():
                    self.totalReadoutCount += readoutsInPacket
                    
                    for currentReadout in range(readoutsInPacket):
+                       
                    # for currentReadout in range(1):
                        
                        self.overallDataIndex += 1 
@@ -1032,10 +1038,12 @@ class pcapng_reader_PreAlloc():
                        
                        # vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
            
-                       index = self.overallDataIndex-1
+                       index = self.overallDataIndex-1   
                        
                        # IMPORTANT this will load the MON data if comes from VMMs anyhow even if MON is OFF and TTl type is False                                 
                        if (vmm3.Ring <= 11):
+                           
+                           
                            
                            self.data[index, 0] = vmm3.Ring
                            self.data[index, 1] = vmm3.Fen

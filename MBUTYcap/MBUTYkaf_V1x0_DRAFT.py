@@ -325,7 +325,7 @@ while True:
     cont += 1
     print('--->'+str(cont))
     
-    stream = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, testing = True)
+    stream = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode, testing = True)
 
     readouts = stream.readouts
 
@@ -361,7 +361,7 @@ while True:
   
 
 
-# readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
 
 # readouts.checkChopperFreq()
 # readouts.checkInvalidToFsInReadouts()

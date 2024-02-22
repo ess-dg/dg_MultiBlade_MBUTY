@@ -402,7 +402,7 @@ for cont, fileName in enumerate(fileDialogue.fileName):
     readouts.append(pcap.readouts)
     
 
-    # pcap = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, nOfPackets = 5, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, testing = True)
+    # pcap = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, nOfPackets = 5, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode, testing = True)
     # readouts.append(pcap.readouts)
     
     # aa = kaf.kafka_reader(parameters.clockTicks.NSperClockTick,nOfPackets = 1)
