@@ -59,6 +59,9 @@ class fileDialogue():
         elif self.openMode == 'sequence' :
            self.openSequence() 
            
+        elif self.openMode == None :
+            self.doNothing()
+           
         else:
             print('\n \033[1;31mPlease select a correct open file mode: window, fileName, latest, secondLast, wholeFolder or sequence \033[1;37m\n')
             print(' ---> Exiting ... \n')
@@ -129,6 +132,10 @@ class fileDialogue():
     def openFileName(self):
         
         pass
+    
+    def doNothing(self):
+        
+        print('nothing to open')
         
     def openLatestFile(self):
         

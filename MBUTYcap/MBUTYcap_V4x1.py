@@ -84,9 +84,9 @@ parameters.loadConfigAndSetParameters(config)
 ### can only be only one of these 5 options: off, pcap-sync, pcap-local, pcap-local-overwrite or kafka
 
 # parameters.acqMode = 'pcap-sync'
-parameters.acqMode = 'pcap-local'
+# parameters.acqMode = 'pcap-local'
 # parameters.acqMode = 'pcap-local-overwrite'
-# parameters.acqMode = 'kafka'
+parameters.acqMode = 'kafka'
 # parameters.acqMode = 'off'
 
 ###############################################################################
@@ -170,8 +170,8 @@ parameters.fileManagement.thresholdFileName = 'MB300L_thresholds.xlsx'
 
 ###############
 ### path to  Tshark, in case you open a pcap  it gets converted into pcapng 
-# parameters.fileManagement.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
-parameters.fileManagement.pathToTshark = '/usr/sbin/'
+parameters.fileManagement.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
+# parameters.fileManagement.pathToTshark = '/usr/sbin/'
 
 ###############
 ### save a hdf file with clusters (reduced file)

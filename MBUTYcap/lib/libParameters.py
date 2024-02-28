@@ -409,7 +409,7 @@ class parameters():
             
                 self.fileManagement.openMode = 'latest'  
                 self.fileManagement.filePath =  self.dumpSettings.destTestData
-                #self.fileManagement.fileName =  [self.dumpSettings.fileName]
+                # self.fileManagement.fileName =  [self.dumpSettings.fileName]
 
     
                 
@@ -433,7 +433,9 @@ class parameters():
  
             elif self.acqMode == 'kafka':
             
+                self.fileManagement.openMode = None
                 print('Acqusition mode: {} - Acquisition through kafka stream'.format(self.acqMode))
+        
                 
             elif self.acqMode == 'off':
                 
