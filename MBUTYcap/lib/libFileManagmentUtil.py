@@ -75,14 +75,16 @@ class fileDialogue():
             for ss in self.fileSerials:
                 print(ss,', ',end='')
             print('\033[1;37m') 
+        elif self.openMode == None :
+            pass
         else:
             print('\033[1;36mFile selected: ',end='')
             for ff in self.fileName:
                 print(ff,', ',end='')
             print('\033[1;37m') 
             
-            
-        self.checkIfExists() 
+        if  self.openMode != None :
+            self.checkIfExists() 
                      
     def checkIfExists(self):
         
