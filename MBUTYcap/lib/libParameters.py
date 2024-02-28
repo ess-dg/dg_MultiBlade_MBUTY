@@ -407,9 +407,9 @@ class parameters():
                 
                 self.dumpSettings.fileNameOnly = False
             
-                self.fileManagement.openMode = 'fileName'  
+                self.fileManagement.openMode = 'latest'  
                 self.fileManagement.filePath =  self.dumpSettings.destTestData
-                self.fileManagement.fileName =  [self.dumpSettings.fileName]
+                #self.fileManagement.fileName =  [self.dumpSettings.fileName]
 
     
                 
