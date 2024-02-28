@@ -40,35 +40,34 @@ class  kafka_reader():
         
         self.readouts = pcapr.readouts()
                 
-        try:
+        # try:
 
-            self.kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets, broker, topic, MONTTLtype, MONring, timeResolutionType,operationMode,testing)
-            self.kaf.allocateMemory()
-            self.kaf.read()
-            
-            self.readouts = self.kaf.readouts
+        self.kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets, broker, topic, MONTTLtype, MONring, timeResolutionType,operationMode,testing)
+        self.kaf.allocateMemory()
+        self.kaf.read()
+        self.readouts = self.kaf.readouts
         
-        except:
+        # except:
             
-            print('\n... PRE-ALLOC method failed, exiting ...')
+        #     print('\n... PRE-ALLOC method failed, exiting ...')
             
-            sys.exit()
+        #     sys.exit()
   
             
-        finally:
+        # finally:
              
-              if sortByTimeStampsONOFF is True:
+        if sortByTimeStampsONOFF is True:
                  
                   print('Readouts are sorted by TimeStamp')
                  
                   self.readouts.sortByTimeStamps()
                  
             
-              else:
+        else:
                 
                   print('Readouts are NOT sorted by TimeStamp')
                 
-              self.readouts.calculateDuration()   
+        self.readouts.calculateDuration()   
 
 
 class kafka_reader_preAlloc():

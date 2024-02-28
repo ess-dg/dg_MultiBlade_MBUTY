@@ -663,38 +663,38 @@ class pcapng_reader():
         
         self.readouts = readouts()
      
-        try:
+        # try:
             # print('PRE-ALLOC method to load data ...')
-            self.pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
-            self.pcapng.allocateMemory()
-            self.pcapng.read()
-            self.readouts = self.pcapng.readouts
+        self.pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
+        self.pcapng.allocateMemory()
+        self.pcapng.read()
+        self.readouts = self.pcapng.readouts
             
-        except:
-            # print('\n... PRE-ALLOC method failed, trying APPEND method to load data ...')
-            print('\n\033[1;31m... PRE-ALLOC method failed, exiting ...\033[1;37m')
+        # except:
+        #     # print('\n... PRE-ALLOC method failed, trying APPEND method to load data ...')
+        #     print('\n\033[1;31m... PRE-ALLOC method failed, exiting ...\033[1;37m')
             
-            sys.exit()
+        #     sys.exit()
             
             #  HERE IS FUTURE DEVEL IF NEEDED 
             # self.pcapng = pcapng_reader_slowAppend(filePathAndFileName)
             # self.pcapng.read(timeResolutionType)
             # self.readouts = self.pcapng.readouts    
             
-        finally:
+        # finally:
              
-              if sortByTimeStampsONOFF is True:
+        if sortByTimeStampsONOFF is True:
                  
                   print('Readouts are sorted by TimeStamp')
                  
                   self.readouts.sortByTimeStamps()
                  
             
-              else:
+        else:
                 
                  print('Readouts are NOT sorted by TimeStamp')
                 
-              self.readouts.calculateDuration()     
+        self.readouts.calculateDuration()     
                         
 ##################################################  
 
@@ -1366,9 +1366,9 @@ if __name__ == '__main__':
    filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
    file = '20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng'
    
-   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
-   file = 'sampleData_NormalMode.pcapng'
-   file = 'sampleData_ClusteredMode.pcapng'
+   # filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
+   # file = 'sampleData_NormalMode.pcapng'
+   # file = 'sampleData_ClusteredMode.pcapng'
    
    filePathAndFileName = filePath+file
    

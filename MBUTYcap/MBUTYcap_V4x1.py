@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V3.0 2023/12/26      francescopiscitelli     ######################
+########    V4.1 2024/02/28      francescopiscitelli     ######################
 ###############################################################################
 ###############################################################################
 #  includes streaming from kafka 
@@ -34,7 +34,7 @@ from lib import libEventsSoftThresholds as thre
 from lib import libReducedFileH5 as saveH5
 from lib import libVMMcalibration as cal 
 
-# from lib import libKafkaReader as kaf
+from lib import libKafkaReader as kaf
 
 ###############################################################################
 ###############################################################################
@@ -49,7 +49,7 @@ from lib import libVMMcalibration as cal
 ###############################################################################
 profiling = para.profiling()
 print('----------------------------------------------------------------------')
-print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 4.0\033[1;37m')
+print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 4.1\033[1;37m')
 print('----------------------------------------------------------------------')
 plt.close("all")
 ### check version ###
@@ -71,17 +71,30 @@ configFileName  = "AMOR.json"
 ###############################################################################
 ### read json and create parameters for plotting and analisys ###
 config = maps.read_json_config(configFilePath+configFileName)
-parameters.loadConfigParameters(config)
+parameters.loadConfigAndSetParameters(config)
 ###############################################################################
 ###############################################################################
 ###############################################################################
 ###############################################################################
 ### edit parameters for plotting and analisys here ###
 ###############################################################################
+
+### ACQ MODES:
+#################################
+### can only be only one of these 5 options: off, pcap-sync, pcap-local, pcap-local-overwrite or kafka
+
+# parameters.acqMode = 'pcap-sync'
+parameters.acqMode = 'pcap-local'
+# parameters.acqMode = 'pcap-local-overwrite'
+# parameters.acqMode = 'kafka'
+# parameters.acqMode = 'off'
+
+###############################################################################
+###############################################################################
 ### FILE MANAGMENT  PARAMETERS:
 #################################
-### ON/OFF if you want dump and open file on same computer, it saves in ./data a file testData.pcapng and overwrites it every time 
-parameters.dumpSettings.auto = False 
+
+# relevant for acqMode =  pcap-local, pcap-local-overwrite and kafka 
 
 parameters.dumpSettings.interface     = 'ens2'
 
@@ -91,25 +104,36 @@ parameters.dumpSettings.quantity      =  100      #packets
 # parameters.dumpSettings.typeOfCapture = 'duration'
 # parameters.dumpSettings.quantity      = 1   #seconds
 
+parameters.fileManagement.fileNameSave = 'test'
+
+# relevant for acqMode =  kafka , num of packets to dump is in dumpSettings 
+parameters.kafkaSettings.broker       = '127.0.0.1:9092'
+parameters.kafkaSettings.topic        = 'freia_debug'
+parameters.kafkaSettings.numOfPackets =  100      #packets
 
 ###############################################################################
 
-### ON/OFF if you want to rsync the data     
-parameters.fileManagement.sync = False  
-
+# relevant for acqMode =  pcap-sync
 ### from ... to  ... rsync the data
 
 parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
 parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataVMM/'
 # parameters.fileManagement.destPath   
 
+parameters.fileManagement.sourcePath = 'essdaq@172.30.244.50:~/pcaps1/'
+
+
 ###############
 
 parameters.fileManagement.filePath = parameters.fileManagement.destPath 
 
+# relevant for acqMode =  off, pcap-sync and pcap-local
+
 parameters.fileManagement.filePath = currentPath+'data/'
 
 # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
+
+parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
 
 # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
 # parameters.fileManagement.fileName = [ 'sampleData_NormalMode.pcapng']
@@ -119,7 +143,7 @@ parameters.fileManagement.filePath = currentPath+'data/'
 
 # parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 # parameters.fileManagement.fileName = ['freiatest.pcapng']
-# parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
+parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
 
 # parameters.fileManagement.fileSerials = np.arange(18,28,1)
 
@@ -331,6 +355,7 @@ if parameters.wavelength.plotXLambda or parameters.wavelength.plotLambdaDistr is
         
 ###############################################################################
 ###############################################################################
+parameters.set_acqMode(parameters.acqMode)
 parameters.update()
 ###############################################################################
 ###############################################################################
@@ -344,33 +369,24 @@ allAxis.createAllAxis(parameters)
 
 ###############################################################################
 ###############################################################################
-if parameters.dumpSettings.auto == True:
-    
-    if parameters.fileManagement.sync == True: 
-        parameters.fileManagement.sync = False
-        print('\n \t Sync turned OFF since you selected AUTO mode')
+if parameters.acqMode  == 'pcap-local-overwrite'  or parameters.acqMode  == 'pcap-local':
     
     rec = ta.dumpToPcapngUtil(parameters.fileManagement.pathToTshark, parameters.dumpSettings.interface, parameters.dumpSettings.destTestData, parameters.dumpSettings.fileName)
 
     # sta = ta.acquisitionStatus(parameters.dumpSettings.destTestData)  
     # sta.set_RecStatus()
     
-    status = rec.dump(parameters.dumpSettings.typeOfCapture,parameters.dumpSettings.quantity,parameters.dumpSettings.numOfFiles,parameters.dumpSettings.delay,fileNameOnly=True)
+    status = rec.dump(parameters.dumpSettings.typeOfCapture,parameters.dumpSettings.quantity,parameters.dumpSettings.numOfFiles,parameters.dumpSettings.delay,parameters.dumpSettings.fileNameOnly)
     # if status == 0: 
     #      sta.set_FinStatus()
     # else:
     #      sta.set_RecStatus()
-         
-    parameters.fileManagement.openMode = 'fileName'  
-    parameters.fileManagement.filePath =  parameters.dumpSettings.destTestData
-    parameters.fileManagement.fileName =  [parameters.dumpSettings.fileName]
 
-###############################################################################
-###############################################################################
 ### sync the data folder from remote computer to local folder 
-if parameters.fileManagement.sync is True:
+elif parameters.acqMode == 'pcap-sync':
     transferData = ta.transferDataUtil()
     transferData.syncData(parameters.fileManagement.sourcePath, parameters.fileManagement.destPath)   
+
 ###############################################################################
 ###############################################################################
 ### select data
@@ -384,36 +400,30 @@ readouts = pcapr.readouts()
 # hits   = maps.hits()
 # events = clu.events()
 
-
 for cont, fileName in enumerate(fileDialogue.fileName):
 
-    print('\033[1;32m-> reading file {} of {}\033[1;37m'.format(cont+1,len(fileDialogue.fileName)))
-    
-    ### check if a file is pcapng otherwise pcap is converted into pcapng
-    conv = ta.pcapConverter(parameters)
-    conv.checkExtensionAndConvertPcap(fileDialogue.filePath+fileName)
-    if conv.flag is False:
-        fileName = conv.fileName_OUT
+    if parameters.acqMode == 'pcap-sync' or parameters.acqMode == 'pcap-local' or parameters.acqMode == 'pcap-local-overwrite' or parameters.acqMode == 'off':
         
-    ### check which Ring, Fen and Hybrid is present in the selected File 
-    # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,parameters.clockTicks.NSperClockTick).check()
-    ### load data  
-    pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = True, operationMode=config.DETparameters.operationMode)
+        print('\033[1;32m-> reading file {} of {}\033[1;37m'.format(cont+1,len(fileDialogue.fileName)))
+        
+        ### check if a file is pcapng otherwise pcap is converted into pcapng
+        conv = ta.pcapConverter(parameters)
+        conv.checkExtensionAndConvertPcap(fileDialogue.filePath+fileName)
+        if conv.flag is False:
+            fileName = conv.fileName_OUT
+            
+        ### check which Ring, Fen and Hybrid is present in the selected File 
+        # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,parameters.clockTicks.NSperClockTick).check()
+        ### load data  
+        pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = True, operationMode=config.DETparameters.operationMode)
+    
+    elif parameters.acqMode == 'kafka':
+    
+        pcap = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, parameters.kafkaSettings.numOfPackets, parameters.kafkaSettings.broker, parameters.kafkaSettings.topic, MONTTLtype = config.MONmap.TTLtype , MONring = config.MONmap.RingID, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode, testing = True)
+  
+    
     readouts.append(pcap.readouts)
-    
 
-    # pcap = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, nOfPackets = 5, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode, testing = True)
-    # readouts.append(pcap.readouts)
-    
-    # aa = kaf.kafka_reader(parameters.clockTicks.NSperClockTick,nOfPackets = 1)
-    
-    # kr = kaf.kafka_reader_preAlloc(parameters.clockTicks.NSperClockTick, nOfPackets=1)
-    # kr.allocateMemory()
-    # kr.read()
-    
-    # # rr = aa.readouts
-    
-    # readouts.append(kr.readouts)
     
     # rrarr = rr.concatenateReadoutsInArrayForDebug()
     

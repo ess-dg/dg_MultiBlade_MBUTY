@@ -50,7 +50,7 @@ class profiling():
 class dumpSettings():
     def __init__(self,currentPath='./'):
         
-        self.auto = False
+        # self.auto = False
         
         self.interface = 'p4p1'
         
@@ -64,11 +64,13 @@ class dumpSettings():
         self.delay      = 0
         
         self.fileName   = 'testData'
+        
+        self.fileNameOnly = True
 
 class fileManagement():
       def __init__(self, currentPath='./'):
   
-            self.sync = False
+            self.fileNameSave = 'test'
             
             # self.pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
             self.pathToTshark = '/usr/sbin/'
@@ -112,6 +114,17 @@ class fileManagement():
           
             self.configFilePath = config.configFilePath
             self.configFileName = config.configFileName
+            
+ 
+    
+class kafkaSettings():
+    def __init__(self):
+          
+        self.broker       = '127.0.0.1:9092'
+        self.topic        = 'freia_debug'
+        self.numOfPackets = 100
+            
+###############################################################################  
  
             
 class configJsonFile():
@@ -314,14 +327,18 @@ class parameters():
                 
         self.fileManagement = fileManagement(currentPath)
         
+        self.acqMode = None
+        
     def init_empty(self):
         
         self.loadConfigParameters(config=None)
         
-    def loadConfigParameters(self,config=None):
+    def loadConfigAndSetParameters(self,config=None):
 
-        self.config = config
- 
+        self.config  = config
+        
+        # self.acqMode = acqMode
+        
         # self.fileManagement = fileManagement(self.fileManagement.currentPath)
         self.fileManagement.importConfigFileDetails(self.config)
         
@@ -344,6 +361,12 @@ class parameters():
         
         self.MONitor = MONitor()
         
+        self.kafkaSettings = kafkaSettings()
+        
+        # self.set_acqMode()
+        
+        # self.check_acqMode()
+        
     def update(self):
         
         self.plotting.calculateDerivedParam()
@@ -355,7 +378,74 @@ class parameters():
             print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin)')
         else:
             print('\n\t histogram outBounds param set as False (Events out of bounds not stored in any bin)')
+            
+    def check_acqMode(self):
 
+        if  self.acqMode is None:
+            
+            print('\n\t\033[1;31mERROR: Acq mode (found {}) not set ---> Exiting ... \n\033[1;37m'.format(self.acqMode),end='') 
+            sys.exit()    
+            
+    def set_acqMode(self,acqMode=None):
+     
+            self.acqMode = acqMode     # pcap-sync, pcap-local, pcap-local-overwrite, kafka
+            
+            if self.acqMode == 'pcap-sync':
+                
+                print('Acqusition mode: {} - Sync turned ON to retrieve data from remote computer'.format(self.acqMode))
+                
+            elif self.acqMode == 'pcap-local':
+                
+                print('Acqusition mode: {} -  Sync turned OFF since you selected pcap-local mode'.format(self.acqMode))
+                
+                self.dumpSettings.destTestData = self.fileManagement.filePath
+                
+                self.dumpSettings.fileName     = self.fileManagement.fileNameSave
+                
+                self.dumpSettings.numOfFiles = 1
+                self.dumpSettings.delay      = 0
+                
+                self.dumpSettings.fileNameOnly = False
+            
+                self.fileManagement.openMode = 'fileName'  
+                self.fileManagement.filePath =  self.dumpSettings.destTestData
+                self.fileManagement.fileName =  [self.dumpSettings.fileName]
+
+    
+                
+            elif self.acqMode == 'pcap-local-overwrite':
+                
+                print('Acqusition mode: {} - Sync turned OFF since you selected pcap-local-overwrite mode'.format(self.acqMode))
+                
+                self.dumpSettings.destTestData = self.fileManagement.currentPath + 'data/'
+                
+                self.dumpSettings.fileName     = 'testData'
+                
+                self.dumpSettings.numOfFiles = 1
+                self.dumpSettings.delay      = 0
+                
+                self.dumpSettings.fileNameOnly = True
+            
+                self.fileManagement.openMode = 'fileName'  
+                self.fileManagement.filePath =  self.dumpSettings.destTestData
+                self.fileManagement.fileName =  [self.dumpSettings.fileName]
+                
+ 
+            elif self.acqMode == 'kafka':
+            
+                print('Acqusition mode: {} - Acquisition through kafka stream'.format(self.acqMode))
+                
+            elif self.acqMode == 'off':
+                
+                print('Acqusition mode: {} - No acquisition is performed, just open a file and visualize'.format(self.acqMode))
+            
+            else:
+                
+                print('\n\t\033[1;31mERROR: Acquisition mode (found {}) can only be only one of these 5 options: off, pcap-sync, pcap-local, pcap-local-overwrite or kafka ---> Exiting ... \n\033[1;37m'.format(self.acqMode),end='') 
+                sys.exit()        
+
+            self.check_acqMode()
+            
 ###############################################################################
 ###############################################################################
 
@@ -401,23 +491,37 @@ if __name__ == '__main__' :
     # prof.stop()
     
     # parameters2  = parameters('/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/')
-    
-    configFilePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/'+'config/'
+
+    currentPath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/'
+    configFilePath  = currentPath +'config/'
     # configFileName  = "MB300_AMOR_config.json"
     configFileName  = "AMOR.json"
     
     # config = maps.read_json_config(configFilePath+configFileName)
     # # parameters.loadConfigParameters(config)
     
+    parameters  = parameters(currentPath)
+    config = maps.read_json_config(configFilePath+configFileName)
+    parameters.loadConfigAndSetParameters(config)
+    
+    parameters.set_acqMode('pcap-local-overwrite')
+    
+    
     # parameters2.loadConfigParameters()
     
     # parr = parameters()
     # parr.init_empty()
     
-    parameters  = parameters(configFilePath)
+    # parameters  = parameters(configFilePath)
     
-    config = maps.read_json_config(configFilePath+configFileName)
-    parameters.loadConfigParameters(config)
+    # config = maps.read_json_config(configFilePath+configFileName)
+    # parameters.loadConfigParameters(config)
+    
+    
+    # aa = acqMode('pcap-local')
+    
+    # aa.set_acqMode()
+    
     
     # parameters.dataReduction.softThArray.ThW[:,1] = 5000
     

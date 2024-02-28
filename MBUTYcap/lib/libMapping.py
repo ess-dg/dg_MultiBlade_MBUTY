@@ -661,7 +661,7 @@ class mapMonitor():
 
 if __name__ == '__main__':
 
-   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/config/'+"test.json"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"test.json"
    # filePathD = './'+"VMM3a_Freia.pcapng"
 
    config = read_json_config(filePath)

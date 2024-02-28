@@ -327,6 +327,7 @@ while True:
     
     stream = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode, testing = True)
 
+
     readouts = stream.readouts
 
     # readouts.append(pcap.readouts)
