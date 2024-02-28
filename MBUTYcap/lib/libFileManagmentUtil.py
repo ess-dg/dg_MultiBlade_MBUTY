@@ -137,7 +137,8 @@ class fileDialogue():
     
     def doNothing(self):
         
-        print('nothing to open')
+        pass 
+        # print('nothing to open')
         
     def openLatestFile(self):
         
