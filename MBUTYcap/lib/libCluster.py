@@ -16,7 +16,7 @@ from lib import libMapping as maps
 from lib import libHistograms as hh
 from lib import libParameters as para
 
-# from lib import libReadPcapngVMM as pcapr
+from lib import libReadPcapngVMM as pcapr
 # from lib import libPlotting as plo
 
 # import libSampleData as sdat
@@ -707,32 +707,40 @@ class checkCassIDs():
               sys.exit()
  
     def checkIfPresentInHits(hits,cassette1ID):
-         
+  
          presentCassettes = np.unique(hits.Cassette[~np.isnan(hits.Cassette)])
+         
+         dimen = np.shape(presentCassettes)[0]
          
          if not(cassette1ID in presentCassettes):
              
              flag = False 
              
-             if np.any(presentCassettes<=-1):
-              # there is unmapped data in hits, might be MON
-                 print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits only contains Cassettes IDs:', end=' ')
-                 presentCassettes = presentCassettes[presentCassettes>=0]
-                 for cc in presentCassettes:
-                     print(int(cc),end=' ')
-                 print('and UNMAPPED data (maybe MON)\033[1;37m',end=' ')
-                 
+             if dimen > 0:
+            
+                 if np.any(presentCassettes<=-1):
+                 # there is unmapped data in hits, might be MON
+                     print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits only contains Cassettes IDs:', end=' ')
+                     presentCassettes = presentCassettes[presentCassettes>=0]
+                     for cc in presentCassettes:
+                         print(int(cc),end=' ')
+                     print('and UNMAPPED data (maybe MON)\033[1;37m',end=' ')
+                    
+                 else:
+                     # there is NO unmapped data in hits
+                     print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits only contains Cassettes IDs:', end=' ')
+                     for cc in presentCassettes:
+                         print(int(cc),end=' ')
+                     print('\033[1;37m',end=' ')
+                     
              else:
-                 # there is NO unmapped data in hits
-                 print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits only contains Cassettes IDs:', end=' ')
-                 for cc in presentCassettes:
-                     print(int(cc),end=' ')
-                 print('\033[1;37m',end=' ')
+                   print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits are empty!\033[1;37m', end=' ')
              
          else: 
              flag = True
              
          return flag 
+                         
      
     def checkIfPresentInEvents(events,cassette1ID):
          
@@ -783,14 +791,14 @@ class hitsMON2events():
 
 if __name__ == '__main__':
     
-    filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/config/'+"test.json"
+    filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"test.json"
     # filePathD = './'+"VMM3a_Freia.pcapng"
 
     config = maps.read_json_config(filePath)
     
-    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
+    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
     file = 'sampleData_NormalMode.pcapng'
-    file = 'sampleData_ClusteredMode.pcapng'
+    # file = 'sampleData_ClusteredMode.pcapng'
     
     filePathAndFileName = filePath+file
     

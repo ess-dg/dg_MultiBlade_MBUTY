@@ -216,14 +216,14 @@ class plottingHits():
         
         cass = self.hits.Cassette == cassette1ID
         
-        if self.config.DETparameters.operationMode == 'normal':
+        if self.parameters.configJsonFile.operationMode == 'normal':
             wires  = self.hits.WorS == 0
             strips = self.hits.WorS == 1
             wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
             self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
             self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
             
-        elif self.config.DETparameters.operationMode == 'clustered':
+        elif self.parameters.configJsonFile.operationMode == 'clustered':
             wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.parameters.configJsonFile.numOfWires)
             self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
             self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass])
@@ -251,7 +251,7 @@ class plottingHits():
              
         sel = self.hits.Cassette == cassette1ID
         
-        if self.config.DETparameters.operationMode == 'normal':
+        if self.parameters.configJsonFile.operationMode == 'normal':
             isWire   = self.hits.WorS == 0
             isStrip  = self.hits.WorS == 1
             
@@ -263,7 +263,7 @@ class plottingHits():
             # self.timeStampW[self.timeStampW == 0] = np.ma.masked # same as np.nan for int64 instead of floats   
             # self.timeStampS[self.timeStampS == 0] = np.ma.masked # same as np.nan for int64 instead of floats
  
-        elif self.config.DETparameters.operationMode == 'clustered':
+        elif self.parameters.configJsonFile.operationMode == 'clustered':
             
             self.timeStampW = self.hits.timeStamp[sel] 
             self.timeStampS = self.hits.timeStamp[sel] 
@@ -278,7 +278,7 @@ class plottingHits():
         
         sel = self.hits.Cassette == cassette1ID
         
-        if self.config.DETparameters.operationMode == 'normal':
+        if self.parameters.configJsonFile.operationMode == 'normal':
             isWire   = self.hits.WorS == 0
             isStrip  = self.hits.WorS == 1
             
@@ -287,7 +287,7 @@ class plottingHits():
             self.WireCh  = np.round((wireCh0to31[sel]+10) * isWire[sel])
             self.StripCh = np.round((self.hits.WiresStrips[sel]+20) * isStrip[sel])
    
-        elif self.config.DETparameters.operationMode == 'clustered':
+        elif self.parameters.configJsonFile.operationMode == 'clustered':
             wireCh0to31 = np.mod(self.hits.WiresStrips1,self.parameters.configJsonFile.numOfWires) 
             
             self.WireCh  = np.round((wireCh0to31[sel]+10))

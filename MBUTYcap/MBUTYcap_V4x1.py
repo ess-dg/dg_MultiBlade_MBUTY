@@ -65,8 +65,6 @@ configFilePath  = currentPath+'config/'
 
 configFileName  = "AMOR.json"
 
-# configFileName  = "test.json"
-
 ###############################################################################
 ###############################################################################
 ### read json and create parameters for plotting and analisys ###
@@ -86,9 +84,10 @@ parameters.loadConfigAndSetParameters(config)
 # parameters.acqMode = 'pcap-sync'
 # parameters.acqMode = 'pcap-local'
 # parameters.acqMode = 'pcap-local-overwrite'
-parameters.acqMode = 'kafka'
-# parameters.acqMode = 'off'
+# parameters.acqMode = 'kafka'
+parameters.acqMode = 'off'
 
+###  then check parameters.fileManagement.openMode = 'window' for the open mode ...
 ###############################################################################
 ###############################################################################
 ### FILE MANAGMENT  PARAMETERS:
@@ -109,19 +108,16 @@ parameters.fileManagement.fileNameSave = 'test'
 # relevant for acqMode =  kafka , num of packets to dump is in dumpSettings 
 parameters.kafkaSettings.broker       = '127.0.0.1:9092'
 parameters.kafkaSettings.topic        = 'freia_debug'
-parameters.kafkaSettings.numOfPackets =  100      #packets
+parameters.kafkaSettings.numOfPackets =  10      #packets
 
 ###############################################################################
 
 # relevant for acqMode =  pcap-sync
 ### from ... to  ... rsync the data
 
+# parameters.fileManagement.sourcePath = 'essdaq@172.30.244.50:~/pcaps/'
 parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
-parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataVMM/'
-# parameters.fileManagement.destPath   
-
-parameters.fileManagement.sourcePath = 'essdaq@172.30.244.50:~/pcaps1/'
-
+parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataVMM/' 
 
 ###############
 
@@ -133,7 +129,7 @@ parameters.fileManagement.filePath = currentPath+'data/'
 
 # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
 
-parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
+# parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
 
 # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
 # parameters.fileManagement.fileName = [ 'sampleData_NormalMode.pcapng']
@@ -190,6 +186,14 @@ parameters.fileManagement.reducedCompressionHDFL  = 9    # gzip compression leve
 
 ### calibration VMM ADC
 parameters.dataReduction.calibrateVMM_ADC_ONOFF = False
+
+### sorting readouts by time stamp, if OFF they are as in RMM stream
+parameters.VMMsettings.sortReadoutsByTimeStampsONOFF = False
+
+### time stamp is time HI + time LO or if fine corrected with TDC 
+parameters.VMMsettings.timeResolutionType = 'fine'
+# parameters.VMMsettings.timeResolutionType = 'coarse'
+
 
 ### cassettes to clusterize and to plot, if empty the cassettes in the config file are taken as default
 # parameters.cassettes.cassettes = [1,2,3,4,5,6]
@@ -260,7 +264,7 @@ parameters.MONitor.MONDistance  = 0
 
 ###############
 # with True disables clustering and mapping for speed reasons, analisys stops at readouts 
-bareReadoutsCalc = False
+parameters.plotting.bareReadoutsCalculation = False
 
 ###############     
 ### show stat during clustering, option  'globalStat'  stat for all cassettes together, 
@@ -286,7 +290,7 @@ parameters.plotting.instRateBin     = 100e-6  # s
 ### ToF plot integrated over individual cassette, one per cassette
 parameters.plotting.plotToFDistr    = False
 
-parameters.plotting.ToFrange       = 0.15    # s
+parameters.plotting.ToFrange        = 0.15    # s
 parameters.plotting.ToFbinning      = 100e-6 # s
      
 parameters.plotting.plotMultiplicity = False 
@@ -371,12 +375,14 @@ allAxis.createAllAxis(parameters)
 ###############################################################################
 if parameters.acqMode  == 'pcap-local-overwrite'  or parameters.acqMode  == 'pcap-local':
     
-    rec = ta.dumpToPcapngUtil(parameters.fileManagement.pathToTshark, parameters.dumpSettings.interface, parameters.dumpSettings.destTestData, parameters.dumpSettings.fileName)
+    rec = ta.dumpToPcapngUtil(parameters.fileManagement.pathToTshark, parameters.dumpSettings.interface, \
+    parameters.dumpSettings.destTestData, parameters.dumpSettings.fileName)
 
     # sta = ta.acquisitionStatus(parameters.dumpSettings.destTestData)  
     # sta.set_RecStatus()
     
-    status = rec.dump(parameters.dumpSettings.typeOfCapture,parameters.dumpSettings.quantity,parameters.dumpSettings.numOfFiles,parameters.dumpSettings.delay,parameters.dumpSettings.fileNameOnly)
+    status = rec.dump(parameters.dumpSettings.typeOfCapture,parameters.dumpSettings.quantity,parameters.dumpSettings.numOfFiles,\
+    parameters.dumpSettings.delay,parameters.dumpSettings.fileNameOnly)
     # if status == 0: 
     #      sta.set_FinStatus()
     # else:
@@ -415,16 +421,17 @@ for cont, fileName in enumerate(fileDialogue.fileName):
         ### check which Ring, Fen and Hybrid is present in the selected File 
         # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,parameters.clockTicks.NSperClockTick).check()
         ### load data  
-        pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = True, operationMode=config.DETparameters.operationMode)
-    
-    elif parameters.acqMode == 'kafka':
-    
-        pcap = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, parameters.kafkaSettings.numOfPackets, parameters.kafkaSettings.broker, parameters.kafkaSettings.topic, MONTTLtype = config.MONmap.TTLtype , MONring = config.MONmap.RingID, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode, testing = True)
-  
-    
-    readouts.append(pcap.readouts)
+        pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, parameters.clockTicks.NSperClockTick, MONTTLtype = config.MONmap.TTLtype, MONring = config.MONmap.RingID, \
+        timeResolutionType = parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF = parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, operationMode=config.DETparameters.operationMode)
 
-    
+    elif parameters.acqMode == 'kafka':
+            
+        testing = True 
+        pcap = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, nOfPackets = parameters.kafkaSettings.numOfPackets, \
+        broker = parameters.kafkaSettings.broker, topic = parameters.kafkaSettings.topic, MONTTLtype = config.MONmap.TTLtype , MONring = config.MONmap.RingID, \
+        timeResolutionType =parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF=parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, operationMode=config.DETparameters.operationMode, testing=testing)
+  
+    readouts.append(pcap.readouts)
     # rrarr = rr.concatenateReadoutsInArrayForDebug()
     
     # md  = maps.mapDetector(pcap.readouts, config)
@@ -452,7 +459,7 @@ readouts.checkInvalidToFsInReadouts()
 readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
 ####################
 
-if bareReadoutsCalc is False:
+if parameters.plotting.bareReadoutsCalculation is False:
     
     ###########################################################################
     ### calibration ADC
@@ -522,6 +529,7 @@ if bareReadoutsCalc is False:
     ### for debug, hits in single array 
     # hitsArray = hits.concatenateHitsInArrayForDebug()
     ####################
+    
     
     if config.DETparameters.operationMode == 'normal':
         ###############################################################################
@@ -631,7 +639,7 @@ if parameters.plotting.plotChopperResets is True:
 ######################
 
 ######################
-if bareReadoutsCalc is False:
+if parameters.plotting.bareReadoutsCalculation is False:
     ### hits
     if (parameters.plotting.plotRawHits or parameters.plotting.plotHitsTimeStamps or parameters.plotting.plotHitsTimeStampsVSChannels) is True:
         plhits = plo.plottingHits(hits, parameters)
@@ -646,7 +654,7 @@ if bareReadoutsCalc is False:
 ######################
 ### events
 
-if bareReadoutsCalc is False:
+if parameters.plotting.bareReadoutsCalculation is False:
     ### XY and XToF
     plev = plo.plottingEvents(events,allAxis,parameters.plotting.coincidenceWS_ONOFF)
     plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits, orientation = parameters.configJsonFile.orientation)

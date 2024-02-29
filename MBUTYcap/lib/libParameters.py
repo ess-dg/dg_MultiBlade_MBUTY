@@ -124,7 +124,11 @@ class kafkaSettings():
         self.topic        = 'freia_debug'
         self.numOfPackets = 100
             
-###############################################################################  
+class VMMsettings():
+    def __init__(self):
+        
+        self.timeResolutionType    = 'fine'
+        self.sortReadoutsByTimeStampsONOFF = True
  
             
 class configJsonFile():
@@ -272,6 +276,8 @@ class plotting():
           
           self.hitogOutBounds = True
           
+          self.bareReadoutsCalculation = False
+          
       def calculateDerivedParam(self):
              
            if self.positionReconstruction == 'W.max-S.max': # w x s max max
@@ -363,6 +369,8 @@ class parameters():
         
         self.kafkaSettings = kafkaSettings()
         
+        self.VMMsettings   = VMMsettings()
+        
         # self.set_acqMode()
         
         # self.check_acqMode()
@@ -392,11 +400,11 @@ class parameters():
             
             if self.acqMode == 'pcap-sync':
                 
-                print('Acqusition mode: {} - Sync turned ON to retrieve data from remote computer'.format(self.acqMode))
+                print('Acquisition mode: {} - Sync turned ON to retrieve data from remote computer'.format(self.acqMode))
                 
             elif self.acqMode == 'pcap-local':
                 
-                print('Acqusition mode: {} -  Sync turned OFF since you selected pcap-local mode'.format(self.acqMode))
+                print('Acquisition mode: {} -  Sync turned OFF since you selected pcap-local mode'.format(self.acqMode))
                 
                 self.dumpSettings.destTestData = self.fileManagement.filePath
                 
@@ -415,7 +423,7 @@ class parameters():
                 
             elif self.acqMode == 'pcap-local-overwrite':
                 
-                print('Acqusition mode: {} - Sync turned OFF since you selected pcap-local-overwrite mode'.format(self.acqMode))
+                print('Acquisition mode: {} - Sync turned OFF since you selected pcap-local-overwrite mode'.format(self.acqMode))
                 
                 self.dumpSettings.destTestData = self.fileManagement.currentPath + 'data/'
                 
@@ -434,12 +442,12 @@ class parameters():
             elif self.acqMode == 'kafka':
             
                 self.fileManagement.openMode = None
-                print('Acqusition mode: {} - Acquisition through kafka stream'.format(self.acqMode))
+                print('Acquisition mode: {} - Acquisition through kafka stream'.format(self.acqMode))
         
                 
             elif self.acqMode == 'off':
                 
-                print('Acqusition mode: {} - No acquisition is performed, just open a file and visualize'.format(self.acqMode))
+                print('Acquisition mode: {} - No acquisition is performed, just open a file and visualize'.format(self.acqMode))
             
             else:
                 

@@ -38,36 +38,25 @@ from lib import libKafkaRawReadoutMessage as rawmsg
 class  kafka_reader():
     def __init__(self, NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = False):
         
-        self.readouts = pcapr.readouts()
-                
-        # try:
-
-        self.kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets, broker, topic, MONTTLtype, MONring, timeResolutionType,operationMode,testing)
-        self.kaf.allocateMemory()
-        self.kaf.read()
-        self.readouts = self.kaf.readouts
-        
-        # except:
-            
-        #     print('\n... PRE-ALLOC method failed, exiting ...')
-            
-        #     sys.exit()
-  
-            
-        # finally:
+        kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets, broker, topic, MONTTLtype, MONring, timeResolutionType,operationMode,testing)
+        kaf.allocateMemory()
+        kaf.read()
+        self.readouts = kaf.readouts  
              
         if sortByTimeStampsONOFF is True:
-                 
+       
                   print('Readouts are sorted by TimeStamp')
                  
                   self.readouts.sortByTimeStamps()
-                 
             
         else:
                 
                   print('Readouts are NOT sorted by TimeStamp')
                 
         self.readouts.calculateDuration()   
+
+
+###############################################################################
 
 
 class kafka_reader_preAlloc():
@@ -87,16 +76,23 @@ class kafka_reader_preAlloc():
         self.debug   = False
         
         self.testing = testing
-        
-        self.readouts = pcapr.readouts()
-        
+  
         self.rea = pcapr.pcapng_reader_PreAlloc(self.NSperClockTick, self.MONTTLtype, self.MONring, self.timeResolutionType, self.operationMode, kafkaStream = True)
             
+        self.rea.timeResolutionType = self.timeResolutionType
+        self.rea.operationMode      = self.operationMode
+        
+        self.readouts = self.rea.readouts
         
         #############################
         
         self.fileSize   = self.nOfPackets*(self.rea.singleReadoutSize*self.rea.readoutsPerPacket+self.rea.ESSheaderSize)
-        print('streaming {} packets ({} kbytes) from kafka'.format(self.nOfPackets,self.fileSize/1000))
+        
+        if testing is True:
+            print('\033[1;33mWARNING ---> Not streaming but testing locally enabled! \033[1;37m')
+            print('simulating streaming {} packets ({} kbytes) from kafka'.format(self.nOfPackets,self.fileSize/1000))
+        else:
+            print('streaming {} packets ({} kbytes) from kafka'.format(self.nOfPackets,self.fileSize/1000))
         
         #############################        
         
@@ -111,10 +107,9 @@ class kafka_reader_preAlloc():
         numOfReadoutsTotal = self.nOfPackets*self.rea.readoutsPerPacket
         self.rea.counterCandidatePackets = self.nOfPackets
         self.rea.counterPackets          = self.nOfPackets
-        self.preallocLength = round(numOfReadoutsTotal)
-        self.dprint('preallocLength {}'.format(self.preallocLength))
-        
-        
+        self.rea.preallocLength          = round(numOfReadoutsTotal)
+        self.dprint('\t preallocLength {}'.format(self.rea.preallocLength))
+      
     def read(self):   
             
         print('\n',end='')
@@ -134,8 +129,8 @@ class kafka_reader_preAlloc():
             consumer.assign(topic_partitions)
                          
         self.rea.overallDataIndex = 0 
-        self.rea.data             = np.zeros((self.preallocLength,19), dtype='int64') 
-        
+        self.rea.data             = np.zeros((self.rea.preallocLength,19), dtype='int64') 
+
         self.rea.stepsForProgress = int(self.rea.counterCandidatePackets/4)+1  # 4 means 25%, 50%, 75% and 100%
         
         for npack in range(self.nOfPackets):
@@ -151,56 +146,67 @@ class kafka_reader_preAlloc():
                             packetLength = len(packetData) 
                             
                         else:
+                           
                         
                         #  if you want generated data to test
                             bytesGens = bytesGen()
                             packetLength = bytesGens.packetLength
                             packetData   = bytesGens.packetData
                             
+                            # print(packetData)
                             
                        
                         
                     except:
-                        self.dprint('--> other packet found')
-                            
+                         self.dprint('--> other packet found')
+                         print('\033[1;31mERROR: --> streaming failed ...\n\033[1;37m',end='')
+    
                     else:
-                        
- 
-                        self.rea.extractFromBytes(packetData,packetLength)
-                        
-  
+
+                        self.rea.extractFromBytes(packetData,packetLength,debugMode = self.debug)
+
         print('[100%]',end=' ') 
 
         self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.rea.counterPackets , self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))
-           
           
         #######################################################       
              
-        # here I remove  the rows that have been preallocated but no filled in case there were some packets big but no ESS
-        if self.preallocLength > self.rea.totalReadoutCount:
+        ####here I remove  the rows that have been preallocated but no filled in case there were some packets big but no ESS
+        if self.rea.preallocLength > self.rea.totalReadoutCount:
 
-            datanew = np.delete(self.rea.data,np.arange(self.rea.totalReadoutCount,self.preallocLength),axis=0)
+            datanew = np.delete(self.rea.data,np.arange(self.rea.totalReadoutCount,self.rea.preallocLength),axis=0)
             print('removing extra allocated length not used ...')
             
-        elif self.preallocLength < self.rea.totalReadoutCount:
+        elif self.rea.preallocLength < self.rea.totalReadoutCount:
             print('something wrong with the preallocation: allocated length {}, total readouts {}'.format(self.preallocLength,self.rea.totalReadoutCount))
             sys.exit()
        
-        elif self.preallocLength == self.rea.totalReadoutCount:
+        elif self.rea.preallocLength == self.rea.totalReadoutCount:
             
             datanew = self.rea.data
-        
+            
         cz = pcapr.checkIfDataHasZeros(datanew)
         datanew = cz.dataOUT
         
-        self.readouts.transformInReadouts(datanew)
+        self.rea.readouts.transformInReadouts(datanew)
+
+        ############
+        
+        self.rea.checkTimeSettings()
         
         self.rea.timeAdjustedWithResolution()
-                    
+              
+        ############
+        
         print('\nkafka stream loaded - {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.rea.totalReadoutCount, self.rea.counterPackets,self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))    
-        # print('\n')
         
         self.rea.removeOtherDataTypes()
+        
+        self.readouts = self.rea.readouts
+        
+        # print(self.readouts.Channel)
+ 
+###############################################################################
         
 class bytesGen():
     def __init__(self):
@@ -209,12 +215,10 @@ class bytesGen():
         # # self.packetData   = b"\x00\x00\x45\x53\x53\x72"+os.urandom(self.packetLength-6)
         
         # self.packetData   = b"\x00\x00\x45\x53\x53\x72"+bytearray([1] * self.packetLength-6)
+
+        # dataPath='../data/'
         
-       
-        
-        dataPath='../data/'
-        
-        # dataPath='./data/'
+        dataPath='./data/'
         
         # print(dataPath)
         
@@ -223,6 +227,7 @@ class bytesGen():
         # print(dataPath)
         
         with open(dataPath+'outputBinary1pkt', 'rb') as f: 
+
             temp =  self.packetData =  f.read()
            
         self.packetData =  temp[42:]
@@ -252,16 +257,20 @@ if __name__ == "__main__":
     
     NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
     
-    # aa = kafka_reader(NSperClockTick, nOfPackets = 1, testing=True)
     
-    # rr = aa.readouts
+    # kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , \
+    # MONring = 11, timeResolutionType = 'fine', operationMode='normal',testing=True)
+                
+    # kaf.allocateMemory()
+    # kaf.read()
     
-    # rrarr = rr.concatenateReadoutsInArrayForDebug()
     
+    kaf =  kafka_reader(NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , \
+    MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, operationMode = 'normal', testing = True)
+            # d
     
-    kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets=1,testing=True)
-    kaf.allocateMemory()
-    kaf.read()
+    readouts = kaf.readouts
     
+    readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
     
     

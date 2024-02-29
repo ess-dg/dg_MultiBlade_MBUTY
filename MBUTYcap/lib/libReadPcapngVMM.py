@@ -661,15 +661,13 @@ class checkIfFileExistInFolder():
 class pcapng_reader():
     def __init__(self, filePathAndFileName, NSperClockTick, MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, operationMode = 'normal'):
         
-        self.readouts = readouts()
-     
         # try:
             # print('PRE-ALLOC method to load data ...')
-        self.pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
-        self.pcapng.allocateMemory()
-        self.pcapng.read()
-        self.readouts = self.pcapng.readouts
-            
+        pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
+        pcapng.allocateMemory()
+        pcapng.read()
+        self.readouts = pcapng.readouts
+
         # except:
         #     # print('\n... PRE-ALLOC method failed, trying APPEND method to load data ...')
         #     print('\n\033[1;31m... PRE-ALLOC method failed, exiting ...\033[1;37m')
@@ -684,7 +682,7 @@ class pcapng_reader():
         # finally:
              
         if sortByTimeStampsONOFF is True:
-                 
+
                   print('Readouts are sorted by TimeStamp')
                  
                   self.readouts.sortByTimeStamps()
@@ -716,7 +714,7 @@ class pcapng_reader_PreAlloc():
         ##########################################################
         
         self.debug = False
-        
+ 
         self.readouts = readouts()
         
         ##########################################################
@@ -736,7 +734,6 @@ class pcapng_reader_PreAlloc():
             
         else:    
             
-            self.data = np.zeros((0,19), dtype='int64') 
             self.stepsForProgress = 1
             self.mainHeaderSize   = 0
     
@@ -761,6 +758,9 @@ class pcapng_reader_PreAlloc():
         self.counterEmptyESSpackets   = 0
         self.totalReadoutCount        = 0  
         self.overallDataIndex         = 0 
+        self.preallocLength           = 0   
+        
+        self.data = np.zeros((self.preallocLength,19), dtype='int64')
         
         ##########################################################
 
@@ -847,18 +847,30 @@ class pcapng_reader_PreAlloc():
                 packetLength = block.packet_len
                 packetData   = block.packet_data
                 
+                # ### to write file from pcapr 
+                # cont =+1 
+                
+                # if cont == 1 :
+                #     # print(packetData)
+                #     with open('/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/lib/outputBin2', 'wb') as f: 
+                #         f.write(packetData)
+                        
+                # else:
+                #     with open('/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/lib/outputBin2', 'ab') as f: 
+                #         f.write(packetData) 
+                
                 
             except:
                 self.dprint('--> other packet found')
                 
             else:
-                self.extractFromBytes(packetData,packetLength)
+                self.extractFromBytes(packetData,packetLength,debugMode = self.debug)
          
         print('[100%]',end=' ') 
 
         self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.counterPackets , self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))
             
-        
+       
         #######################################################       
              
         # here I remove  the rows that have been preallocated but no filled in case there were some packets big but no ESS
@@ -881,6 +893,8 @@ class pcapng_reader_PreAlloc():
         self.readouts.transformInReadouts(datanew)
         
         ############
+        
+        self.checkTimeSettings()
           
         self.timeAdjustedWithResolution()
         
@@ -890,13 +904,29 @@ class pcapng_reader_PreAlloc():
 
         ############
         
-        # self.readouts.timeStamp  = self.readouts.timeCoarse  + VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset=100e-9,time_slope=1).TDC_s
-       
-        # self.readouts.TDC =  VMM3A_convertCalibrate_TDCinSec(self.readouts.TDC,timeResolution,time_offset=100e-9,time_slope=1).TDC_s
-        
         self.removeOtherDataTypes()
         
         ff.close()
+        
+    def checkTimeSettings(self):
+        
+        if self.operationMode == 'normal' or self.operationMode == 'clustered':
+            
+            pass
+
+        else:
+            
+            print('\n\t\033[1;31mERROR: Operation mode (found {}) not set either to normal or clustered ---> Exiting ... \n\033[1;37m'.format(self.operationMode),end='') 
+            sys.exit()  
+            
+        if self.timeResolutionType == 'fine' or self.timeResolutionType == 'coarse':
+                
+            pass
+
+        else:
+                
+            print('\n\t\033[1;31mERROR: Time resolution (found {}) not set either to fine or coarse ---> Exiting ... \n\033[1;37m'.format(self.operationMode),end='') 
+            sys.exit()      
         
     def timeAdjustedWithResolution(self):
         
@@ -929,14 +959,14 @@ class pcapng_reader_PreAlloc():
                 
         elif self.operationMode == 'clustered': 
                  
-             flag = self.readouts.checkIfNormalHitMode()
-             if flag is True: 
-                 removedNum = self.readouts.removeNormalHitData()
-                 print('removed {} clustered readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
-                 self.totalReadoutCount = self.totalReadoutCount-removedNum
+              flag = self.readouts.checkIfNormalHitMode()
+              if flag is True: 
+                  removedNum = self.readouts.removeNormalHitData()
+                  print('removed {} clustered readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
+                  self.totalReadoutCount = self.totalReadoutCount-removedNum
         
         
-    def extractFromBytes(self,packetData,packetLength):
+    def extractFromBytes(self,packetData,packetLength,debugMode=False):
         
         indexESS = packetData.find(b'ESS')
         
@@ -1024,7 +1054,8 @@ class pcapng_reader_PreAlloc():
                            vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
                            # vmm3.G0 = 2
                        else:
-                           print('\n\t\033[1;33mWARNING: Operation mode (G0) is not one of these: normal hit or clustered mode!\033[1;37m',end='') 
+                           print('\n\t\033[1;31mERROR: Operation mode ({} found) is not one of these: normal or clustered mode! --> Exiting!\033[1;37m'.format(self.operationMode),end='') 
+                           sys.exit()
                        
                        # mode = VMM3A_modes(packetData[indexStart:indexStop])
                        # G0   = mode.G0
@@ -1042,8 +1073,7 @@ class pcapng_reader_PreAlloc():
                        
                        # IMPORTANT this will load the MON data if comes from VMMs anyhow even if MON is OFF and TTl type is False                                 
                        if (vmm3.Ring <= 11):
-                           
-                           
+                          
                            
                            self.data[index, 0] = vmm3.Ring
                            self.data[index, 1] = vmm3.Fen
@@ -1107,18 +1137,13 @@ class pcapng_reader_PreAlloc():
                            
                                print('\n \033[1;33mWARNING ---> Ring for Monitor in TTL type not matching, usually Ring is 11! \033[1;37m')
                            
-                       # elif (self.MONOnOff is True) and (vmm3.MONTTLtype is False) and (vmm3.Ring == self.MONring):
-                           
-                       #     print('\n \033[1;31mWARNING ---> TTL type for Monitor not matching! \033[1;37m')
-                           
-                       # else:
-                           
-                       #     print('ciao')
+  
                            
                            
-                       
-                       self.dprint(" \t Packet: {} ({} bytes), Readout: {}, Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time Coarse {} ns, BC {}, OverTh {}, ADC {}, TDC {}, GEO {} " \
-                                   .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeCoarse,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.GEO))
+                    # valid or normal mode 
+                       if debugMode is True:
+                           print(" \t Packet: {} ({} bytes), Readout: {}, Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time Coarse {} ns, BC {}, OverTh {}, ADC {}, TDC {}, GO {} " \
+                                       .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeCoarse,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.G0))
 
        
                        ###########
@@ -1429,11 +1454,15 @@ if __name__ == '__main__':
    # readouts = readouts()
    # pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine', operationMode='normal')
 
-   pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine', operationMode='clustered')
-   pcapng.allocateMemory()
-   pcapng.read()
-   readouts = pcapng.readouts
+   # pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine', operationMode='normal')
+   # pcapng.allocateMemory()
+   # pcapng.read()
+   # readouts = pcapng.readouts
+   
+   
+   pcap = pcapng_reader(filePathAndFileName,NSperClockTick, MONTTLtype=True, MONring=11, timeResolutionType='fine', sortByTimeStampsONOFF=True, operationMode='normal')
 
+   readouts = pcap.readouts
    
    # pcap = pcapng_reader_PreAlloc(filePath,NSperClockTick)
    # pcap.allocateMemory()
