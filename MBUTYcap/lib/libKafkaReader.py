@@ -130,8 +130,12 @@ class kafka_reader_preAlloc():
                          
         self.rea.overallDataIndex = 0 
         self.rea.data             = np.zeros((self.rea.preallocLength,19), dtype='int64') 
+        
+        self.rea.heartbeats = np.zeros((self.rea.counterCandidatePackets,), dtype='int64') 
 
         self.rea.stepsForProgress = int(self.rea.counterCandidatePackets/4)+1  # 4 means 25%, 50%, 75% and 100%
+        
+        indexPackets = 0 
         
         for npack in range(self.nOfPackets):
 
@@ -163,7 +167,8 @@ class kafka_reader_preAlloc():
     
                     else:
 
-                        self.rea.extractFromBytes(packetData,packetLength,debugMode = self.debug)
+                        self.rea.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
+                        indexPackets += 1
 
         print('[100%]',end=' ') 
 
@@ -189,6 +194,8 @@ class kafka_reader_preAlloc():
         datanew = cz.dataOUT
         
         self.rea.readouts.transformInReadouts(datanew)
+        
+        self.rea.readouts.heartbeats = self.rea.heartbeats
 
         ############
         
@@ -205,6 +212,8 @@ class kafka_reader_preAlloc():
         self.readouts = self.rea.readouts
         
         # print(self.readouts.Channel)
+        
+        # consumer.close()
  
 ###############################################################################
         

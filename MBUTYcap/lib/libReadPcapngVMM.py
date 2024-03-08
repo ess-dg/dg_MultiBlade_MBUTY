@@ -46,6 +46,8 @@ class readouts():
         self.Durations = np.zeros((0), dtype = datype)
         self.mult0     = np.zeros((0), dtype = datype)
         self.mult1     = np.zeros((0), dtype = datype)
+        
+        self.heartbeats = np.zeros((0), dtype = datype)
                
     def transformInReadouts(self, data):
         self.Ring       = data[:,0]
@@ -95,6 +97,8 @@ class readouts():
         self.Durations  = np.append(self.Durations, reado.Durations)
         self.mult0     = np.concatenate((self.mult0, reado.mult0), axis=0)
         self.mult1     = np.concatenate((self.mult1, reado.mult1), axis=0)
+        
+        self.heartbeats= np.concatenate((self.heartbeats, reado.heartbeats), axis=0)
        
               
     def concatenateReadoutsInArrayForDebug(self):
@@ -274,26 +278,36 @@ class readouts():
     def checkChopperFreq(self):  
         
         try:
-            deltaTime  = np.diff(self.PulseT - self.PulseT[0])
-            
+            # this extract timing from non-empty packets 
+            deltaTime         = np.diff(self.PulseT - self.PulseT[0])
             indexesIsNotZero  = np.argwhere(deltaTime>0)
+            deltaTimeNoTZero  = deltaTime[indexesIsNotZero]
+            meanDelta         = np.mean(deltaTimeNoTZero)/1e9
+            varianceDelta     = np.var(deltaTimeNoTZero)/1e9
+            meanFreq          = 1/meanDelta
             
-            deltaTimeNoTZero = deltaTime[indexesIsNotZero]
             
-            meanDelta = np.mean(deltaTimeNoTZero)/1e9
+            # this extract timing from all packets, also empty -> heartbeats 
+            indexesIsNotZero2  = np.argwhere(self.heartbeats>0)
+            heartbeats2        = self.heartbeats[indexesIsNotZero2]
+            heartbeatsUnique   = np.unique(heartbeats2)
             
-            varianceDelta = np.var(deltaTimeNoTZero)/1e9
-            
-            meanFreq = 1/meanDelta
-            
+            deltaTime2         = np.diff(heartbeatsUnique - heartbeatsUnique[0])
+            indexesIsNotZero3  = np.argwhere(deltaTime2>0)
+            deltaTimeNoTZero3  = deltaTime2[indexesIsNotZero3]
+            meanDelta2         = np.mean(deltaTimeNoTZero3)/1e9
+            varianceDelta2     = np.var(deltaTimeNoTZero3)/1e9
+            meanFreq2          = 1/meanDelta2
+
             if np.isnan(meanDelta):
-                print('\nNo Chopper found')
+                print('\nNo Chopper found or all data is in one single Pulse Time')
             else:
-                print('\nChopper Period is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta,varianceDelta,meanFreq)))
+                print('\nHeartbeats Period (all packets) is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta2,varianceDelta2,meanFreq2)))
+                print('Timing/Chopper Period (not empty packets) is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta,varianceDelta,meanFreq)))
                        
         except:
 
-            print('\t \033[1;33mWARNING: Unable to calculate chopper frequency! \033[1;37m')
+            print('\t \033[1;33mWARNING: Unable to calculate timing/chopper frequency! \033[1;37m')
             time.sleep(2)
     
     
@@ -762,6 +776,8 @@ class pcapng_reader_PreAlloc():
         
         self.data = np.zeros((self.preallocLength,19), dtype='int64')
         
+        self.heartbeats = np.zeros((0,), dtype='int64')
+        
         ##########################################################
 
     def dprint(self, msg):
@@ -829,7 +845,9 @@ class pcapng_reader_PreAlloc():
         
         print('\n',end='')
         
-        self.data = np.zeros((self.preallocLength,19), dtype='int64') 
+        self.data       = np.zeros((self.preallocLength,19), dtype='int64') 
+        
+        self.heartbeats = np.zeros((self.counterCandidatePackets,), dtype='int64') 
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
@@ -838,7 +856,7 @@ class pcapng_reader_PreAlloc():
         
         self.stepsForProgress = int(self.counterCandidatePackets/4)+1  # 4 means 25%, 50%, 75% and 100%
         
-        # cont = 0
+        indexPackets = 0 
         
         for block in scanner:
             
@@ -864,13 +882,13 @@ class pcapng_reader_PreAlloc():
                 self.dprint('--> other packet found')
                 
             else:
-                self.extractFromBytes(packetData,packetLength,debugMode = self.debug)
+                self.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
+                indexPackets += 1
          
         print('[100%]',end=' ') 
 
         self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.counterPackets , self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))
-            
-       
+             
         #######################################################       
              
         # here I remove  the rows that have been preallocated but no filled in case there were some packets big but no ESS
@@ -891,6 +909,8 @@ class pcapng_reader_PreAlloc():
         datanew = cz.dataOUT
         
         self.readouts.transformInReadouts(datanew)
+        
+        self.readouts.heartbeats = self.heartbeats
         
         ############
         
@@ -964,9 +984,30 @@ class pcapng_reader_PreAlloc():
                   removedNum = self.readouts.removeNormalHitData()
                   print('removed {} clustered readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
                   self.totalReadoutCount = self.totalReadoutCount-removedNum
+      
+        
+    def extractPulseTime(self,packetData,indexESS):
+        
+        ESSlength  = int.from_bytes(packetData[indexESS+4:indexESS+6], byteorder='little') # bytes 
+        
+        PulseThigh = int.from_bytes(packetData[indexESS+8:indexESS+12], byteorder='little')*1000000000
+        PulseTlow  = int.from_bytes(packetData[indexESS+12:indexESS+16], byteorder='little')*self.NSperClockTick 
+        PrevPThigh = int.from_bytes(packetData[indexESS+16:indexESS+20], byteorder='little')*1000000000
+        PrevPTlow  = int.from_bytes(packetData[indexESS+20:indexESS+24], byteorder='little')*self.NSperClockTick 
+        
+        #  IMPORTANT if you do int round after sum is off, needs to be done before then sum hi and low
+        PulseThighR = int(round(PulseThigh))
+        PulseTlowR  = int(round(PulseTlow))
+        PrevPThighR = int(round(PrevPThigh))
+        PrevPTlowR  = int(round(PrevPTlow))
+        
+        PulseT = PulseThighR + PulseTlowR
+        PrevPT = PrevPThighR + PrevPTlowR
+        
+        return PulseT, PrevPT, ESSlength
         
         
-    def extractFromBytes(self,packetData,packetLength,debugMode=False):
+    def extractFromBytes(self,packetData,packetLength,indexPackets,debugMode=False):
         
         indexESS = packetData.find(b'ESS')
         
@@ -1006,7 +1047,9 @@ class pcapng_reader_PreAlloc():
                
                self.counterEmptyESSpackets += 1
                self.dprint('empty packet No. {}'.format(self.counterEmptyESSpackets))
-           
+               
+               PulseT, _, _  = self.extractPulseTime(packetData,indexESS)
+
            else:
                
                if readoutsInPacket.is_integer() is not True:
@@ -1014,23 +1057,8 @@ class pcapng_reader_PreAlloc():
                    time.sleep(2)
                else:
                    
-                   # only read header if there is no emplty packet 
-                   
-                   ESSlength  = int.from_bytes(packetData[indexESS+4:indexESS+6], byteorder='little') # bytes    
-                   
-                   PulseThigh = int.from_bytes(packetData[indexESS+8:indexESS+12], byteorder='little')*1000000000
-                   PulseTlow  = int.from_bytes(packetData[indexESS+12:indexESS+16], byteorder='little')*self.NSperClockTick 
-                   PrevPThigh = int.from_bytes(packetData[indexESS+16:indexESS+20], byteorder='little')*1000000000
-                   PrevPTlow  = int.from_bytes(packetData[indexESS+20:indexESS+24], byteorder='little')*self.NSperClockTick 
-                   
-                   #  IMPORTANT if you do int round after sum is off, needs to be done before then sum hi and low
-                   PulseThighR = int(round(PulseThigh))
-                   PulseTlowR  = int(round(PulseTlow))
-                   PrevPThighR = int(round(PrevPThigh))
-                   PrevPTlowR  = int(round(PrevPTlow))
-                   
-                   PulseT = PulseThighR + PulseTlowR
-                   PrevPT = PrevPThighR + PrevPTlowR
+                   # only read header if there is no emplty packet
+                   PulseT, PrevPT, ESSlength  = self.extractPulseTime(packetData,indexESS)
                  
                    # ESSlength is only 30 if the packet is an ESS packet but empty= 72-42 =30
                    self.dprint('ESS packet length {} bytes, packetLength {} bytes, readouts in packet {}'.format(ESSlength, packetLength,readoutsInPacket))  
@@ -1147,8 +1175,9 @@ class pcapng_reader_PreAlloc():
 
        
                        ###########
-
-                   
+                       
+           self.heartbeats[indexPackets] = PulseT
+        
 
         if np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0 or np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0:
            percents = int(round(100.0 * self.counterValidESSpackets / float(self.counterCandidatePackets), 1))
