@@ -302,7 +302,7 @@ class readouts():
             if np.isnan(meanDelta):
                 print('\nNo Chopper found or all data is in one single Pulse Time')
             else:
-                print('\nHeartbeats Period (all packets) is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta2,varianceDelta2,meanFreq2)))
+                print('\nHeartbeats Period     (all packets)       is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta2,varianceDelta2,meanFreq2)))
                 print('Timing/Chopper Period (not empty packets) is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta,varianceDelta,meanFreq)))
                        
         except:

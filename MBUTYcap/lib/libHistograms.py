@@ -72,45 +72,45 @@ class allAxis():
         self.axMult      = createAx(start, stop, steps)
         self.axInstRate  = createAx(start, stop, steps)
         
-    def createAllAxis(self,param): 
+    def createAllAxis(self,parameters): 
         
         # param.update()
         
-        sine = np.sin(np.deg2rad(param.configJsonFile.bladesInclination)) 
+        sine = np.sin(np.deg2rad(parameters.config.DETparameters.bladesInclination)) 
         
-        self.axEnergy = createAx(0, param.pulseHeigthSpect.maxEnerg, param.pulseHeigthSpect.energyBins)
-        self.axToF    = createAx(0, param.plotting.ToFrange, param.plotting.ToFbins)
-        self.axLambda = createAx(param.wavelength.lambdaRange[0], param.wavelength.lambdaRange[1], param.wavelength.lambdaBins)
+        self.axEnergy = createAx(0, parameters.pulseHeigthSpect.maxEnerg, parameters.pulseHeigthSpect.energyBins)
+        self.axToF    = createAx(0, parameters.plotting.ToFrange, parameters.plotting.ToFbins)
+        self.axLambda = createAx(parameters.wavelength.lambdaRange[0], parameters.wavelength.lambdaRange[1], parameters.wavelength.lambdaBins)
         
         start  = 0
-        stop   = len(param.cassettes.cassettes)*param.configJsonFile.numOfWires-1
-        steps  = len(param.cassettes.cassettes)*param.plotting.posWbins - int(param.plotting.posWbins/param.configJsonFile.numOfWires - 1)
+        stop   = len(parameters.config.DETparameters.cassInConfig)*parameters.config.DETparameters.numOfWires-1
+        steps  = len(parameters.config.DETparameters.cassInConfig)*parameters.plotting.posWbins - int(parameters.plotting.posWbins/parameters.config.DETparameters.numOfWires - 1)
 
         self.axWires  = createAx(start, stop, steps)
         
         start  = 0
-        stop   = param.configJsonFile.numOfStrips-1
-        steps  = param.plotting.posSbins - int(param.plotting.posSbins/param.configJsonFile.numOfStrips - 1)
+        stop   = parameters.config.DETparameters.numOfStrips-1
+        steps  = parameters.plotting.posSbins - int(parameters.plotting.posSbins/parameters.config.DETparameters.numOfStrips - 1)
 
         self.axStrips = createAx(start, stop, steps)
         
         start  = 0
-        stop   = (len(param.cassettes.cassettes)*param.configJsonFile.numOfWires-1)*param.configJsonFile.wirePitch*sine
-        steps  = len(param.cassettes.cassettes)*param.plotting.posWbins - int(param.plotting.posWbins/param.configJsonFile.numOfWires - 1)
+        stop   = (len(parameters.config.DETparameters.cassInConfig)*parameters.config.DETparameters.numOfWires-1)*parameters.config.DETparameters.wirePitch*sine
+        steps  = len(parameters.config.DETparameters.cassInConfig)*parameters.plotting.posWbins - int(parameters.plotting.posWbins/parameters.config.DETparameters.numOfWires - 1)
 
         self.axWires_mm  = createAx(start, stop, steps)
         
         start  = 0
-        stop   = (param.configJsonFile.numOfStrips-1)*param.configJsonFile.stripPitch
-        steps  = param.plotting.posSbins - int(param.plotting.posSbins/param.configJsonFile.numOfStrips - 1)
+        stop   = (parameters.config.DETparameters.numOfStrips-1)*parameters.config.DETparameters.stripPitch
+        steps  = parameters.plotting.posSbins - int(parameters.plotting.posSbins/parameters.config.DETparameters.numOfStrips - 1)
         
         self.axStrips_mm = createAx(start, stop, steps)
         
-        self.axMult = createAx(0, param.configJsonFile.numOfStrips-1, param.configJsonFile.numOfStrips)
+        self.axMult = createAx(0, parameters.config.DETparameters.numOfStrips-1, parameters.config.DETparameters.numOfStrips)
         
-        start = -param.plotting.ToFrange
-        stop  = param.plotting.ToFrange
-        steps = round((stop-start)/param.plotting.instRateBin)
+        start = -parameters.plotting.ToFrange
+        stop  = parameters.plotting.ToFrange
+        steps = round((stop-start)/parameters.plotting.instRateBin)
         self.axInstRate = createAx(start, stop, steps)
         
     def updateAllAxis(self):

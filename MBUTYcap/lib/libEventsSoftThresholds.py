@@ -48,8 +48,8 @@ class softThresholds():
     def __init__(self, cassettes, parameters):
         
         self.parameters = parameters
-        self.ThW = np.zeros((self.parameters.configJsonFile.numOfWires,len(cassettes)))
-        self.ThS = np.zeros((self.parameters.configJsonFile.numOfStrips,len(cassettes)))
+        self.ThW = np.zeros((self.parameters.config.DETparameters.numOfWires,len(cassettes)))
+        self.ThS = np.zeros((self.parameters.config.DETparameters.numOfStrips,len(cassettes)))
         self.CassetteIDs  = cassettes
 
 ###############################
@@ -89,8 +89,8 @@ class thresholdDef():
                     else:
                          cassFound.append(cc)
                          index = np.where(cc == cassInFile)[0]
-                         self.softThresholds.ThW[:,k] = temp[:self.parameters.configJsonFile.numOfWires,index][:,0]
-                         self.softThresholds.ThS[:,k] = temp[self.parameters.configJsonFile.numOfWires:(self.parameters.configJsonFile.numOfWires+self.parameters.configJsonFile.numOfStrips),index][:,0]
+                         self.softThresholds.ThW[:,k] = temp[:self.parameters.config.DETparameters.numOfWires,index][:,0]
+                         self.softThresholds.ThS[:,k] = temp[self.parameters.config.DETparameters.numOfWires:(self.parameters.config.DETparameters.numOfWires+self.parameters.config.DETparameters.numOfStrips),index][:,0]
                     
                 if len(cassNotFound) > 0:
                     print('\t \033[1;33mWARNING ... Threshold File does NOT contain all the cassettes IDs')
@@ -122,8 +122,8 @@ class thresholdDef():
             
         else:
             print("\t ... software thresholds switched OFF for cassette ID:  "+str(cassette1ID))
-            ThW = np.zeros((self.parameters.configJsonFile.numOfWires))
-            ThS = np.zeros((self.parameters.configJsonFile.numOfStrips))
+            ThW = np.zeros((self.parameters.config.DETparameters.numOfWires))
+            ThS = np.zeros((self.parameters.config.DETparameters.numOfStrips))
             
         return ThW, ThS    
                 
@@ -157,17 +157,17 @@ class applyThresholdsToEvents():
 
                 ThW, ThS = self.thresholds.get_thresholds1Cass(cassette1ID)
 
-                wireCh0to31Round = np.round(np.mod(self.eventsBT.positionW,self.parameters.configJsonFile.numOfWires))
+                wireCh0to31Round = np.round(np.mod(self.eventsBT.positionW,self.parameters.config.DETparameters.numOfWires))
                     
                 stripChRound     = np.round(self.eventsBT.positionS)         
                 
-                for ww in range(self.parameters.configJsonFile.numOfWires):
+                for ww in range(self.parameters.config.DETparameters.numOfWires):
                     
                     belowThW = np.logical_and(np.logical_and(selCass, wireCh0to31Round == ww) , self.eventsBT.PHW <= ThW[ww])
                     
                     self.eventsBT.multW[belowThW] = -1
                     
-                for ss in range(self.parameters.configJsonFile.numOfStrips):
+                for ss in range(self.parameters.config.DETparameters.numOfStrips):
                         
                     belowThS  =  np.logical_and(np.logical_and(selCass, stripChRound == ss) , self.eventsBT.PHS <= ThS[ss])
                     
@@ -272,7 +272,7 @@ if __name__ == '__main__':
     parameters.fileManagement.thresholdFilePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
     parameters.fileManagement.thresholdFileName = 'MB300L_thresholds.xlsx'
     
-    parameters.configJsonFile.offset1stWires = 10
+    # parameters.configJsonFile.offset1stWires = 10
     
     parameters.dataReduction.softThresholdType = 'off'
     
@@ -285,7 +285,7 @@ if __name__ == '__main__':
     parameters.dataReduction.softThArray.ThS[:,0] = 2000 
     parameters.dataReduction.softThArray.ThW[:,1] = 5000
     
-    parameters.configJsonFile.numOfStrips = 32   
+    # parameters.configJsonFile.numOfStrips = 32   
     
     # thresholds = thresholdDef(parameters)
     # thresholds.load([45,1,2,89,67,8])

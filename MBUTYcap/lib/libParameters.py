@@ -129,59 +129,7 @@ class VMMsettings():
         
         self.timeResolutionType    = 'fine'
         self.sortReadoutsByTimeStampsONOFF = True
- 
-            
-class configJsonFile():
-      def __init__(self, config=None):
-          
-          if config is None:
-              
-              self.detectorName = 'empty'
-              
-              self.operationMode = 'empty'
-              
-              self.numOfCassettes = 0
-              
-              self.orientation = 'empty'
-                        
-              #  by default the cassettes are the ones present in the json file 
-              self.cassInConfig = [0]
-              
-              self.numOfWires  = 0
-              self.numOfStrips = 0
-              
-              self.wirePitch  = 0
-              self.stripPitch = 0
-              
-              self.bladesInclination = 0
-              self.offset1stWires    = 0
-              
-          else:
-              
-              self.detectorName   = config.DETparameters.name
-               
-              self.numOfCassettes = config.DETparameters.numOfCassettes
-              
-              self.operationMode  = config.DETparameters.operationMode
-              
-              self.orientation    = config.DETparameters.orientation
-                        
-              #  by default the cassettes are the ones present in the json file 
-              self.cassInConfig = config.DETparameters.cassInConfig
-              
-              self.numOfWires  = config.DETparameters.numOfWires
-              self.numOfStrips = config.DETparameters.numOfStrips
-              
-              self.wirePitch  = config.DETparameters.wirePitch
-              self.stripPitch = config.DETparameters.stripPitch
-              
-              self.bladesInclination = config.DETparameters.bladesInclination
-              self.offset1stWires    = config.DETparameters.offset1stWires
-          
-class cassettes():  
-      def __init__(self, configJsonFile):  
-          #  by default the cassettes are the ones present in the json file
-          self.cassettes = configJsonFile.cassInConfig
+
           
 class clockTicks():
       def __init__(self):      
@@ -240,9 +188,10 @@ class pulseHeigthSpect():
           self.plotPHScorrelation = False
           
 class plotting():
-      def __init__(self, configJsonFile):
+      def __init__(self, config):
+     
+          self.config = config
           
-          self.configJsonFile = configJsonFile
           #  is you want stats of clusters per cassette or for all at once, 0 no  stat, individualStat stat per cass, globalStat stat all cass glob
           self.showStat = 'globalStat'
                     
@@ -281,14 +230,14 @@ class plotting():
       def calculateDerivedParam(self):
              
            if self.positionReconstruction == 'W.max-S.max': # w x s max max
-                 self.posWbins = int(self.configJsonFile.numOfWires)
-                 self.posSbins = int(self.configJsonFile.numOfStrips)
+                 self.posWbins = int(self.config.DETparameters.numOfWires)
+                 self.posSbins = int(self.config.DETparameters.numOfStrips)
            elif self.positionReconstruction == 'W.cog-S.cog': # w x s CoG CoG
-                 self.posWbins = int(self.configJsonFile.numOfWires*2)
-                 self.posSbins = int(self.configJsonFile.numOfStrips*2) 
+                 self.posWbins = int(self.config.DETparameters.numOfWires*2)
+                 self.posSbins = int(self.config.DETparameters.numOfStrips*2) 
            elif self.positionReconstruction == 'W.max-S.cog': # w x s max CoG
-                 self.posWbins = int(self.configJsonFile.numOfWires)
-                 self.posSbins = int(self.configJsonFile.numOfStrips*2)
+                 self.posWbins = int(self.config.DETparameters.numOfWires)
+                 self.posSbins = int(self.config.DETparameters.numOfStrips*2)
              
            self.ToFbins  = round(self.ToFrange/self.ToFbinning) 
           
@@ -341,18 +290,18 @@ class parameters():
         
     def loadConfigAndSetParameters(self,config=None):
 
-        self.config  = config
+        self.config = config
         
         # self.acqMode = acqMode
         
         # self.fileManagement = fileManagement(self.fileManagement.currentPath)
         self.fileManagement.importConfigFileDetails(self.config)
         
-        self.configJsonFile = configJsonFile(self.config)
+        # self.configJsonFile = configJsonFile(self.config)
         
         self.dumpSettings   = dumpSettings(self.fileManagement.currentPath)
         
-        self.cassettes      = cassettes(self.configJsonFile)
+        # self.cassettes      = cassettes(self.configJsonFile)
          
         self.clockTicks     = clockTicks()
         
@@ -360,7 +309,7 @@ class parameters():
         
         self.pulseHeigthSpect = pulseHeigthSpect()
         
-        self.plotting = plotting(self.configJsonFile)
+        self.plotting = plotting(self.config)
         self.plotting.calculateDerivedParam()
         
         self.wavelength = wavelength()

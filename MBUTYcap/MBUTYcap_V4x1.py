@@ -194,11 +194,6 @@ parameters.VMMsettings.sortReadoutsByTimeStampsONOFF = False
 parameters.VMMsettings.timeResolutionType = 'fine'
 # parameters.VMMsettings.timeResolutionType = 'coarse'
 
-
-### cassettes to clusterize and to plot, if empty the cassettes in the config file are taken as default
-# parameters.cassettes.cassettes = [1,2,3,4,5,6]
-# parameters.cassettes.cassettes = np.arange(32,0,-1)
-
 ### timeWindow to search for clusters, timeWindow is max time between events in candidate cluster 
 ### and timeWindow/2 is the recursive time distance between adjacent hits
 parameters.dataReduction.timeWindow = 0.5e-6
@@ -209,7 +204,7 @@ parameters.dataReduction.softThresholdType = 'off'
 
 if parameters.dataReduction.softThresholdType == 'userDefined':
     
-    parameters.dataReduction.createThArrays(parameters.cassettes.cassettes, parameters)    
+    parameters.dataReduction.createThArrays(parameters.config.DETparameters.cassInConfig, parameters)    
     parameters.dataReduction.softThArray.ThW[:,0] = 15000
     parameters.dataReduction.softThArray.ThS[:,0] = 500   
           
@@ -295,8 +290,6 @@ parameters.plotting.ToFbinning      = 100e-6 # s
      
 parameters.plotting.plotMultiplicity = False 
 
-# parameters.configJsonFile.orientation = 'vertical'
-
 ### 'W.max-S.max' is max max,  'W.cog-S.cog' is CoG CoG, 'W.max-S.cog' is wires max and strips CoG 
 parameters.plotting.positionReconstruction = 'W.max-S.cog'
 parameters.plotting.positionReconstruction = 'W.max-S.max'
@@ -315,9 +308,6 @@ parameters.plotting.removeInvalidToFs   = True
 
 ### histogram outBounds param set as True as default (Events out of bounds stored in first and last bin)
 parameters.plotting.hitogOutBounds = True
-
-### for absolute  units calculation in X, already loaded in config json file
-# parameters.configJsonFile.offset1stWires = 10
 
 ##############################      
 ### PHS
@@ -439,7 +429,7 @@ for cont, fileName in enumerate(fileDialogue.fileName):
     # hits.append(md.hits)
      
     # cc = clu.clusterHits(md.hits,parameters.plotting.showStat)
-    # cc.clusterizeManyCassettes(parameters.cassettes.cassettes, parameters.dataReduction.timeWindow)
+    # cc.clusterizeManyCassettes(parameters.config.DETparameters.cassInConfig, parameters.dataReduction.timeWindow)
     # eve.append(cc.events)
     
 
@@ -535,7 +525,7 @@ if parameters.plotting.bareReadoutsCalculation is False:
         ###############################################################################
         ### clusterize
         cc = clu.clusterHits(hits,parameters.plotting.showStat)
-        cc.clusterizeManyCassettes(parameters.cassettes.cassettes, parameters.dataReduction.timeWindow)
+        cc.clusterizeManyCassettes(parameters.config.DETparameters.cassInConfig, parameters.dataReduction.timeWindow)
         events = cc.events
         deltaTimeWS = cc.deltaTimeClusterWSall
         
@@ -562,7 +552,7 @@ if parameters.plotting.bareReadoutsCalculation is False:
        
     ####################    
     ### for debug, generate sample events 2
-    # dd = sdat.sampleEventsMultipleCassettes(parameters.cassettes.cassettes,'./data/')
+    # dd = sdat.sampleEventsMultipleCassettes(parameters.config.DETparameters.cassInConfig,'./data/')
     # dd.generateGlob(Nevents)
     # events  = dd.events
     # eventsArray = events.concatenateEventsInArrayForDebug()
@@ -595,7 +585,7 @@ if parameters.plotting.bareReadoutsCalculation is False:
     ###############################################################################
     ### software thresholds
     
-    # asth = thre.applyThresholdsToEvents(eventsBTh, parameters.cassettes.cassettes, parameters, parameters.plotting.showStat)
+    # asth = thre.applyThresholdsToEvents(eventsBTh, parameters.config.DETparameters.cassInConfig, parameters, parameters.plotting.showStat)
     # asth.thresholdizeAllCassettes()
         
     # events  = asth.events 
@@ -627,9 +617,9 @@ parameters.HistNotification()
 if (parameters.plotting.plotRawReadouts  or  parameters.plotting.plotReadoutsTimeStamps) is True:
     plread = plo.plottingReadouts(readouts, config)
     if parameters.plotting.plotRawReadouts is True:
-        plread.plotChRaw(parameters.cassettes.cassettes)
+        plread.plotChRaw(parameters.config.DETparameters.cassInConfig)
     if parameters.plotting.plotReadoutsTimeStamps is True:
-        plread.plotTimeStamps(parameters.cassettes.cassettes)
+        plread.plotTimeStamps(parameters.config.DETparameters.cassInConfig)
             
 if parameters.plotting.plotChopperResets is True:
     plread1 = plo.plottingReadouts(readouts, config)
@@ -644,11 +634,11 @@ if parameters.plotting.bareReadoutsCalculation is False:
     if (parameters.plotting.plotRawHits or parameters.plotting.plotHitsTimeStamps or parameters.plotting.plotHitsTimeStampsVSChannels) is True:
         plhits = plo.plottingHits(hits, parameters)
         if parameters.plotting.plotRawHits is True:
-            plhits.plotChRaw(parameters.cassettes.cassettes)
+            plhits.plotChRaw(parameters.config.DETparameters.cassInConfig)
         if parameters.plotting.plotHitsTimeStamps is True:
-            plhits.plotTimeStamps(parameters.cassettes.cassettes)
+            plhits.plotTimeStamps(parameters.config.DETparameters.cassInConfig)
         if parameters.plotting.plotHitsTimeStampsVSChannels is True:    
-            plhits.plotTimeStampsVSCh(parameters.cassettes.cassettes)    
+            plhits.plotTimeStampsVSCh(parameters.config.DETparameters.cassInConfig)    
     ######################
 
 ######################
@@ -657,32 +647,32 @@ if parameters.plotting.bareReadoutsCalculation is False:
 if parameters.plotting.bareReadoutsCalculation is False:
     ### XY and XToF
     plev = plo.plottingEvents(events,allAxis,parameters.plotting.coincidenceWS_ONOFF)
-    plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits, orientation = parameters.configJsonFile.orientation)
+    plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits, orientation = parameters.config.DETparameters.orientation)
     
     # ### ToF per cassette 
     if parameters.plotting.plotToFDistr is True:
-        plev.plotToF(parameters.cassettes.cassettes)
+        plev.plotToF(parameters.config.DETparameters.cassInConfig)
 
     ### lambda
     if parameters.wavelength.plotXLambda is True:
         plev.plotXLambda(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits)
     ### lambda per cassette
     if parameters.wavelength.plotLambdaDistr is True:
-        plev.plotLambda(parameters.cassettes.cassettes)
+        plev.plotLambda(parameters.config.DETparameters.cassInConfig)
         
     ### multiplicity 
     if parameters.plotting.plotMultiplicity is True:
-        plev.plotMultiplicity(parameters.cassettes.cassettes)
+        plev.plotMultiplicity(parameters.config.DETparameters.cassInConfig)
 
     # ### PHS
     if parameters.pulseHeigthSpect.plotPHS is True:
-        plev.plotPHS(parameters.cassettes.cassettes, parameters, logScale = parameters.pulseHeigthSpect.plotPHSlog)
+        plev.plotPHS(parameters.config.DETparameters.cassInConfig, parameters, logScale = parameters.pulseHeigthSpect.plotPHSlog)
     if parameters.pulseHeigthSpect.plotPHScorrelation is True:
-        plev.plotPHScorrelation(parameters.cassettes.cassettes, parameters.pulseHeigthSpect.plotPHSlog)
+        plev.plotPHScorrelation(parameters.config.DETparameters.cassInConfig, parameters.pulseHeigthSpect.plotPHSlog)
     
     ### instantaneous Rate per cassette
     if parameters.plotting.plotInstRate is True:
-        plev.plotInstantaneousRate(parameters.cassettes.cassettes)
+        plev.plotInstantaneousRate(parameters.config.DETparameters.cassInConfig)
 
     ############
     # MON plots

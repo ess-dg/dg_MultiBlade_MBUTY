@@ -98,7 +98,7 @@ class plottingReadouts():
             
             sel = sel1 & sel2 & sel3
             
-            # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
+            # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],parameters.config.DETparameters.numOfWires)
             
             if self.config.DETparameters.operationMode == 'normal':
                 asic0  = self.readouts.ASIC == 0
@@ -216,15 +216,15 @@ class plottingHits():
         
         cass = self.hits.Cassette == cassette1ID
         
-        if self.parameters.configJsonFile.operationMode == 'normal':
+        if self.parameters.config.DETparameters.operationMode == 'normal':
             wires  = self.hits.WorS == 0
             strips = self.hits.WorS == 1
-            wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.configJsonFile.numOfWires)
+            wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.config.DETparameters.numOfWires)
             self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
             self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
             
-        elif self.parameters.configJsonFile.operationMode == 'clustered':
-            wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.parameters.configJsonFile.numOfWires)
+        elif self.parameters.config.DETparameters.operationMode == 'clustered':
+            wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.parameters.config.DETparameters.numOfWires)
             self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
             self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass])
         
@@ -251,11 +251,11 @@ class plottingHits():
              
         sel = self.hits.Cassette == cassette1ID
         
-        if self.parameters.configJsonFile.operationMode == 'normal':
+        if self.parameters.config.DETparameters.operationMode == 'normal':
             isWire   = self.hits.WorS == 0
             isStrip  = self.hits.WorS == 1
             
-            # wireCh0to31 = np.mod(self.hits.WiresStrips[sel & isWire],self.parameters.configJsonFile.numOfWires)
+            # wireCh0to31 = np.mod(self.hits.WiresStrips[sel & isWire],self.parameters.config.DETparameters.numOfWires)
             
             self.timeStampW = self.hits.timeStamp[sel] * isWire[sel]
             self.timeStampS = self.hits.timeStamp[sel] * isStrip[sel]
@@ -263,7 +263,7 @@ class plottingHits():
             # self.timeStampW[self.timeStampW == 0] = np.ma.masked # same as np.nan for int64 instead of floats   
             # self.timeStampS[self.timeStampS == 0] = np.ma.masked # same as np.nan for int64 instead of floats
  
-        elif self.parameters.configJsonFile.operationMode == 'clustered':
+        elif self.parameters.config.DETparameters.operationMode == 'clustered':
             
             self.timeStampW = self.hits.timeStamp[sel] 
             self.timeStampS = self.hits.timeStamp[sel] 
@@ -278,17 +278,17 @@ class plottingHits():
         
         sel = self.hits.Cassette == cassette1ID
         
-        if self.parameters.configJsonFile.operationMode == 'normal':
+        if self.parameters.config.DETparameters.operationMode == 'normal':
             isWire   = self.hits.WorS == 0
             isStrip  = self.hits.WorS == 1
             
-            wireCh0to31 = np.mod(self.hits.WiresStrips,self.parameters.configJsonFile.numOfWires) 
+            wireCh0to31 = np.mod(self.hits.WiresStrips,self.parameters.config.DETparameters.numOfWires) 
             
             self.WireCh  = np.round((wireCh0to31[sel]+10) * isWire[sel])
             self.StripCh = np.round((self.hits.WiresStrips[sel]+20) * isStrip[sel])
    
-        elif self.parameters.configJsonFile.operationMode == 'clustered':
-            wireCh0to31 = np.mod(self.hits.WiresStrips1,self.parameters.configJsonFile.numOfWires) 
+        elif self.parameters.config.DETparameters.operationMode == 'clustered':
+            wireCh0to31 = np.mod(self.hits.WiresStrips1,self.parameters.config.DETparameters.numOfWires) 
             
             self.WireCh  = np.round((wireCh0to31[sel]+10))
             self.StripCh = np.round((self.hits.WiresStrips[sel]+20))
@@ -297,8 +297,8 @@ class plottingHits():
         self.StripCh[self.StripCh == 0] = np.ma.masked # same as np.nan for int64 instead of floats
         
         self.WireCh  = self.WireCh   - 10
-        self.StripCh = self.StripCh  - 20 + self.parameters.configJsonFile.numOfWires
-            
+        self.StripCh = self.StripCh  - 20 + self.parameters.config.DETparameters.numOfWires
+        
     def plotTimeStamps(self,cassettes):
         
         self.plotht = preparePlotMatrix(1004, 1, len(cassettes))
@@ -679,13 +679,13 @@ class plottingEvents():
             
             self.plotPHS.figHandle.suptitle('Pulse Heigth Spectra')
             
-            wireCh0to31Round = np.round(np.mod(self.events.positionW,parameters.configJsonFile.numOfWires))
+            wireCh0to31Round = np.round(np.mod(self.events.positionW,parameters.config.DETparameters.numOfWires))
                     
             stripChRound     = np.round(self.events.positionS)
             
-            wireAx  = np.linspace(0,parameters.configJsonFile.numOfWires-1, parameters.configJsonFile.numOfWires)
+            wireAx  = np.linspace(0,parameters.config.DETparameters.numOfWires-1, parameters.config.DETparameters.numOfWires)
             
-            stripAx = np.linspace(0,parameters.configJsonFile.numOfStrips-1, parameters.configJsonFile.numOfStrips)
+            stripAx = np.linspace(0,parameters.config.DETparameters.numOfStrips-1, parameters.config.DETparameters.numOfStrips)
             
             for k, cass in enumerate(cassettes):
        
@@ -882,7 +882,7 @@ if __name__ == '__main__' :
     
     # parameters.wavelength.distance = 19000
     
-    parameters.configJsonFile.offset1stWires = 10
+    # parameters.config.DETparameters.offset1stWires = 10
 
     #  generate sample hits 
     

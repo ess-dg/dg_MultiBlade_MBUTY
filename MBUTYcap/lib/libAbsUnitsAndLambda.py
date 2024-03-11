@@ -88,24 +88,24 @@ class calculateAbsUnits():
                  
      def calculatePositionAbsUnit(self):
          
-         sine = np.sin(np.deg2rad(self.parameters.configJsonFile.bladesInclination)) 
-         cosi = np.cos(np.deg2rad(self.parameters.configJsonFile.bladesInclination)) 
+         sine = np.sin(np.deg2rad(self.parameters.config.DETparameters.bladesInclination)) 
+         cosi = np.cos(np.deg2rad(self.parameters.config.DETparameters.bladesInclination)) 
          
          #  wires are in global coord so mod 32 to bring it back from 0 to 31
-         wireCh0to31 = np.mod(self.events.positionW,self.parameters.configJsonFile.numOfWires)
+         wireCh0to31 = np.mod(self.events.positionW,self.parameters.config.DETparameters.numOfWires)
          
-         for k, cass in enumerate(self.parameters.configJsonFile.cassInConfig):
+         for k, cass in enumerate(self.parameters.config.DETparameters.cassInConfig):
              
              selectW = self.events.Cassette == cass
-             self.events.positionWmm[selectW]  = np.round((wireCh0to31[selectW] * (self.parameters.configJsonFile.wirePitch*sine) + self.parameters.configJsonFile.offset1stWires*k), decimals=2 )  #mm
+             self.events.positionWmm[selectW]  = np.round((wireCh0to31[selectW] * (self.parameters.config.DETparameters.wirePitch*sine) + self.parameters.config.DETparameters.offset1stWires*k), decimals=2 )  #mm
          
             
          selectS = self.events.positionS >= 0
-         self.events.positionSmm[selectS]  = np.round((self.events.positionS[selectS] * self.parameters.configJsonFile.stripPitch ), decimals = 2) #mm
+         self.events.positionSmm[selectS]  = np.round((self.events.positionS[selectS] * self.parameters.config.DETparameters.stripPitch ), decimals = 2) #mm
          self.events.positionSmm[~selectS] = -1                             
            
          #mm Z is 0 at first wire here 
-         self.events.positionZmm = np.round((wireCh0to31 * (self.parameters.configJsonFile.wirePitch*cosi)), decimals = 2) #mm 
+         self.events.positionZmm = np.round((wireCh0to31 * (self.parameters.config.DETparameters.wirePitch*cosi)), decimals = 2) #mm 
              
      def calculateToF(self, removeInvalidToFs = False):
          
