@@ -416,7 +416,7 @@ for cont, fileName in enumerate(fileDialogue.fileName):
 
     elif parameters.acqMode == 'kafka':
             
-        testing = True 
+        testing = False 
         pcap = kaf.kafka_reader(parameters.clockTicks.NSperClockTick, nOfPackets = parameters.kafkaSettings.numOfPackets, \
         broker = parameters.kafkaSettings.broker, topic = parameters.kafkaSettings.topic, MONTTLtype = config.MONmap.TTLtype , MONring = config.MONmap.RingID, \
         timeResolutionType =parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF=parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, operationMode=config.DETparameters.operationMode, testing=testing)

@@ -75,6 +75,8 @@ class kafka_reader_preAlloc():
         
         self.debug   = False
         
+        self.removeremoveOtherDataTypesONOFF = True
+        
         self.testing = testing
   
         self.rea = pcapr.pcapng_reader_PreAlloc(self.NSperClockTick, self.MONTTLtype, self.MONring, self.timeResolutionType, self.operationMode, kafkaStream = True)
@@ -207,7 +209,7 @@ class kafka_reader_preAlloc():
         
         print('\nkafka stream loaded - {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.rea.totalReadoutCount, self.rea.counterPackets,self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))    
         
-        self.rea.removeOtherDataTypes()
+        self.rea.removeOtherDataTypes(removeONOFF=self.removeremoveOtherDataTypesONOFF)
         
         self.readouts = self.rea.readouts
         

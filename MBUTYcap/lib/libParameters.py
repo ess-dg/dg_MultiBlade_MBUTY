@@ -156,7 +156,7 @@ class dataReduction():
     def __init__(self):
         
 
-          self.timeWindow = 0.5e-6  #s default is 3us for clustering
+          self.timeWindow = 0.5e-6  #s default is 0.5us for clustering
           
           # not implented yet
           # overflowcorr      = True   #ON/OFF (does not affect the MONITOR)
@@ -286,7 +286,7 @@ class parameters():
         
     def init_empty(self):
         
-        self.loadConfigParameters(config=None)
+        self.loadConfigAndSetParameters(config=None)
         
     def loadConfigAndSetParameters(self,config=None):
 
@@ -297,11 +297,7 @@ class parameters():
         # self.fileManagement = fileManagement(self.fileManagement.currentPath)
         self.fileManagement.importConfigFileDetails(self.config)
         
-        # self.configJsonFile = configJsonFile(self.config)
-        
         self.dumpSettings   = dumpSettings(self.fileManagement.currentPath)
-        
-        # self.cassettes      = cassettes(self.configJsonFile)
          
         self.clockTicks     = clockTicks()
         
@@ -319,11 +315,7 @@ class parameters():
         self.kafkaSettings = kafkaSettings()
         
         self.VMMsettings   = VMMsettings()
-        
-        # self.set_acqMode()
-        
-        # self.check_acqMode()
-        
+    
     def update(self):
         
         self.plotting.calculateDerivedParam()

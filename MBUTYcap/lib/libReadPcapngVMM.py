@@ -229,11 +229,11 @@ class readouts():
      ###############        
             
     def removeCalibrationData(self):
-         print('--> removing latency calib data from readouts ...')
-         CalibData = self.G0 == 1
-         self.removeData(CalibData)
-         removedNum = np.sum(CalibData)
-         return removedNum 
+        print('--> removing latency calib data from readouts ...')
+        CalibData = self.G0 == 1
+        self.removeData(CalibData)
+        removedNum = np.sum(CalibData)
+        return removedNum 
          
     def removeClusteredData(self):
         print('--> removing clustered data from readouts ...')
@@ -728,6 +728,8 @@ class pcapng_reader_PreAlloc():
         ##########################################################
         
         self.debug = False
+        
+        self.removeremoveOtherDataTypesONOFF = True
  
         self.readouts = readouts()
         
@@ -924,7 +926,7 @@ class pcapng_reader_PreAlloc():
 
         ############
         
-        self.removeOtherDataTypes()
+        self.removeOtherDataTypes(removeONOFF=self.removeremoveOtherDataTypesONOFF)
         
         ff.close()
         
@@ -960,30 +962,33 @@ class pcapng_reader_PreAlloc():
             # tere is no time fine in clustered mode is already one sigle time 
                     self.readouts.timeStamp = self.readouts.timeCoarse
 
-    def removeOtherDataTypes(self):
+    def removeOtherDataTypes(self,removeONOFF=True):
         
         flag = self.readouts.checkIfCalibrationMode() 
         if flag is True: 
-            removedNum = self.readouts.removeCalibrationData()
-            print('removed {} calibration readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum)) 
-            self.totalReadoutCount = self.totalReadoutCount-removedNum
+           if removeONOFF == True:
+              removedNum = self.readouts.removeCalibrationData()
+              print('removed {} calibration readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum)) 
+              self.totalReadoutCount = self.totalReadoutCount-removedNum
                   
                   
         if self.operationMode == 'normal':
  
             flag = self.readouts.checkIfClusteredMode()
             if flag is True: 
-                removedNum = self.readouts.removeClusteredData()
-                print('removed {} normal readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
-                self.totalReadoutCount = self.totalReadoutCount-removedNum
+               if removeONOFF == True:
+                  removedNum = self.readouts.removeClusteredData()
+                  print('removed {} normal readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
+                  self.totalReadoutCount = self.totalReadoutCount-removedNum
                 
         elif self.operationMode == 'clustered': 
                  
               flag = self.readouts.checkIfNormalHitMode()
               if flag is True: 
-                  removedNum = self.readouts.removeNormalHitData()
-                  print('removed {} clustered readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
-                  self.totalReadoutCount = self.totalReadoutCount-removedNum
+                 if removeONOFF == True:
+                    removedNum = self.readouts.removeNormalHitData()
+                    print('removed {} clustered readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
+                    self.totalReadoutCount = self.totalReadoutCount-removedNum
       
         
     def extractPulseTime(self,packetData,indexESS):
