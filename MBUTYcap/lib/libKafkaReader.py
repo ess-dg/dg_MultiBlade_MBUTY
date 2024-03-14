@@ -166,9 +166,9 @@ class kafka_reader_preAlloc():
                                     timeElapsed = time.time() - tStart
                                     
                                     if timeElapsed > 3:
-                                        print('\033[1;33mWARNING ---> No data found associated to topic: {}\033[1;37m'.format(self.topic))
-                                        flagTopicFound = False
-                                        break       
+                                        print('\nwaiting for next comsumer poll on topic {}\033[1;37m'.format(self.topic))
+                                        # flagTopicFound = False
+                                        # break       
                                 
                                 ar52 = rawmsg.RawReadoutMessage.GetRootAs(msg.value(), 0)
                                 packetData   = ar52.RawDataAsNumpy().tobytes()
@@ -187,8 +187,8 @@ class kafka_reader_preAlloc():
                         
                     except:
                          self.dprint('--> other packet found')
-                         print('\033[1;31mERROR: --> streaming failed ...\n\033[1;37m',end='')
-    
+                         print('\033[1;31mERROR: --> streaming failed ... exiting ... \n\033[1;37m',end='')
+                         sys.exit()
                     else:
                         if self.debug == True:
                             print('\npacket no. {} of {} received'.format(npack+1,self.nOfPackets),end='')
