@@ -117,49 +117,71 @@ class kafka_reader_preAlloc():
         print('\n',end='')
         
         if self.testing is False:
-        
-            kafka_config = krx.generate_config(self.broker, True)
-        
-            consumer = Consumer(kafka_config)
             
+
+            kafka_config = krx.generate_config(self.broker, True)
+
+            consumer = Consumer(kafka_config)
+    
             metadata = krx.get_metadata_blocking(consumer)
+            
+            print('---> connection to kafka successful!')
+
             if self.topic not in metadata.topics:
-                raise Exception("Topic does not exist")
+                
+                print('\033[1;31mERROR: --> Topic {} does not exist in topics list --> exiting...\n\033[1;37m'.format(self.topic),end='')
+                sys.exit()
+                # raise Exception("Topic {} does not exist in topics list".format(self.topic))
+            
+            if self.debug == True:
+                print(metadata.topics) 
+    
             
             topic_partitions = [TopicPartition(self.topic, p) for p in metadata.topics[self.topic].partitions]
-            
             consumer.assign(topic_partitions)
-                         
+
+ 
+            
         self.rea.overallDataIndex = 0 
         self.rea.data             = np.zeros((self.rea.preallocLength,19), dtype='int64') 
         
         self.rea.heartbeats = np.zeros((self.rea.counterCandidatePackets,), dtype='int64') 
 
-        self.rea.stepsForProgress = int(self.rea.counterCandidatePackets/4)+1  # 4 means 25%, 50%, 75% and 100%
+        self.rea.stepsForProgress = int(self.rea.counterCandidatePackets/20)+1  # 4 means 25%, 50%, 75% and 100%
         
         indexPackets = 0 
         
+        tStart = time.time() 
+        flagTopicFound = True
+        
         for npack in range(self.nOfPackets):
-
+                     
                     try:
                         
-                        if self.testing is False:
-                            while (msg := consumer.poll(timeout=0.5)) is None:
-                                time.sleep(0.2)
-                            
-                            ar52 = rawmsg.RawReadoutMessage.GetRootAs(msg.value(), 0)
-                            packetData   = ar52.RawDataAsNumpy().tobytes()
-                            packetLength = len(packetData) 
-                            
-                        else:
-                           
-                        
-                        #  if you want generated data to test
-                            bytesGens = bytesGen()
-                            packetLength = bytesGens.packetLength
-                            packetData   = bytesGens.packetData
-                            
-                            # print(packetData)
+                        if flagTopicFound == True:
+          
+                            if self.testing is False:
+                                while (msg := consumer.poll(timeout=0.5)) is None:
+                                    time.sleep(0.2)
+                                    timeElapsed = time.time() - tStart
+                                    
+                                    if timeElapsed > 3:
+                                        print('\033[1;33mWARNING ---> No data found associated to topic: {}\033[1;37m'.format(self.topic))
+                                        flagTopicFound = False
+                                        break       
+                                
+                                ar52 = rawmsg.RawReadoutMessage.GetRootAs(msg.value(), 0)
+                                packetData   = ar52.RawDataAsNumpy().tobytes()
+                                packetLength = len(packetData) 
+                                
+                            else:
+                              
+                            #  if you want generated data to test
+                                bytesGens = bytesGen()
+                                packetLength = bytesGens.packetLength
+                                packetData   = bytesGens.packetData
+                                
+                                # print(packetData)
                             
                        
                         
@@ -168,54 +190,59 @@ class kafka_reader_preAlloc():
                          print('\033[1;31mERROR: --> streaming failed ...\n\033[1;37m',end='')
     
                     else:
-
-                        self.rea.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
-                        indexPackets += 1
-
-        print('[100%]',end=' ') 
-
-        self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.rea.counterPackets , self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))
-          
-        #######################################################       
-             
-        ####here I remove  the rows that have been preallocated but no filled in case there were some packets big but no ESS
-        if self.rea.preallocLength > self.rea.totalReadoutCount:
-
-            datanew = np.delete(self.rea.data,np.arange(self.rea.totalReadoutCount,self.rea.preallocLength),axis=0)
-            print('removing extra allocated length not used ...')
+                        if self.debug == True:
+                            print('\npacket no. {} of {} received'.format(npack+1,self.nOfPackets),end='')
+                        if flagTopicFound == True:    
+                            self.rea.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
+                            indexPackets += 1
+                      
+ 
+        if flagTopicFound == True: 
             
-        elif self.rea.preallocLength < self.rea.totalReadoutCount:
-            print('something wrong with the preallocation: allocated length {}, total readouts {}'.format(self.preallocLength,self.rea.totalReadoutCount))
-            sys.exit()
-       
-        elif self.rea.preallocLength == self.rea.totalReadoutCount:
-            
-            datanew = self.rea.data
-            
-        cz = pcapr.checkIfDataHasZeros(datanew)
-        datanew = cz.dataOUT
-        
-        self.rea.readouts.transformInReadouts(datanew)
-        
-        self.rea.readouts.heartbeats = self.rea.heartbeats
-
-        ############
-        
-        self.rea.checkTimeSettings()
-        
-        self.rea.timeAdjustedWithResolution()
+            print('[100%]',end=' ') 
+    
+            self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.rea.counterPackets , self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))
               
-        ############
-        
-        print('\nkafka stream loaded - {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.rea.totalReadoutCount, self.rea.counterPackets,self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))    
-        
-        self.rea.removeOtherDataTypes(removeONOFF=self.removeremoveOtherDataTypesONOFF)
-        
-        self.readouts = self.rea.readouts
-        
-        # print(self.readouts.Channel)
-        
-        # consumer.close()
+            #######################################################       
+                 
+            ####here I remove  the rows that have been preallocated but no filled in case there were some packets big but no ESS
+            if self.rea.preallocLength > self.rea.totalReadoutCount:
+    
+                datanew = np.delete(self.rea.data,np.arange(self.rea.totalReadoutCount,self.rea.preallocLength),axis=0)
+                print('removing extra allocated length not used ...')
+                
+            elif self.rea.preallocLength < self.rea.totalReadoutCount:
+                print('something wrong with the preallocation: allocated length {}, total readouts {}'.format(self.preallocLength,self.rea.totalReadoutCount))
+                sys.exit()
+           
+            elif self.rea.preallocLength == self.rea.totalReadoutCount:
+                
+                datanew = self.rea.data
+                
+            cz = pcapr.checkIfDataHasZeros(datanew)
+            datanew = cz.dataOUT
+            
+            self.rea.readouts.transformInReadouts(datanew)
+            
+            self.rea.readouts.heartbeats = self.rea.heartbeats
+    
+            ############
+            
+            self.rea.checkTimeSettings()
+            
+            self.rea.timeAdjustedWithResolution()
+                  
+            ############
+            
+            print('\nkafka stream loaded - {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.rea.totalReadoutCount, self.rea.counterPackets,self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))    
+            
+            self.rea.removeOtherDataTypes(removeONOFF=self.removeremoveOtherDataTypesONOFF)
+            
+            self.readouts = self.rea.readouts
+            
+            # print(self.readouts.Channel)
+            
+        consumer.close()
  
 ###############################################################################
         
@@ -274,10 +301,13 @@ if __name__ == "__main__":
                 
     # kaf.allocateMemory()
     # kaf.read()
+             
+    topic = 'freia_debug'
     
+    # topic = 'CAEN_debug'
     
-    kaf =  kafka_reader(NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , \
-    MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, operationMode = 'normal', testing = True)
+    kaf =  kafka_reader(NSperClockTick, nOfPackets = 5, broker = '127.0.0.1:9092', topic = topic, MONTTLtype = True , \
+    MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = False)
             # d
     
     readouts = kaf.readouts

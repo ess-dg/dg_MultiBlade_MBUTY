@@ -20,8 +20,9 @@ def generate_config(brokers, staging):
 
 def get_metadata_blocking(consumer):
     while True:
+        print('---> connecting to kafka ...')
         try:
-            return consumer.list_topics(timeout=1)
+            return consumer.list_topics(timeout=2)
         except Exception:
             print("Cannot get topic metadata - broker(s) down?")
             time.sleep(0.1)
