@@ -380,7 +380,7 @@ class clusterHits():
             timeWindow_ns = int(round(timeWindow*1e9))
         
             TimeWindowMax          = int(round(timeWindow_ns*1.01))
-            TimeWindowRecursive    = int(round(TimeWindowMax/2))
+            TimeWindowRecursive    = int(round(TimeWindowMax*1.2))
         
             ##########
          
