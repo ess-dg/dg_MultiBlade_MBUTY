@@ -8,7 +8,7 @@
 	"orientation" : "horizontal",
 
 	"Cassette2ElectronicsConfig" : [
-		{"ID" : 0, "Ring" : 0, "Fen" : 2, "Hybrid" : 0}
+		{"ID" : 0, "Ring" : 0, "Fen" : 0, "Hybrid" : 4}
 	],
 	
 	"ChannelMapping" : [

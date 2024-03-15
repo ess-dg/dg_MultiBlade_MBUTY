@@ -127,7 +127,7 @@ parameters.fileManagement.filePath = parameters.fileManagement.destPath
 
 parameters.fileManagement.filePath = currentPath+'data/'
 
-# parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
+parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
 
 # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
 
@@ -148,7 +148,7 @@ parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1
 ### entire  folder  opend  and analized and cumulated  all togheter 
 ### sequence opens all filens in     parameters.fileManagement.fileSerials and with fileName
 parameters.fileManagement.openMode = 'window'
-# parameters.fileManagement.openMode = 'fileName'
+parameters.fileManagement.openMode = 'fileName'
 # parameters.fileManagement.openMode = 'latest'
 # parameters.fileManagement.openMode = 'secondLast'
 # parameters.fileManagement.openMode = 'wholeFolder'
@@ -196,7 +196,7 @@ parameters.VMMsettings.timeResolutionType = 'fine'
 
 ### timeWindow to search for clusters, timeWindow is max time between events in candidate cluster 
 ### and timeWindow/2 is the recursive time distance between adjacent hits
-parameters.dataReduction.timeWindow = 0.5e-6
+parameters.dataReduction.timeWindow = 0.3e-6
 
 ### 'OFF', 'fromFile' = File With Threhsolds Loaded, 'userDefined' = User defines the Thresholds in an array softTh
 parameters.dataReduction.softThresholdType = 'off' 

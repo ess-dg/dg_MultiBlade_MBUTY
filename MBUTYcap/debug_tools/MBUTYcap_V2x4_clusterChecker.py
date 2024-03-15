@@ -59,13 +59,13 @@ parameters  = para.parameters(currentPath)
 
 configFilePath  = currentPath+'config/'
 
-configFileName  = "AMOR.json"
+configFileName  = "test.json"
 
 ###############################################################################
 ###############################################################################
 ### read json and create parameters for plotting and analisys ###
 config = maps.read_json_config(configFilePath+configFileName)
-parameters.loadConfigParameters(config)
+parameters.loadConfigAndSetParameters(config)
 ###############################################################################
 ###############################################################################
 ###############################################################################
@@ -99,13 +99,13 @@ parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataV
 
 ###############
 
-parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/MultiBlade/AMOR_Multi-Blade_NEW_2023_ECDC/data2testEFU/'
+parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
 
 ### folder and file to open (file can be a list of files)
 # parameters.fileManagement.filePath = parameters.fileManagement.destPath
 parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 parameters.fileManagement.fileName = ['freiatest.pcapng']
-parameters.fileManagement.fileName = ['20230913_153543_pkts100_MuonsNOmon-morten_00000.pcapng']
+parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
 
 # parameters.fileManagement.fileSerials = np.arange(18,28,1)
 
@@ -150,7 +150,7 @@ parameters.fileManagement.reducedCompressionHDFL  = 9    # gzip compression leve
 
 ### timeWindow to search for clusters, timeWindow is max time between events in candidate cluster 
 ### and timeWindow/2 is the recursive time distance between adjacent hits
-parameters.dataReduction.timeWindow = 3e-6
+parameters.dataReduction.timeWindow = 0.5e-6
 
 ### 'OFF', 'fromFile' = File With Threhsolds Loaded, 'userDefined' = User defines the Thresholds in an array softTh
 parameters.dataReduction.softThresholdType = 'off' 
@@ -441,7 +441,7 @@ if bareReadoutsCalc is False:
     # cclu.clusterizeManyCassettes(parameters.cassettes.cassettes, parameters.dataReduction.timeWindow)
     events = clu.events()
     
-    cassettesIDs = parameters.cassettes.cassettes
+    cassettesIDs = parameters.config.DETparameters.cassInConfig
     
     timeWindow = parameters.dataReduction.timeWindow
     
@@ -463,6 +463,8 @@ if bareReadoutsCalc is False:
         
         # init an empty event obj
         events1Cass  = clu.events()
+        
+        
         
         rejCounter = np.zeros((5),dtype='int64')
         
@@ -495,6 +497,7 @@ if bareReadoutsCalc is False:
         
             #select only the data relative to the wanted cassette ID
             selectCassette = hits.Cassette == cassette1ID
+            
         
             # for speed the hits are inserted in an array
             # add a line at top [0,0,0,0] not to lose the 1st event
@@ -505,6 +508,9 @@ if bareReadoutsCalc is False:
             data[:,3] = hits.WorS[selectCassette]
             data[:,4] = hits.PulseT[selectCassette]
             data[:,5] = hits.PrevPT[selectCassette]
+            
+            data = data[0:100,:]
+            
 
             # add a line at top [0,0,0,0] not to lose the 1st event
             data = np.concatenate( ( np.zeros((1,np.shape(data)[1]), dtype = 'int64'), data ), axis=0)  #add a line at top not to lose the 1st event
@@ -512,33 +518,37 @@ if bareReadoutsCalc is False:
 
             # data[:,0] = np.around(data[:,0],decimals=self.resolution) #time rounded at 1us precision is 6 decimals, 7 is 100ns, etc...
 
-            deltaTime = np.diff(data[:,0])                    #1st derivative of time 
+            deltaTime = np.diff(data[:,0])                     #1st derivative of time 
             deltaTime = np.concatenate(([0],deltaTime),axis=0) #add a zero at top to restore length of vector
        
             clusterlogic = (np.absolute(deltaTime) <= TimeWindowRecursive) #is zero when a new cluster starts 
+            
+            
        
-            # data1 = np.concatenate((data,clusterlogic[:,None]),axis=1) #this is for debugging 
+            data1 = np.concatenate((data,clusterlogic[:,None]),axis=1) #this is for debugging 
        
             index = np.argwhere(clusterlogic == False) #find the index where a new cluster may start 
            
             #################################
    
             ADCCH = np.zeros((np.shape(data)[0],12),dtype='int64')
-   
-            ADCCH[:,0:3] = data[:,0:3]  # first 3 columns as data
-            ADCCH[:,3]   = clusterlogic.astype(int) # col 3 is 0 where a new cluster may start
-   
-            ADCCH[:,4]   = (data[:,3] == 0).astype(int)   # wire  
-            ADCCH[:,5]   = (data[:,3] == 1).astype(int)   # strip 
-   
-            ADCCH[:,6]   = data[:,1]*ADCCH[:,4]   # wire ch
-            ADCCH[:,7]   = data[:,1]*ADCCH[:,5]   # strip ch
-   
-            ADCCH[:,8]   = data[:,2]*ADCCH[:,4]   # wire ADCs 
-            ADCCH[:,9]   = data[:,2]*ADCCH[:,5]   # strip ADCs 
-   
-            ADCCH[:,10]  =  ADCCH[:,4]*ADCCH[:,6]*ADCCH[:,8]    # weighted position on wires
-            ADCCH[:,11]  =  ADCCH[:,5]*ADCCH[:,7]*ADCCH[:,9]    # weighted position on strips
+    
+            # ADCCH2 = np.zeros((np.shape(data)[0],1),dtype='int64')
+    
+            ADCCH[:,0:3] = (data[:,0:3])  # first 3 columns as data
+            ADCCH[:,3]   = (clusterlogic.astype(int)) # col 3 is 0 where a new cluster may start
+    
+            ADCCH[:,4]   = ((data[:,3] == 0).astype(int))   # wire  
+            ADCCH[:,5]   = ((data[:,3] == 1).astype(int))   # strip 
+    
+            ADCCH[:,6]   = (data[:,1]*ADCCH[:,4]).astype(int)   # wire ch
+            ADCCH[:,7]   = (data[:,1]*ADCCH[:,5]).astype(int)   # strip ch
+
+            ADCCH[:,8]   = (data[:,2]*ADCCH[:,4]).astype(int)   # wire ADCs 
+            ADCCH[:,9]   = (data[:,2]*ADCCH[:,5]).astype(int)   # strip ADCs 
+    
+            ADCCH[:,10]  =  (ADCCH[:,4]*ADCCH[:,6]*ADCCH[:,8]).astype(int)    # weighted position on wires
+            ADCCH[:,11]  =  (ADCCH[:,5]*ADCCH[:,7]*ADCCH[:,9]).astype(int)   # weighted position on strips
            
             #################################
 
@@ -555,10 +565,15 @@ if bareReadoutsCalc is False:
             TPHM[:,2]  = data[index[:,0],5]   # PrevPT
     
             #################################
-           
             # add a fake last cluster to make loop up to the very last true cluster
             index = np.concatenate((index,[[np.shape(data)[0]]]),axis=0)
-            ADCCH = np.concatenate((ADCCH,np.zeros((1,12))),axis=0) 
+            
+            ADCCH = np.concatenate((ADCCH,np.zeros((1,12),dtype='int64')),axis=0)
+
+     
+            #################################
+            
+
 
             #################################
             if  NumClusters >= 0:
@@ -682,16 +697,16 @@ if bareReadoutsCalc is False:
         
         rejCounterAll += rejCounter
         
-        del events1Cass
+        # del events1Cass
         
     if showStat == 'globalStat':
         cclu.someStat(events,rejCounterAll)
     
     ####################    
     ### for debug, events in single array 
-    eventsArray = events.concatenateEventsInArrayForDebug() 
+    # eventsArray = events.concatenateEventsInArrayForDebug() 
     ####################
-       
+    events1CassArray = events1Cass.concatenateEventsInArrayForDebug()
     ####################    
     ### for debug, generate sample events 2
     # dd = sdat.sampleEventsMultipleCassettes(parameters.cassettes.cassettes,'./data/')
@@ -758,9 +773,9 @@ parameters.HistNotification()
 if (parameters.plotting.plotRawReadouts  or  parameters.plotting.plotReadoutsTimeStamps) is True:
     plread = plo.plottingReadouts(readouts, config)
     if parameters.plotting.plotRawReadouts is True:
-        plread.plotChRaw(parameters.cassettes.cassettes)
+        plread.plotChRaw(parameters.config.DETparameters.cassInConfig)
     if parameters.plotting.plotReadoutsTimeStamps is True:
-        plread.plotTimeStamps(parameters.cassettes.cassettes)
+        plread.plotTimeStamps(parameters.config.DETparameters.cassInConfig)
         
 if parameters.plotting.plotChopperResets is True:
     plread1 = plo.plottingReadouts(readouts, config)
@@ -775,11 +790,11 @@ if bareReadoutsCalc is False:
     if (parameters.plotting.plotRawHits or parameters.plotting.plotHitsTimeStamps or parameters.plotting.plotHitsTimeStampsVSChannels) is True:
         plhits = plo.plottingHits(hits, parameters)
         if parameters.plotting.plotRawHits is True:
-            plhits.plotChRaw(parameters.cassettes.cassettes)
+            plhits.plotChRaw(parameters.config.DETparameters.cassInConfig)
         if parameters.plotting.plotHitsTimeStamps is True:
-            plhits.plotTimeStamps(parameters.cassettes.cassettes)
+            plhits.plotTimeStamps(parameters.config.DETparameters.cassInConfig)
         if parameters.plotting.plotHitsTimeStampsVSChannels is True:    
-            plhits.plotTimeStampsVSCh(parameters.cassettes.cassettes)    
+            plhits.plotTimeStampsVSCh(parameters.config.DETparameters.cassInConfig)    
     ######################
 
 ######################
@@ -788,7 +803,7 @@ if bareReadoutsCalc is False:
 if bareReadoutsCalc is False:
     ### XY and XToF
     plev = plo.plottingEvents(events,allAxis,parameters.plotting.coincidenceWS_ONOFF)
-    plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits, orientation = parameters.configJsonFile.orientation)
+    plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits, orientation = parameters.config.DETparameters.orientation)
     
     # ### ToF per cassette 
     if parameters.plotting.plotToFDistr is True:
@@ -807,13 +822,13 @@ if bareReadoutsCalc is False:
 
     # ### PHS
     if parameters.pulseHeigthSpect.plotPHS is True:
-        plev.plotPHS(parameters.cassettes.cassettes, parameters, logScale = parameters.pulseHeigthSpect.plotPHSlog)
+        plev.plotPHS(parameters.config.DETparameters.cassInConfig, parameters, logScale = parameters.pulseHeigthSpect.plotPHSlog)
     if parameters.pulseHeigthSpect.plotPHScorrelation is True:
         plev.plotPHScorrelation(parameters.cassettes.cassettes, parameters.pulseHeigthSpect.plotPHSlog)
     
     ### instantaneous Rate per cassette
     if parameters.plotting.plotInstRate is True:
-        plev.plotInstantaneousRate(parameters.cassettes.cassettes)
+        plev.plotInstantaneousRate(parameters.config.DETparameters.cassInConfig)
 
     ############
     # MON plots
