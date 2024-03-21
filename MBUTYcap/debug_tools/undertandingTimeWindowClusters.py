@@ -38,7 +38,7 @@ timeWindow = 1e-6
 timeWindow_ns = int(round(timeWindow*1e9))
    
 TimeWindowRecursive  = int(round(timeWindow_ns*1.01))
-TimeWindowMax        = int(round(timeWindow_ns*1.5))
+TimeWindowMax        = int(round(TimeWindowRecursive*1.5))
 
 
 data1 = np.concatenate( ( np.zeros((1,np.shape(data)[1]), dtype = 'int64'), data ), axis=0)  #add a line at top not to lose the 1st event

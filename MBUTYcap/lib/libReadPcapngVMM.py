@@ -310,7 +310,10 @@ class readouts():
             print('\t \033[1;33mWARNING: Unable to calculate timing/chopper frequency! \033[1;37m')
             time.sleep(2)
     
-    
+    def removeNonESSpacketsHeartbeats(self,heartbeats):
+        indexesIsNotZero  = np.argwhere(self.heartbeats>0)
+        heartbeats   = heartbeats[indexesIsNotZero]
+        return heartbeats
    
     def checkInvalidToFsInReadouts(self):
         
@@ -913,6 +916,7 @@ class pcapng_reader_PreAlloc():
         self.readouts.transformInReadouts(datanew)
         
         self.readouts.heartbeats = self.heartbeats
+        # self.readouts.removeNonESSpacketsHeartbeats()
         
         ############
         

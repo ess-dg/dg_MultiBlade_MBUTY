@@ -129,7 +129,6 @@ parameters.fileManagement.filePath = currentPath+'data/'
 
 parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
 
-# parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
 
 # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
 # parameters.fileManagement.fileName = [ 'sampleData_NormalMode.pcapng']
@@ -148,7 +147,7 @@ parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1
 ### entire  folder  opend  and analized and cumulated  all togheter 
 ### sequence opens all filens in     parameters.fileManagement.fileSerials and with fileName
 parameters.fileManagement.openMode = 'window'
-parameters.fileManagement.openMode = 'fileName'
+# parameters.fileManagement.openMode = 'fileName'
 # parameters.fileManagement.openMode = 'latest'
 # parameters.fileManagement.openMode = 'secondLast'
 # parameters.fileManagement.openMode = 'wholeFolder'
@@ -259,7 +258,7 @@ parameters.MONitor.MONDistance  = 0
 
 ###############
 # with True disables clustering and mapping for speed reasons, analisys stops at readouts 
-parameters.plotting.bareReadoutsCalculation = False
+parameters.plotting.bareReadoutsCalculation = True
 
 ###############     
 ### show stat during clustering, option  'globalStat'  stat for all cassettes together, 
@@ -432,6 +431,7 @@ for cont, fileName in enumerate(fileDialogue.fileName):
     # cc.clusterizeManyCassettes(parameters.config.DETparameters.cassInConfig, parameters.dataReduction.timeWindow)
     # eve.append(cc.events)
     
+heartbeats = readouts.removeNonESSpacketsHeartbeats(readouts.heartbeats)
 
 readouts.checkChopperFreq()
 
@@ -708,6 +708,63 @@ if parameters.plotting.bareReadoutsCalculation is False:
 # ax.set_xlim((-200,200))
 # # figl.suptitle('2FEN_2Hy')
       
+# ToF     = readouts.timeStamp - readouts.PulseT
+
+# # ToFprev = readouts.timeStamp - readouts.PrevPT
+
+# # delta =  readouts.PulseT -  readouts.PrevPT
+
+# # patth = 'ToFs.txt'
+
+
+# TofAxis  = np.linspace(0,5e7,1024)
+        
+
+
+# histo = hh.histog().hist1D(TofAxis,ToF)
+
+
+# figl5666, ax5666 = plt.subplots(num=567655,figsize=(6,6), nrows=1, ncols=1)
+           
+# # global PHS plot
+# # ax5666.step(allAxis.axEnergy.axis,PHSGw,'r',where='mid',label='w')
+# ax5666.step(TofAxis,histo,'k',where='mid',label='w/s')
+# # ax5666.set_xlabel('pulse height (a.u.)')
+# # ax5666.set_ylabel('counts')
+# # ax5666.set_xlim([0,1200])
+# ax5666.grid()
+# ax5666.set_yscale('log')
+
+
+# chaxis = np.linspace(0,63,64)
+
+
+# selHYB = readouts.hybrid  == 3
+
+# selVMM = readouts.VMM     == 6
+
+# selall = np.logical_and(selHYB,selVMM)
+
+
+
+# histo2D = hh.histog().hist2D( TofAxis, ToF[selall], chaxis, readouts.Channel[selall] ) 
+
+# from matplotlib.colors import LogNorm
+
+# figl5667, ax5667 = plt.subplots(num=567657,figsize=(6,6), nrows=1, ncols=1)
+           
+# # global PHS plot
+# # ax5666.step(allAxis.axEnergy.axis,PHSGw,'r',where='mid',label='w')
+# pos1  = ax5667.imshow(histo2D,aspect='auto',norm=LogNorm(),interpolation='none',extent=[TofAxis[0],TofAxis[-1],chaxis[-1],chaxis[0]], origin='upper',cmap='viridis')
+ 
+# ax5667.grid()
+
+# aa = np.concatenate((ToF[:,None],ToFprev[:,None]),axis=1)
+
+
+# # bb = np.round(aa/100000)   
+  
+# dataTemp = np.savetxt(patth,aa,delimiter='\t')
 
 
 ###############################################################################

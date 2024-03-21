@@ -225,6 +225,7 @@ class kafka_reader_preAlloc():
             self.rea.readouts.transformInReadouts(datanew)
             
             self.rea.readouts.heartbeats = self.rea.heartbeats
+            # self.rea.readouts.removeNonESSpacketsHeartbeats()
     
             ############
             
