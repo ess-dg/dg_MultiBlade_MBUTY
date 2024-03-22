@@ -46,7 +46,6 @@ class readouts():
         self.Durations = np.zeros((0), dtype = datype)
         self.mult0     = np.zeros((0), dtype = datype)
         self.mult1     = np.zeros((0), dtype = datype)
-        
         self.heartbeats = np.zeros((0), dtype = datype)
                
     def transformInReadouts(self, data):
@@ -97,7 +96,6 @@ class readouts():
         self.Durations  = np.append(self.Durations, reado.Durations)
         self.mult0     = np.concatenate((self.mult0, reado.mult0), axis=0)
         self.mult1     = np.concatenate((self.mult1, reado.mult1), axis=0)
-        
         self.heartbeats= np.concatenate((self.heartbeats, reado.heartbeats), axis=0)
        
               
@@ -311,9 +309,14 @@ class readouts():
             time.sleep(2)
     
     def removeNonESSpacketsHeartbeats(self,heartbeats):
-        indexesIsNotZero  = np.argwhere(self.heartbeats>0)
-        heartbeats   = heartbeats[indexesIsNotZero]
+        indexesIsNotZero  = np.argwhere(heartbeats>0)
+        heartbeats        = heartbeats[indexesIsNotZero[:,0]]
         return heartbeats
+     
+    # def removeNonESSpacketsHeartbeats(self):
+    #     indexesIsNotZero = np.argwhere(self.heartbeats>0)
+    #     self.heartbeats  = self.heartbeats[indexesIsNotZero[:,0]]
+
    
     def checkInvalidToFsInReadouts(self):
         
@@ -781,7 +784,7 @@ class pcapng_reader_PreAlloc():
         
         self.data = np.zeros((self.preallocLength,19), dtype='int64')
         
-        self.heartbeats = np.zeros((0,), dtype='int64')
+        # self.heartbeats = np.zeros((0,), dtype='int64')
         
         ##########################################################
 
@@ -850,9 +853,9 @@ class pcapng_reader_PreAlloc():
         
         print('\n',end='')
         
-        self.data       = np.zeros((self.preallocLength,19), dtype='int64') 
+        self.data = np.zeros((self.preallocLength,19), dtype='int64') 
         
-        self.heartbeats = np.zeros((self.counterCandidatePackets,), dtype='int64') 
+        self.readouts.heartbeats = np.zeros((self.counterCandidatePackets), dtype='int64') 
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
@@ -915,8 +918,12 @@ class pcapng_reader_PreAlloc():
         
         self.readouts.transformInReadouts(datanew)
         
-        self.readouts.heartbeats = self.heartbeats
+        # self.readouts.heartbeats = self.heartbeats
+        # print(self.readouts.heartbeats)
+        
         # self.readouts.removeNonESSpacketsHeartbeats()
+        
+        # print(self.readouts.heartbeats)
         
         ############
         
@@ -1185,7 +1192,7 @@ class pcapng_reader_PreAlloc():
        
                        ###########
                        
-           self.heartbeats[indexPackets] = PulseT
+           self.readouts.heartbeats[indexPackets] = PulseT
         
 
         if np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0 or np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0:

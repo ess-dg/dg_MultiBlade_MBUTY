@@ -108,7 +108,7 @@ parameters.fileManagement.fileNameSave = 'test'
 # relevant for acqMode =  kafka , num of packets to dump is in dumpSettings 
 parameters.kafkaSettings.broker       = '127.0.0.1:9092'
 parameters.kafkaSettings.topic        = 'freia_debug'
-parameters.kafkaSettings.numOfPackets =  10      #packets
+parameters.kafkaSettings.numOfPackets =  100      #packets
 
 ###############################################################################
 
@@ -128,7 +128,6 @@ parameters.fileManagement.filePath = parameters.fileManagement.destPath
 parameters.fileManagement.filePath = currentPath+'data/'
 
 parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
-
 
 # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
 # parameters.fileManagement.fileName = [ 'sampleData_NormalMode.pcapng']
@@ -258,7 +257,7 @@ parameters.MONitor.MONDistance  = 0
 
 ###############
 # with True disables clustering and mapping for speed reasons, analisys stops at readouts 
-parameters.plotting.bareReadoutsCalculation = True
+parameters.plotting.bareReadoutsCalculation = False
 
 ###############     
 ### show stat during clustering, option  'globalStat'  stat for all cassettes together, 
@@ -431,7 +430,10 @@ for cont, fileName in enumerate(fileDialogue.fileName):
     # cc.clusterizeManyCassettes(parameters.config.DETparameters.cassInConfig, parameters.dataReduction.timeWindow)
     # eve.append(cc.events)
     
-heartbeats = readouts.removeNonESSpacketsHeartbeats(readouts.heartbeats)
+# 
+
+heartbeats1 = readouts.heartbeats
+heartbeats2 = readouts.removeNonESSpacketsHeartbeats(readouts.heartbeats)
 
 readouts.checkChopperFreq()
 
