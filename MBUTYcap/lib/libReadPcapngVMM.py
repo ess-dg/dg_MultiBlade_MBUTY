@@ -350,9 +350,21 @@ class readouts():
 
 class checkInstrumentID():
     def __init__(self, ID):
-        self.FREIAID = 72
-        self.EstiaID = 76
-        self.AMORID  = 78
+        
+        self.FREIAID   = 72
+        self.ESTIAID   = 76
+        self.AMORID    = 78
+        self.TBLVMMID  = 73
+        
+        self.LOKIID      = 48
+        self.BMID        = 16
+        self.BIFROSTID   = 52
+        self.NMXID       = 68
+        self.MAGICID     = 100
+        self.TREXID      = 64
+        self.CSPECID     = 60
+        self.MIRACLESID  = 56
+        self.DREAMID     = 96
         
         self.printa = True
         
@@ -362,6 +374,8 @@ class checkInstrumentID():
              print('found ESTIA data stream')
         elif ID == self.AMORID:
              print('found AMOR data stream')
+        elif ID == self.TBLVMMID:
+                  print('found TBL data stream')
         else:
              print('found some other data stream')
              

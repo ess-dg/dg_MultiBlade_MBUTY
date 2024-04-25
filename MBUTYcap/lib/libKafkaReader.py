@@ -229,7 +229,7 @@ class kafka_reader_preAlloc():
             if self.rea.preallocLength > self.rea.totalReadoutCount:
     
                 datanew = np.delete(self.rea.data,np.arange(self.rea.totalReadoutCount,self.rea.preallocLength),axis=0)
-                print('removing extra allocated length not used ...')
+                print('\nremoving extra allocated length not used ...')
                 
             elif self.rea.preallocLength < self.rea.totalReadoutCount:
                 print('something wrong with the preallocation: allocated length {}, total readouts {}'.format(self.preallocLength,self.rea.totalReadoutCount))
