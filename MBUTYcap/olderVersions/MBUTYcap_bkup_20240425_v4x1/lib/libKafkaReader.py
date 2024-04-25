@@ -88,23 +88,16 @@ class kafka_reader_preAlloc():
         
         #############################
         
-        # self.fileSize   = self.nOfPackets*(self.rea.singleReadoutSize*self.rea.readoutsPerPacket+self.rea.ESSheaderSize)
-        
-        self.fileSize   = self.nOfPackets*(self.rea.singleReadoutSize*self.rea.readoutsPerPacket+32) # allocate more memory with header 32 instead of 30 
+        self.fileSize   = self.nOfPackets*(self.rea.singleReadoutSize*self.rea.readoutsPerPacket+self.rea.ESSheaderSize)
         
         if testing is True:
             print('\033[1;33mWARNING ---> Not streaming but testing locally enabled! \033[1;37m')
-            print('simulating streaming {} packets ({:.1f} kbytes) from kafka'.format(self.nOfPackets,self.fileSize/1000))
+            print('simulating streaming {} packets ({} kbytes) from kafka'.format(self.nOfPackets,self.fileSize/1000))
         else:
-            print('streaming {} packets ({:.1f} kbytes) from kafka'.format(self.nOfPackets,self.fileSize/1000))
+            print('streaming {} packets ({} kbytes) from kafka'.format(self.nOfPackets,self.fileSize/1000))
         
         #############################        
         
-    # def checkFWversion(self):
-        
-        
-    
-    
     def dprint(self, msg):
             if self.debug:
                 print("{}".format(msg))
@@ -124,6 +117,7 @@ class kafka_reader_preAlloc():
         print('\n',end='')
         
         if self.testing is False:
+            
 
             kafka_config = krx.generate_config(self.broker, True)
 
@@ -159,8 +153,6 @@ class kafka_reader_preAlloc():
         
         tStart = time.time() 
         flagTopicFound = True
-        
-        packetsFWversion = np.zeros((0),dtype='int64')
         
         for npack in range(self.nOfPackets):
                      
@@ -198,28 +190,16 @@ class kafka_reader_preAlloc():
                          print('\033[1;31mERROR: --> streaming failed ... exiting ... \n\033[1;37m',end='')
                          sys.exit()
                     else:
-                        
-                        indexESS = packetData.find(b'ESS')
-                        
-                        if indexESS != -1:
-                           FWversionTemp    = self.rea.extractFWversion(packetData, indexESS)
-                           packetsFWversion = np.append(packetsFWversion,FWversionTemp)
-                                         
-                           self.rea.checkFWversionSetHeaders(FWversionTemp)   
-                        
                         if self.debug == True:
                             print('\npacket no. {} of {} received'.format(npack+1,self.nOfPackets),end='')
                         if flagTopicFound == True:    
                             self.rea.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
                             indexPackets += 1
-        
-                        
+                      
  
         if flagTopicFound == True: 
             
             print('[100%]',end=' ') 
-            
-            self.rea.checkIfUniformFWversion(packetsFWversion)
     
             self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.rea.counterPackets , self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))
               
@@ -329,7 +309,7 @@ if __name__ == "__main__":
     # topic = 'CAEN_debug'
     
     kaf =  kafka_reader(NSperClockTick, nOfPackets = 5, broker = '127.0.0.1:9092', topic = topic, MONTTLtype = True , \
-    MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = True)
+    MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = False)
             # d
     
     readouts = kaf.readouts

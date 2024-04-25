@@ -762,8 +762,9 @@ class pcapng_reader_PreAlloc():
         ##########################################################
         
         self.readoutsPerPacket   = 446 #packets
-        self.ESSheaderSize       = None  # 30 bytes if version is 0  or 32 bytes if version is 1   
-        self.headerSize          = None  # self.mainHeaderSize+self.ESSheaderSize #bytes  (72 if mainHeaderSize = 42)
+        self.offset              = 25  #bytes Num of bytes after the word (cookie) ESS = 0x 45 53 53
+        self.ESSheaderSize       = 30  #bytes    
+        self.headerSize          = self.mainHeaderSize+self.ESSheaderSize #bytes  (72 if mainHeaderSize = 42)
         self.singleReadoutSize   = 20  #bytes
         
         # self.numOfPacketsPerTransfer = 447
@@ -785,43 +786,7 @@ class pcapng_reader_PreAlloc():
         
         # self.heartbeats = np.zeros((0,), dtype='int64')
         
-        
-        
         ##########################################################
-        
-    def calculateHeaderSize(self):
-        self.headerSize  = self.mainHeaderSize+self.ESSheaderSize #bytes  (72 if mainHeaderSize = 42 and 74 if version 1)
-        
-    def extractFWversion(self,packetData,indexESS):
-        version = int.from_bytes(packetData[indexESS-1:indexESS], byteorder='little') # bytes 
-        return version
-    
-    def checkIfUniformFWversion(self,packetsFWversion):
-        
-        packetsFWversion = np.atleast_1d(packetsFWversion)
-        
-        print('\nchecking RMM firmware version ',end='')
-        if np.any(packetsFWversion) != packetsFWversion[0]:
-            print('\n \033[1;31mWARNING ---> found different Firmware Versions in packets, use version 0 as default, data might be corrupted for other versions\033[1;37m')
-            time.sleep(1)
-        
-        self.ESSheaderSize = 30  # 30 bytes if version is 0  or 32 bytes if version is 1   
-        self.calculateHeaderSize()
-        
-        print('--> version: {}'.format(packetsFWversion[0]),end='')
-    
-    def checkFWversionSetHeaders(self,packetsFWversion):
-        
-        packetsFWversion = np.atleast_1d(packetsFWversion)
-
-        if packetsFWversion[0] == 0:
-                self.ESSheaderSize = 30  # 30 bytes if version is 0  or 32 bytes if version is 1   
-                self.calculateHeaderSize()  
-                
-        elif packetsFWversion[0] == 1:
-                self.ESSheaderSize = 32  # 30 bytes if version is 0  or 32 bytes if version is 1   
-                self.calculateHeaderSize()
-
 
     def dprint(self, msg):
         if self.debug:
@@ -835,7 +800,6 @@ class pcapng_reader_PreAlloc():
         scanner = pg.FileScanner(ff)
         
         packetsSizes = np.zeros((0),dtype='int64')
-        packetsFWversion = np.zeros((0),dtype='int64')
         
         counter = 0
         
@@ -852,28 +816,13 @@ class pcapng_reader_PreAlloc():
             try:
                 packetSize = block.packet_len
                 self.dprint("packetSize {} bytes".format(packetSize))
-                
-                packetData = block.packet_data
-                
-                indexESS   = packetData.find(b'ESS')
-                
-                if indexESS != -1:
-                   FWversionTemp = self.extractFWversion(packetData, indexESS)
-       
             except:
                 self.dprint('--> other packet found No. {}'.format(self.counterPackets-self.counterCandidatePackets))
             else:
                 self.counterCandidatePackets += 1
-                packetsSizes     = np.append(packetsSizes,packetSize)
-                packetsFWversion = np.append(packetsFWversion,FWversionTemp)
+                packetsSizes = np.append(packetsSizes,packetSize)
                 
         self.dprint('counterPackets {}, counterCandidatePackets {}'.format(self.counterPackets,self.counterCandidatePackets))    
-        
-        self.checkIfUniformFWversion(packetsFWversion)
-        self.checkFWversionSetHeaders(packetsFWversion)
-        
-        # print(self.ESSheaderSize)
-        # print(self.headerSize)
 
         if self.debug:
             overallSize = np.sum(packetsSizes)
@@ -1091,12 +1040,12 @@ class pcapng_reader_PreAlloc():
            
            if self.counterValidESSpackets == 1:
                checkInstrumentID(packetData[indexESS+3])
-    
-           indexDataStart = indexESS + self.ESSheaderSize - 2   # index after (cookie) ESS = 0x 45 53 53 where data starts (eg 44+30-2=72)
-
+            
+           indexDataStart = indexESS + self.offset + 3    #  this is 72 = 44+25+3
+           
            #   give a warning if not 72,  check that ESS cookie is always in the same place
            if indexDataStart != self.headerSize:
-               print('\n \033[1;31mWARNING ---> ESS cookie is not in position 72 or 74 or 42 or 44! \033[1;37m')
+               print('\n \033[1;31mWARNING ---> ESS cookie is not in position 72! \033[1;37m')
                
            # ##########################################
            # # UDP ports here not used for now

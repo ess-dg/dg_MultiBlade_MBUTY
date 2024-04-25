@@ -450,8 +450,13 @@ class clusterHits():
             ADCCH[:,8]   = (data[:,2]*ADCCH[:,4]).astype(int)   # wire ADCs 
             ADCCH[:,9]   = (data[:,2]*ADCCH[:,5]).astype(int)   # strip ADCs 
     
-            ADCCH[:,10]  =  (ADCCH[:,4]*ADCCH[:,6]*ADCCH[:,8]).astype(int)    # weighted position on wires
-            ADCCH[:,11]  =  (ADCCH[:,5]*ADCCH[:,7]*ADCCH[:,9]).astype(int)    # weighted position on strips
+            # ADCCH[:,10]  =  (ADCCH[:,4]*ADCCH[:,6]*ADCCH[:,8]).astype(int)    # weighted position on wires
+            # ADCCH[:,11]  =  (ADCCH[:,5]*ADCCH[:,7]*ADCCH[:,9]).astype(int)    # weighted position on strips
+            
+            power = 2
+            
+            ADCCH[:,10]  =  (ADCCH[:,4]*ADCCH[:,6]*(ADCCH[:,8]**power)).astype(int)    # weighted position on wires
+            ADCCH[:,11]  =  (ADCCH[:,5]*ADCCH[:,7]*(ADCCH[:,9]**power)).astype(int)    # weighted position on strips
             
             # print(ADCCH[0:20,:])
             
@@ -565,9 +570,16 @@ class clusterHits():
                                 self.TPHM[kk,4]   = ss     #multiplicity strips
                                 self.TPHM[kk,5]   = np.sum(clusterq[:,8],axis=0)   #PH wires
                                 self.TPHM[kk,6]   = np.sum(clusterq[:,9],axis=0)   #PH strips
-                                self.PO[kk,0]     = round((np.sum(clusterq[:,10],axis=0))/(self.TPHM[kk,5]),2)       #position wires 0 to 31
-                                self.PO[kk,1]     = round((((np.sum(clusterq[:,11],axis=0))/(self.TPHM[kk,6]))),2)   #position strips from 0 to 31 or up to 63
-                                       
+                                # self.PO[kk,0]     = round((np.sum(clusterq[:,10],axis=0))/(self.TPHM[kk,5]),2)       #position wires 0 to 31
+                                # self.PO[kk,1]     = round((((np.sum(clusterq[:,11],axis=0))/(self.TPHM[kk,6]))),2)   #position strips from 0 to 31 or up to 63
+                                   
+                                temp1 = np.sum((clusterq[:,8]**power),axis=0) 
+                                temp2 = np.sum((clusterq[:,9]**power),axis=0) 
+                                
+                                self.PO[kk,0]     = round((np.sum(clusterq[:,10],axis=0))/(temp1),2)       #position wires 0 to 31
+                                self.PO[kk,1]     = round((((np.sum(clusterq[:,11],axis=0))/(temp2))),2)   #position strips from 0 to 31 or up to 63
+                                   
+                                
                             else:
                                 self.rejCounter[1] = self.rejCounter[1]+1;                #counter if they are no neighbour 
                                 
@@ -586,8 +598,11 @@ class clusterHits():
 
                                 self.TPHM[kk,3]   = ww     #multiuplicity wires
                                 self.TPHM[kk,5]   = np.sum(clusterq[:,8],axis=0)   #PH wires
-                                self.PO[kk,0]     = round((np.sum(clusterq[:,10],axis=0))/(self.TPHM[kk,5]),2)     #position wires
+                                # self.PO[kk,0]     = round((np.sum(clusterq[:,10],axis=0))/(self.TPHM[kk,5]),2)     #position wires
                                 self.PO[kk,1]     = -1 #position strips if absent
+                                
+                                temp1 = np.sum((clusterq[:,8]**power),axis=0) 
+                                self.PO[kk,0]     = round((np.sum(clusterq[:,10],axis=0))/(temp1),2)    
                                    
                             else:
                                 self.rejCounter[1] = self.rejCounter[1]+1              #counter if they are no neighbour 

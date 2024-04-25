@@ -2,7 +2,7 @@ import time
 import configargparse as argparse
 
 from confluent_kafka import Consumer, TopicPartition
- 
+
 from lib import libKafkaRawReadoutMessage as rawmsg
 
 # import libKafkaRawReadoutMessage as rawmsg
