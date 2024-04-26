@@ -370,7 +370,7 @@ class checkInstrumentID():
         
         if ID == self.FREIAID:
              print('found FREIA data stream')
-        elif ID == self.EstiaID:
+        elif ID == self.ESTIAID:
              print('found ESTIA data stream')
         elif ID == self.AMORID:
              print('found AMOR data stream')
