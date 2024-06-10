@@ -15,6 +15,7 @@ from lib import libSampleData as sdat
 from lib import libMapping as maps
 from lib import libHistograms as hh
 from lib import libParameters as para
+# from lib import libProgressBar as pb
 
 from lib import libReadPcapngVMM as pcapr
 # from lib import libPlotting as plo
@@ -505,6 +506,8 @@ class clusterHits():
                         if np.mod(kk,steps) == 0 or kk == (NumClusters-1):
                             percents = int(round(100.0 * kk / float(NumClusters), 1))
                             print('['+format(percents,'01d') + '%]',end=' ')
+                            
+                            # pb.progressBar(kk,steps)
                         
                         clusterq = (ADCCH[index[kk,0]:index[kk+1,0],:]).astype(int)
                         

@@ -16,6 +16,7 @@ import time
 import sys
 # from lib import libPlotting as plo
 
+
 ###############################################################################
 ###############################################################################
 
@@ -1297,9 +1298,13 @@ class pcapng_reader_PreAlloc():
            self.readouts.heartbeats[indexPackets] = PulseT
         
 
-        if np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0 or np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0:
-           percents = int(round(100.0 * self.counterValidESSpackets / float(self.counterCandidatePackets), 1))
-           print('['+format(percents,'01d') + '%]',end=' ')      
+        if np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0:
+            percents = int(round(100.0 * self.counterValidESSpackets / float(self.counterCandidatePackets), 1))
+            print('['+format(percents,'01d') + '%]',end=' ')  
+           
+        # pb.progressBar(self.counterValidESSpackets,self.counterCandidatePackets)
+           
+           
         
         
 class checkIfDataHasZeros():
