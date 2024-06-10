@@ -128,7 +128,7 @@ parameters.fileManagement.filePath = parameters.fileManagement.destPath
 
 parameters.fileManagement.filePath = currentPath+'data/'
 
-parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
+# parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
 
 # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
 # parameters.fileManagement.fileName = [ 'sampleData_NormalMode.pcapng']
@@ -138,7 +138,9 @@ parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/D
 
 # parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
 # parameters.fileManagement.fileName = ['freiatest.pcapng']
-parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
+# parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
+parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
+
 
 # parameters.fileManagement.fileSerials = np.arange(18,28,1)
 
@@ -147,7 +149,7 @@ parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1
 ### entire  folder  opend  and analized and cumulated  all togheter 
 ### sequence opens all filens in     parameters.fileManagement.fileSerials and with fileName
 parameters.fileManagement.openMode = 'window'
-# parameters.fileManagement.openMode = 'fileName'
+parameters.fileManagement.openMode = 'fileName'
 # parameters.fileManagement.openMode = 'latest'
 # parameters.fileManagement.openMode = 'secondLast'
 # parameters.fileManagement.openMode = 'wholeFolder'
