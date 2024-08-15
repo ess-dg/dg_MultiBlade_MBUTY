@@ -211,7 +211,13 @@ class read_json_config():
             print('\n ---> in folder: ' + self.configFilePath + ' \n -> exiting.')
             sys.exit()
             
-        self.conf = json.load(self.ff)
+        try:    
+            self.conf = json.load(self.ff)
+        except:
+            print('\n \033[1;31m---> Error in config File: ' + self.configFileName + ' \033[1;37m',end='')
+            print(' ---> common mistake: last line of Cassette2ElectronicsConfig: {"ID" : X, "Ring" : X, "Fen" : X, "Hybrid" : X} must not have comma! \n -> exiting.')
+            sys.exit()
+            
         
         self.get_allParameters()
         
@@ -666,9 +672,9 @@ if __name__ == '__main__':
 
    config = read_json_config(filePath)
    
-   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
+   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    file = 'sampleData_NormalMode.pcapng'
-   file = 'sampleData_ClusteredMode.pcapng'
+   # file = 'sampleData_ClusteredMode.pcapng'
    
    filePathAndFileName = filePath+file
    

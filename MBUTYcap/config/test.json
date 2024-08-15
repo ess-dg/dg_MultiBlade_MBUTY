@@ -3,12 +3,13 @@
 	
 	"operationMode" : "normal",
 
-	"cassettes" : 1,
+	"cassettes" : 2,
 	
 	"orientation" : "horizontal",
 
 	"Cassette2ElectronicsConfig" : [
-		{"ID" : 0, "Ring" : 0, "Fen" : 0, "Hybrid" : 4}
+		{"ID" : 0, "Ring" : 0, "Fen" : 0, "Hybrid" : 4},
+		{"ID" : 1, "Ring" : 1, "Fen" : 0, "Hybrid" : 3}
 	],
 	
 	"ChannelMapping" : [
