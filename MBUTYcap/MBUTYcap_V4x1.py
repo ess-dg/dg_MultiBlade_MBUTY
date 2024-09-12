@@ -149,7 +149,7 @@ parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
 ### entire  folder  opend  and analized and cumulated  all togheter 
 ### sequence opens all filens in     parameters.fileManagement.fileSerials and with fileName
 parameters.fileManagement.openMode = 'window'
-parameters.fileManagement.openMode = 'fileName'
+# parameters.fileManagement.openMode = 'fileName'
 # parameters.fileManagement.openMode = 'latest'
 # parameters.fileManagement.openMode = 'secondLast'
 # parameters.fileManagement.openMode = 'wholeFolder'

@@ -768,6 +768,25 @@ class checkCassIDs():
      
 ###############################################################################
 
+# class hitsMON2events():
+    
+#     def __init__(self,hitsMON):
+#          print('\033[1;36mTransforming MON hits into events ... \033[1;37m',end='')
+         
+#          self.hits = hitsMON
+
+#          self.events = events()
+         
+#          self.events.importDurations(self.hits)
+         
+#          self.events.PHW  = self.hits.ADC
+#          self.events.PHS  = self.hits.ADC
+#          self.events.WorS = 99
+#          self.events.PrevPT = self.hits.PrevPT
+#          self.events.PulseT = self.hits.PulseT
+#          self.events.timeStamp = self.hits.timeStamp
+         
+         
 class hitsMON2events():
     
     def __init__(self,hitsMON):
@@ -779,15 +798,20 @@ class hitsMON2events():
          
          self.events.importDurations(self.hits)
          
+         lengg = np.shape(self.hits.ADC)[0]
+         
          self.events.PHW  = self.hits.ADC
          self.events.PHS  = self.hits.ADC
-         self.events.WorS = 99
+         self.events.WorS = 99*np.ones((lengg))
          self.events.PrevPT = self.hits.PrevPT
          self.events.PulseT = self.hits.PulseT
          self.events.timeStamp = self.hits.timeStamp
          
-         
-    # def hitsToEvents(self):
+         self.events.Cassette  = 99*np.ones((lengg))
+         self.events.positionW = 99*np.ones((lengg))
+         self.events.positionS = 99*np.ones((lengg))
+         self.events.multW = 99*np.ones((lengg))
+         self.events.multS = 99*np.ones((lengg))
         
         
         
