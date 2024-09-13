@@ -252,7 +252,7 @@ parameters.MONitor.MONThreshold = 0
 parameters.MONitor.plotMONtofPHS = False  
 
 ### in mm, distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
-parameters.MONitor.MONDistance  = 0   
+parameters.MONitor.MONDistance  = 6000   
 
 ###############################################################################
 ### PLOTTING PARAMETERS:
@@ -494,9 +494,12 @@ if parameters.plotting.bareReadoutsCalculation is False:
             print('\033[1;32m\t MON events: {}\033[1;37m'.format(len(eventsMON.timeStamp)))
             
             
-            # CALCULATION OF LAMBDA ON MON NOT YET IMPLEMENTED
+            if parameters.wavelength.calculateLambda is True:
+                
+                abMON.calculateWavelengthMON()
 
-
+            eventsMON = abMON.events
+            eventsMONarray = eventsMON.concatenateEventsInArrayForDebug()
 
     
     ###############################################################################
@@ -686,6 +689,11 @@ if parameters.plotting.bareReadoutsCalculation is False:
         
         plMON = plo.plottingMON(eventsMON,allAxis)
         plMON.plot_ToF_PHS_MON()
+        
+        if parameters.wavelength.calculateLambda is True: 
+            plMON.plotLambda_MON()
+            
+            
 
 ###############################################################################
 ###############################################################################
