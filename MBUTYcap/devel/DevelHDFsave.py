@@ -13,6 +13,7 @@ import time
 import os
 import sys
 import matplotlib.pyplot as plt
+import h5py
 
 # import matplotlib
 # # matplotlib.use(‘Qt5Agg’)
@@ -22,19 +23,19 @@ app = QApplication(sys.argv)
 ### import the library with all specific functions that this code uses 
 from lib import libReadPcapngVMM as pcapr
 from lib import libSampleData as sdat
-from lib import libMapping as maps
+from lib import libMappingMG as maps
 from lib import libCluster as clu
-from lib import libAbsUnitsAndLambda as absu
+from lib import libAbsUnitsAndLambdaMG as absu
 from lib import libHistograms as hh
 from lib import libFileManagmentUtil as fd
 from lib import libParameters as para
 from lib import libTerminal as ta
-from lib import libPlotting as plo
+from lib import libPlottingMG as plo
 from lib import libEventsSoftThresholds as thre
 from lib import libReducedFileH5 as saveH5
 from lib import libVMMcalibration as cal 
 
-from lib import libKafkaReader as kaf
+# from lib import libKafkaReader as kaf
 
 
 ###############################################################################
@@ -64,7 +65,8 @@ parameters  = para.parameters(currentPath)
 
 configFilePath  = currentPath+'config/'
 
-configFileName  = "AMOR.json"
+# configFileName  = "MG.json"
+configFileName  = "MGEMMA.json"
 
 ###############################################################################
 ###############################################################################
@@ -96,7 +98,7 @@ parameters.acqMode = 'off'
 
 # relevant for acqMode =  pcap-local, pcap-local-overwrite and kafka 
 
-parameters.dumpSettings.interface     = 'ens2'
+parameters.dumpSettings.interface     = 'enp5s0'
 
 parameters.dumpSettings.typeOfCapture = 'packets'
 parameters.dumpSettings.quantity      =  100      #packets
@@ -117,8 +119,8 @@ parameters.kafkaSettings.numOfPackets =  100      #packets
 ### from ... to  ... rsync the data
 
 # parameters.fileManagement.sourcePath = 'essdaq@172.30.244.50:~/pcaps/'
-parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
-parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataVMM/' 
+parameters.fileManagement.sourcePath = 'mg@172.18.40.245:/home/mg/data/VMM-Utgard-test-2024/'
+parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/MGdata/' 
 
 ###############
 
@@ -127,6 +129,7 @@ parameters.fileManagement.filePath = parameters.fileManagement.destPath
 # relevant for acqMode =  off, pcap-sync and pcap-local
 
 parameters.fileManagement.filePath = currentPath+'data/'
+# parameters.fileManagement.filePath ='/home/mg/data/VMM-Utgard-test-2024/'
 
 # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
 
@@ -136,10 +139,13 @@ parameters.fileManagement.filePath = currentPath+'data/'
 
 ### folder and file to open (file can be a list of files)
 
-# parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
-# parameters.fileManagement.fileName = ['freiatest.pcapng']
-# parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
-parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
+parameters.fileManagement.fileName = ['freiatest.pcapng']
+
+parameters.fileManagement.fileName = ['MG_2col_1cluster.pcapng']
+
+parameters.fileManagement.fileName = ['MG_2col_2clusters.pcapng']
+
+parameters.fileManagement.fileName = ['MGdata.pcapng']
 
 
 # parameters.fileManagement.fileSerials = np.arange(18,28,1)
@@ -149,7 +155,7 @@ parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
 ### entire  folder  opend  and analized and cumulated  all togheter 
 ### sequence opens all filens in     parameters.fileManagement.fileSerials and with fileName
 parameters.fileManagement.openMode = 'window'
-# parameters.fileManagement.openMode = 'fileName'
+parameters.fileManagement.openMode = 'fileName'
 # parameters.fileManagement.openMode = 'latest'
 # parameters.fileManagement.openMode = 'secondLast'
 # parameters.fileManagement.openMode = 'wholeFolder'
@@ -174,7 +180,7 @@ parameters.fileManagement.pathToTshark = '/Applications/Wireshark.app/Contents/M
 ### save a hdf file with clusters (reduced file)
 
 ### ON/OFF
-parameters.fileManagement.saveReducedFileONOFF = False   
+parameters.fileManagement.saveReducedFileONOFF = True   
 parameters.fileManagement.saveReducedPath = '/Users/francescopiscitelli/Desktop/reducedFile/'
 
 parameters.fileManagement.reducedNameMainFolder  = 'entry1'
@@ -189,7 +195,7 @@ parameters.fileManagement.reducedCompressionHDFL  = 9    # gzip compression leve
 parameters.dataReduction.calibrateVMM_ADC_ONOFF = False
 
 ### sorting readouts by time stamp, if OFF they are as in RMM stream
-parameters.VMMsettings.sortReadoutsByTimeStampsONOFF = False
+parameters.VMMsettings.sortReadoutsByTimeStampsONOFF = True
 
 ### time stamp is time HI + time LO or if fine corrected with TDC 
 parameters.VMMsettings.timeResolutionType = 'fine'
@@ -197,7 +203,7 @@ parameters.VMMsettings.timeResolutionType = 'fine'
 
 ### timeWindow to search for clusters, timeWindow is max time between events in candidate cluster 
 ### and timeWindow/2 is the recursive time distance between adjacent hits
-parameters.dataReduction.timeWindow = 0.3e-6
+parameters.dataReduction.timeWindow = 2e-6
 
 ### 'OFF', 'fromFile' = File With Threhsolds Loaded, 'userDefined' = User defines the Thresholds in an array softTh
 parameters.dataReduction.softThresholdType = 'off' 
@@ -217,7 +223,7 @@ if parameters.dataReduction.softThresholdType == 'userDefined':
 parameters.wavelength.distance = 8000
 
 ##ON/OFF
-parameters.wavelength.calculateLambda = False
+parameters.wavelength.calculateLambda = True
 
 ### ON/OFF plot X vs Lambda 2D plot
 parameters.wavelength.plotXLambda     = False
@@ -243,16 +249,16 @@ parameters.wavelength.chopperPickUpDelay =  13.5/(2.*180.) * parameters.waveleng
 #################################
 
 ### ON/OFF
-parameters.MONitor.MONOnOff = False   
+parameters.MONitor.MONOnOff = True   
 
 ### threshold on MON, th is OFF if 0, any other value is ON
 parameters.MONitor.MONThreshold = 0   
 
 ### ON/OFF plotting (MON ToF and Pulse Height) 
-parameters.MONitor.plotMONtofPHS = True  
+parameters.MONitor.plotMONtofPHS = False  
 
 ### in mm, distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
-parameters.MONitor.MONDistance  = 6000   
+parameters.MONitor.MONDistance  = 10000   
 
 ###############################################################################
 ### PLOTTING PARAMETERS:
@@ -270,7 +276,7 @@ parameters.plotting.showStat = 'globalStat'
 
 ###############     
 ### raw plots
-parameters.plotting.plotRawReadouts         = True
+parameters.plotting.plotRawReadouts         = False
 parameters.plotting.plotReadoutsTimeStamps  = False
 parameters.plotting.plotRawHits             = False
 parameters.plotting.plotHitsTimeStamps      = False
@@ -315,7 +321,7 @@ parameters.plotting.hitogOutBounds = True
 ### PHS
 
 ### ON/OFF PHS per channel and global
-parameters.pulseHeigthSpect.plotPHS = True
+parameters.pulseHeigthSpect.plotPHS = False
 
 ### plot PHS in log scale 
 parameters.pulseHeigthSpect.plotPHSlog = False
@@ -493,13 +499,9 @@ if parameters.plotting.bareReadoutsCalculation is False:
             
             print('\033[1;32m\t MON events: {}\033[1;37m'.format(len(eventsMON.timeStamp)))
             
-            
             if parameters.wavelength.calculateLambda is True:
                 
                 abMON.calculateWavelengthMON()
-
-            eventsMON = abMON.events
-            eventsMONarray = eventsMON.concatenateEventsInArrayForDebug()
 
     
     ###############################################################################
@@ -583,6 +585,7 @@ if parameters.plotting.bareReadoutsCalculation is False:
     # eventsBTh = ab.events 
     
     events = ab.events 
+    eventsArray2 = events.concatenateEventsInArrayForDebug() 
     
     ####################    
     ### for debug, events in single array 
@@ -615,6 +618,89 @@ if parameters.plotting.bareReadoutsCalculation is False:
             sav.save(events,eventsMON)
         else:
             sav.save(events)
+        
+        # saveReducedPath = parameters.fileManagement.saveReducedPath
+        # fileName = fileNameSave
+        # nameMainFolder = parameters.fileManagement.reducedNameMainFolder     
+        # compressionHDFT = parameters.fileManagement.reducedCompressionHDFT  
+        # compressionHDFL = parameters.fileManagement.reducedCompressionHDFL 
+        
+        # if not os.path.exists(saveReducedPath):
+        #    os.makedirs(saveReducedPath)
+
+        # outfile = saveReducedPath+fileName+'.h5'
+    
+        # # check if file already exist and in case yes delete it 
+        # if os.path.exists(outfile):
+        #     print('\033[1;33mWARNING: Reduced DATA file exists, it will be overwritten!\033[1;37m')
+        #     os.system('rm '+outfile)
+      
+        # fid    = h5py.File(outfile, "w")
+    
+        # # create groups in h5 file  
+        # # gparam = fid.create_group(nameMainFolder+'/parameters')
+        # gdet   = fid.create_group(nameMainFolder+'/detector')
+        # gmon   = fid.create_group(nameMainFolder+'/monitor')
+        
+        # # self.ginstr = self.fid.create_group(self.nameMainFolder+'/instrument')
+        # # self.grun   = self.fid.create_group(self.nameMainFolder+'/run')
+        
+        # gdet_data = gdet.create_group('events')
+        # gmon_data = gmon.create_group('events')
+        
+        
+        # # padic =  parameters.__dict__
+        # # for key in  padic.keys():
+    
+        #      # if key != 'config':
+                 
+        #          # gparam_subg = gparam.create_group(key)
+                 
+        #          # print(key)
+             
+        #          # temp_dic = padic[key].__dict__
+                 
+        #          # temp_dic = dict(padic[key])
+     
+        #          # for key2, value in zip(temp_dic.keys(),temp_dic.values()) :
+                     
+        #          # for key2 in temp_dic.keys() :
+                     
+        #          #         print(key2)
+           
+        #                  # print(key2, value, type(value))
+                        
+        #                  # if isinstance(value, (bool, float, int)):
+        #                  #     gparam_subg.create_dataset(key2, data = [value], compression=compressionHDFT, compression_opts=compressionHDFL)
+        #                  # elif isinstance(value, (str)):
+        #                  #     gparam_subg.attrs.create(key2, value)
+        #                  # elif isinstance(value, (list, np.ndarray)):
+        #                  #     try:
+        #                  #         gparam_subg.create_dataset(key2, data = value, compression=compressionHDFT, compression_opts=compressionHDFL)
+        #                  #     except:
+                                
+        #                  #         # val = value[0]
+        #                  #         # print(val)
+        #                  #         gparam_subg.attrs.create(key2,value)
+                            
+        #                  # else:
+        #                  #     print('excluded dataset: ->  '+str(key2)+' -> '+str(type(value)))
+        #                  #     # a=1
+                            
+        # gdet.attrs.create('units: time in ns (int), position in channel number or mm (phys. unit), lambda in Angstrom, Pulse Heigth in a.u. ADC',1)
+    
+        # evdic = events.__dict__        
+        # for key, value in  zip(evdic.keys(),evdic.values()) :
+        #     gdet_data.create_dataset(key, data = value, compression=compressionHDFT, compression_opts=compressionHDFL)
+            
+        # if (parameters.MONitor.MONOnOff is True) and (MON.flagMONfound is True):
+
+        #     mondic = eventsMON.__dict__        
+        #     for key, value in  zip(mondic.keys(),mondic.values()) :
+        #         gmon_data.create_dataset(key, data = value, compression=compressionHDFT, compression_opts=compressionHDFL)
+        
+        
+        # fid.close()
 
 ###############################################################################
 ###############################################################################
@@ -654,46 +740,45 @@ if parameters.plotting.bareReadoutsCalculation is False:
 ######################
 ### events
 
-if parameters.plotting.bareReadoutsCalculation is False:
-    ### XY and XToF
-    plev = plo.plottingEvents(events,allAxis,parameters.plotting.coincidenceWS_ONOFF)
-    plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits, orientation = parameters.config.DETparameters.orientation)
+# if parameters.plotting.bareReadoutsCalculation is False:
+#     ### XY and XToF
+#     plev = plo.plottingEvents(events,allAxis,parameters.plotting.coincidenceWS_ONOFF,parameters)
+#     plev.plotXYToF(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits, orientation = parameters.config.DETparameters.orientation)
     
-    # ### ToF per cassette 
-    if parameters.plotting.plotToFDistr is True:
-        plev.plotToF(parameters.config.DETparameters.cassInConfig)
+#     # ### ToF per cassette 
+#     if parameters.plotting.plotToFDistr is True:
+#         plev.plotToF(parameters.config.DETparameters.cassInConfig)
 
-    ### lambda
-    if parameters.wavelength.plotXLambda is True:
-        plev.plotXLambda(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits)
-    ### lambda per cassette
-    if parameters.wavelength.plotLambdaDistr is True:
-        plev.plotLambda(parameters.config.DETparameters.cassInConfig)
+#     ### lambda
+#     if parameters.wavelength.plotXLambda is True:
+#         plev.plotXLambda(logScale = parameters.plotting.plotIMGlog, absUnits = parameters.plotting.plotABSunits)
+#     ### lambda per cassette
+#     if parameters.wavelength.plotLambdaDistr is True:
+#         plev.plotLambda(parameters.config.DETparameters.cassInConfig)
         
-    ### multiplicity 
-    if parameters.plotting.plotMultiplicity is True:
-        plev.plotMultiplicity(parameters.config.DETparameters.cassInConfig)
+#     ### multiplicity 
+#     if parameters.plotting.plotMultiplicity is True:
+#         plev.plotMultiplicity(parameters.config.DETparameters.cassInConfig)
 
-    # ### PHS
-    if parameters.pulseHeigthSpect.plotPHS is True:
-        plev.plotPHS(parameters.config.DETparameters.cassInConfig, parameters, logScale = parameters.pulseHeigthSpect.plotPHSlog)
-    if parameters.pulseHeigthSpect.plotPHScorrelation is True:
-        plev.plotPHScorrelation(parameters.config.DETparameters.cassInConfig, parameters.pulseHeigthSpect.plotPHSlog)
+#     # ### PHS
+#     if parameters.pulseHeigthSpect.plotPHS is True:
+#         plev.plotPHS(parameters.config.DETparameters.cassInConfig, parameters, logScale = parameters.pulseHeigthSpect.plotPHSlog)
+#     if parameters.pulseHeigthSpect.plotPHScorrelation is True:
+#         plev.plotPHScorrelation(parameters.config.DETparameters.cassInConfig, parameters.pulseHeigthSpect.plotPHSlog)
     
-    ### instantaneous Rate per cassette
-    if parameters.plotting.plotInstRate is True:
-        plev.plotInstantaneousRate(parameters.config.DETparameters.cassInConfig)
+#     ### instantaneous Rate per cassette
+#     if parameters.plotting.plotInstRate is True:
+#         plev.plotInstantaneousRate(parameters.config.DETparameters.cassInConfig)
 
-    ############
-    # MON plots
-    if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is True and MON.flagMONfound is True:
+#     ############
+#     # MON plots
+#     if parameters.MONitor.MONOnOff is True and parameters.MONitor.plotMONtofPHS is True and MON.flagMONfound is True:
         
-        plMON = plo.plottingMON(eventsMON,allAxis)
-        plMON.plot_ToF_PHS_MON()
+#         plMON = plo.plottingMON(eventsMON,allAxis)
+#         plMON.plot_ToF_PHS_MON()
         
-        if parameters.wavelength.calculateLambda is True: 
-            plMON.plotLambda_MON()
-            
+#         if parameters.wavelength.calculateLambda is True:
+#             plMON.plotLambda_MON()
             
 
 ###############################################################################

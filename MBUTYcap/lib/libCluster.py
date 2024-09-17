@@ -800,19 +800,19 @@ class hitsMON2events():
          
          lengg = np.shape(self.hits.ADC)[0]
          
-         self.events.PHW  = self.hits.ADC
-         self.events.PHS  = self.hits.ADC
-         self.events.WorS = 99*np.ones((lengg))
+         self.events.PHW    = self.hits.ADC
+         self.events.PHS    = self.hits.ADC
          self.events.PrevPT = self.hits.PrevPT
          self.events.PulseT = self.hits.PulseT
          self.events.timeStamp = self.hits.timeStamp
          
-         self.events.Cassette  = 99*np.ones((lengg))
-         self.events.positionW = 99*np.ones((lengg))
-         self.events.positionS = 99*np.ones((lengg))
-         self.events.multW = 99*np.ones((lengg))
-         self.events.multS = 99*np.ones((lengg))
-        
+         self.events.WorS      = 99*np.ones((lengg),dtype=int)
+         self.events.Cassette  = 99*np.ones((lengg),dtype=int)
+         self.events.positionW = 99*np.ones((lengg),dtype=int)
+         self.events.positionS = 99*np.ones((lengg),dtype=int)
+         self.events.multW     = 99*np.ones((lengg),dtype=int)
+         self.events.multS     = 99*np.ones((lengg),dtype=int)
+         self.events.Nevents   = lengg*np.ones((1),dtype=int)
         
         
          
