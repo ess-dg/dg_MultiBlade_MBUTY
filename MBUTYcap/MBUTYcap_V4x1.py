@@ -106,6 +106,9 @@ parameters.dumpSettings.quantity      =  100      #packets
 
 parameters.fileManagement.fileNameSave = 'test'
 
+# NOTE
+# for acqMode =  pcap-local saves files in parameters.fileManagement.filePath 
+
 # relevant for acqMode =  kafka , num of packets to dump is in dumpSettings 
 parameters.kafkaSettings.broker       = '127.0.0.1:9092'
 parameters.kafkaSettings.topic        = 'freia_debug'
