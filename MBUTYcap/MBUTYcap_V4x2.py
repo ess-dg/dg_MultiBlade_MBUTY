@@ -66,6 +66,8 @@ configFilePath  = currentPath+'config/'
 
 configFileName  = "AMOR.json"
 
+# configFileName  = "ESTIA.json"
+
 ###############################################################################
 ###############################################################################
 ### read json and create parameters for plotting and analisys ###
@@ -82,7 +84,7 @@ parameters.loadConfigAndSetParameters(config)
 #################################
 ### can only be only one of these 5 options: off, pcap-sync, pcap-local, pcap-local-overwrite or kafka
 
-# parameters.acqMode = 'pcap-sync'
+parameters.acqMode = 'pcap-sync'
 # parameters.acqMode = 'pcap-local'
 # parameters.acqMode = 'pcap-local-overwrite'
 # parameters.acqMode = 'kafka'
@@ -119,8 +121,8 @@ parameters.kafkaSettings.numOfPackets =  100      #packets
 # relevant for acqMode =  pcap-sync
 ### from ... to  ... rsync the data
 
-# parameters.fileManagement.sourcePath = 'essdaq@172.30.244.50:~/pcaps/'
-parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
+parameters.fileManagement.sourcePath = 'essdaq@172.30.244.50:~/pcaps/'
+# parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
 parameters.fileManagement.destPath   = '/Users/francescopiscitelli/Desktop/dataVMM/' 
 
 ###############
@@ -152,7 +154,7 @@ parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
 ### entire  folder  opend  and analized and cumulated  all togheter 
 ### sequence opens all filens in     parameters.fileManagement.fileSerials and with fileName
 parameters.fileManagement.openMode = 'window'
-# parameters.fileManagement.openMode = 'fileName'
+parameters.fileManagement.openMode = 'fileName'
 # parameters.fileManagement.openMode = 'latest'
 # parameters.fileManagement.openMode = 'secondLast'
 # parameters.fileManagement.openMode = 'wholeFolder'
@@ -291,6 +293,9 @@ parameters.plotting.plotToFDistr    = False
 
 parameters.plotting.ToFrange        = 0.15    # s
 parameters.plotting.ToFbinning      = 100e-6 # s
+
+parameters.plotting.ToFGate         = False
+parameters.plotting.ToFGateRange    = [0.02,0.025]   # s
      
 parameters.plotting.plotMultiplicity = False 
 
@@ -618,6 +623,14 @@ if parameters.plotting.bareReadoutsCalculation is False:
             sav.save(events,eventsMON)
         else:
             sav.save(events)
+            
+###############################################################################
+###############################################################################            
+            
+#  like this all ToFs get into reduced file, the gate is only in plotting 
+    if parameters.plotting.ToFGate is True:
+        abb = absu.gateToF(events,parameters.plotting.ToFGateRange)
+        events = abb.events 
 
 ###############################################################################
 ###############################################################################

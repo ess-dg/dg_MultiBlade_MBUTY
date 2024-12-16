@@ -209,6 +209,9 @@ class plotting():
            
           self.ToFrange        = 0.1   # s
           self.ToFbinning      = 100e-6 # s
+          
+          self.ToFGate         = False
+          self.ToFGateRange    = [0.0,0.5]   # s
                     
           self.plotMultiplicity = False 
           

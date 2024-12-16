@@ -34,8 +34,15 @@ class saveReducedDataToHDF():
         
         ###########################
         
-        if not os.path.exists(saveReducedPath):
-           os.makedirs(saveReducedPath)
+        if os.path.exists(saveReducedPath) is False:
+            print('\n --> \033[1;33mWARNING: Folder: '+saveReducedPath+' for reduced data file does not exist.\033[1;37m')
+            inp = input('     press (y) to create or (n or enter) to quit ')
+            if inp == 'y':
+                os.mkdir(saveReducedPath)
+                print(' --> folder created.')
+            else:    
+                print(' --> exiting, data reduced not saved.')
+                sys.exit()
 
         self.outfile = saveReducedPath+fileName+'.h5'
     

@@ -73,6 +73,28 @@ class Tof2LambdaConverter():
 
 ###############################################################################
 
+
+class gateToF():  
+    def __init__(self, events, ToFGateRange): 
+        
+         self.events       = events
+         self.ToFGateRange = ToFGateRange
+
+         print(' \t Gating ToF between {}ms and {}ms'.format(self.ToFGateRange[0]*1e3,self.ToFGateRange[1]*1e3))
+         
+         # this if is to avoid gating tof before callculating tof and erasing all events 
+         if np.any(self.events.ToF!=0):
+             keep = np.logical_and(self.events.ToF>=self.ToFGateRange[0]*1000000000,self.events.ToF<=self.ToFGateRange[1]*1000000000)
+
+             self.events.removeData(~keep)
+         else:
+             
+             print('\n \033[1;33m\t WARNING ---> ToF gating not possible, calcualate ToFs first. ToF array empty! \033[1;37m')
+             
+             
+        
+###############################################################################        
+
 class calculateAbsUnits():
      def __init__(self, events, parameters, text=''): 
          
@@ -148,6 +170,7 @@ class calculateAbsUnits():
           else:
               
               print('\n \033[1;33m\t Invalid ToFs not removed, kept in the plots! \033[1;37m')
+              
 
      def calculateWavelength(self):
          
@@ -251,6 +274,9 @@ class calculateAbsUnits():
                 else:
                     print('\n \033[1;33m\t %d events removed because of Invalid Tofs \033[1;37m' % (NumInvalid))
             
+
+         
+         
                 
 ###############################################################################
 ###############################################################################
