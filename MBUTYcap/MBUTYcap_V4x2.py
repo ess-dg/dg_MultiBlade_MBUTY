@@ -350,12 +350,14 @@ parameters.pulseHeigthSpect.plotPHScorrelation = False
 ### if you want to save reduced data, it must include lambda, 
 ### so lambda calculation is turned ON if not yet 
 if parameters.fileManagement.saveReducedFileONOFF is True:       
-    parameters.wavelength.calculateLambda = True
-    print('\n \t Lambda calculation turned ON to save reduced DATA')
+    if parameters.wavelength.calculateLambda == False:
+        parameters.wavelength.calculateLambda = True
+        print('\n \t Lambda calculation turned ON to save reduced DATA')
     
 if parameters.wavelength.plotXLambda or parameters.wavelength.plotLambdaDistr is True:
-    parameters.wavelength.calculateLambda = True
-    print('\n \t Lambda calculation turned ON to plot Lambda')
+    if parameters.wavelength.calculateLambda == False:
+        parameters.wavelength.calculateLambda = True
+        print('\n \t Lambda calculation turned ON to plot Lambda')
         
 ###############################################################################
 ###############################################################################
