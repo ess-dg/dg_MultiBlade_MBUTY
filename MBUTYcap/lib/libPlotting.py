@@ -431,6 +431,10 @@ class plottingEvents():
                     except:
                         print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
                         
+                    # add red lines to plot IMG
+                    # for k in np.arange(31,self.allAxis.axWires.steps,32):
+                    #     ax1.plot([k,k],[0,64],'r',linewidth=0.5)
+    
                     # cbar1 =fig2D.colorbar(pos1,ax=ax1)
                     # cbar2.minorticks_on()
                     # ax1.set_aspect('tight')
@@ -454,8 +458,8 @@ class plottingEvents():
                         print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
                         
                     # # add red lines to plot IMG
-                    # for k in np.arange(0,445,32):
-                    #     ax1.plot([0,63],[k,k],'r',linewidth=1)
+                    # for k in np.arange(31,self.allAxis.axWires.steps,32):
+                    #     ax1.plot([0,64],[k,k],'r',linewidth=1)
                         
                         
                     ax1.set_ylabel('Wire ch.')

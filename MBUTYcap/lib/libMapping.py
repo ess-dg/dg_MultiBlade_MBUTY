@@ -107,7 +107,7 @@ class hits():
     
 class extractHitsPortion():
     
-    def extract(hits,start,stop):
+    def extract(self,hits,start,stop):
         
         hitsEx = hits
     
