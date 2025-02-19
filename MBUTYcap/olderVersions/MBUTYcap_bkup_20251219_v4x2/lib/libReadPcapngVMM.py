@@ -1126,8 +1126,6 @@ class pcapng_reader_PreAlloc():
         
     def extractFromBytes(self,packetData,packetLength,indexPackets,debugMode=False):
         
-        ICMPflag = False 
-        
         indexESS = packetData.find(b'ESS')
         
         self.dprint('index where ESS word starts {}'.format(indexESS))
@@ -1146,16 +1144,11 @@ class pcapng_reader_PreAlloc():
                checkInstrumentID(packetData[indexESS+3])
                
     
-           indexDataStart = indexESS + self.ESSheaderSize - 2   # index after (cookie) ESS = 0x 45 53 53 where data starts (eg 44+30-2=72 or 44+32-2=74 )
+           indexDataStart = indexESS + self.ESSheaderSize - 2   # index after (cookie) ESS = 0x 45 53 53 where data starts (eg 44+30-2=72)
 
            #   give a warning if not 72,  check that ESS cookie is always in the same place
            if indexDataStart != self.headerSize:
-               print('\n \033[1;33mWARNING ---> ESS cookie is not in position! Data does not start at byte 72 or 74 or 42 or 44! \033[1;37m')
-               
-               if (indexESS == 72):
-                   # this is the case where the packet is sent instead of UDP but as a ping from RMM ICMP message -> need to skip this package 
-                   print(' \033[1;33mWARNING ---> ICMP packet found in data -> skipping packet. \033[1;37m')
-                   ICMPflag = True
+               print('\n \033[1;31mWARNING ---> ESS cookie is not in position 72 or 74 or 42 or 44! \033[1;37m')
                
            # ##########################################
            # # UDP ports here not used for now
@@ -1164,154 +1157,152 @@ class pcapng_reader_PreAlloc():
            # portDest    = int.from_bytes(packetData[indexUDPstart+2:indexUDPstart+4], byteorder='big') 
            # self.dprint('source: '+str(portSource)+' -> dest: '+str(portDest))
            # ##########################################
+       
+           readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
+           # or alternatively
+           # readoutsInPacket = (ESSlength - self.ESSheaderSize) / self.singleReadoutSize
            
-           if ICMPflag == False:
+           if (packetLength - indexDataStart) == 0: #empty packet 72 bytes 
                
-               readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
-               # or alternatively
-               # readoutsInPacket = (ESSlength - self.ESSheaderSize) / self.singleReadoutSize
+               self.counterEmptyESSpackets += 1
+               self.dprint('empty packet No. {}'.format(self.counterEmptyESSpackets))
                
-               if (packetLength - indexDataStart) == 0: #empty packet 72 bytes 
-                   
-                   self.counterEmptyESSpackets += 1
-                   self.dprint('empty packet No. {}'.format(self.counterEmptyESSpackets))
-                   
-                   PulseT, _, _  = self.extractPulseTime(packetData,indexESS)
-    
+               PulseT, _, _  = self.extractPulseTime(packetData,indexESS)
+
+           else:
+               
+               if readoutsInPacket.is_integer() is not True:
+                   print('\n \033[1;31mWARNING ---> something wrong with data bytes dimensions \033[1;37m')
+                   time.sleep(2)
                else:
                    
-                   if readoutsInPacket.is_integer() is not True:
-                       print('\n \033[1;31mWARNING ---> something wrong with data bytes dimensions \033[1;37m')
-                       time.sleep(2)
-                   else:
-                       
-                       # only read header if there is no emplty packet
-                       PulseT, PrevPT, ESSlength  = self.extractPulseTime(packetData,indexESS)
-                     
-                       # ESSlength is only 30 if the packet is an ESS packet but empty= 72-42 =30
-                       self.dprint('ESS packet length {} bytes, packetLength {} bytes, readouts in packet {}'.format(ESSlength, packetLength,readoutsInPacket))  
+                   # only read header if there is no emplty packet
+                   PulseT, PrevPT, ESSlength  = self.extractPulseTime(packetData,indexESS)
+                 
+                   # ESSlength is only 30 if the packet is an ESS packet but empty= 72-42 =30
+                   self.dprint('ESS packet length {} bytes, packetLength {} bytes, readouts in packet {}'.format(ESSlength, packetLength,readoutsInPacket))  
+               
+                   readoutsInPacket = int(readoutsInPacket)
+                   self.totalReadoutCount += readoutsInPacket
                    
-                       readoutsInPacket = int(readoutsInPacket)
-                       self.totalReadoutCount += readoutsInPacket
+                   for currentReadout in range(readoutsInPacket):
                        
-                       for currentReadout in range(readoutsInPacket):
-                           
-                       # for currentReadout in range(1):
-                           
-                           self.overallDataIndex += 1 
+                   # for currentReadout in range(1):
                        
-                           indexStart = indexDataStart + self.singleReadoutSize * currentReadout
-                           indexStop  = indexDataStart + self.singleReadoutSize * (currentReadout + 1)
-               
-                           if self.operationMode == 'normal':  # expected G0 is 0 or 1 
-                               vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
-                               # vmm3.G0 = 2
-                           elif self.operationMode == 'clustered':  # expected G0 is 2
-                               vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
-                               # vmm3.G0 = 2
-                           else:
-                               print('\n\t\033[1;31mERROR: Operation mode ({} found) is not one of these: normal or clustered mode! --> Exiting!\033[1;37m'.format(self.operationMode),end='') 
-                               sys.exit()
+                       self.overallDataIndex += 1 
+                   
+                       indexStart = indexDataStart + self.singleReadoutSize * currentReadout
+                       indexStop  = indexDataStart + self.singleReadoutSize * (currentReadout + 1)
+           
+                       if self.operationMode == 'normal':  # expected G0 is 0 or 1 
+                           vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
+                           # vmm3.G0 = 2
+                       elif self.operationMode == 'clustered':  # expected G0 is 2
+                           vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
+                           # vmm3.G0 = 2
+                       else:
+                           print('\n\t\033[1;31mERROR: Operation mode ({} found) is not one of these: normal or clustered mode! --> Exiting!\033[1;37m'.format(self.operationMode),end='') 
+                           sys.exit()
+                       
+                       # mode = VMM3A_modes(packetData[indexStart:indexStop])
+                       # G0   = mode.G0
+                       # if G0 == 0 or G0 == 1:  # normal hit mode or calibration mode 
+                       #      vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
+                       # elif G0 == 2: # clustered mode 
+                       #      # print('clustered')
+                       #      vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
+                       # else:
+                       #      print('\n\t\033[1;33mWARNING: Found (G0=-1) Operation mode which is not one of these three: Normal hit mode or calibration or clustered mode!\033[1;37m',end='') 
+                       
+                       # vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
+           
+                       index = self.overallDataIndex-1   
+                       
+                       # IMPORTANT this will load the MON data if comes from VMMs anyhow even if MON is OFF and TTl type is False                                 
+                       if (vmm3.Ring <= 11):
+                          
                            
-                           # mode = VMM3A_modes(packetData[indexStart:indexStop])
-                           # G0   = mode.G0
-                           # if G0 == 0 or G0 == 1:  # normal hit mode or calibration mode 
-                           #      vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
-                           # elif G0 == 2: # clustered mode 
-                           #      # print('clustered')
-                           #      vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
-                           # else:
-                           #      print('\n\t\033[1;33mWARNING: Found (G0=-1) Operation mode which is not one of these three: Normal hit mode or calibration or clustered mode!\033[1;37m',end='') 
+                           self.data[index, 0] = vmm3.Ring
+                           self.data[index, 1] = vmm3.Fen
+                           self.data[index, 2] = vmm3.VMM
+                           self.data[index, 3] = vmm3.hybrid
+                           self.data[index, 4] = vmm3.ASIC
+                           self.data[index, 5] = vmm3.Channel
+                           self.data[index, 6] = vmm3.ADC
+                           self.data[index, 7] = vmm3.BC
+                           self.data[index, 8] = vmm3.OTh
+                           self.data[index, 9] = vmm3.TDC
+                           self.data[index, 10] = vmm3.GEO
+                           self.data[index, 11] = vmm3.timeCoarse
+                           self.data[index, 12] = PulseT
+                           self.data[index, 13] = PrevPT
+                           self.data[index, 14] = vmm3.G0  # if 1 is calibration
+                           self.data[index, 15] = vmm3.Channel1
+                           self.data[index, 16] = vmm3.ADC1
+                           self.data[index, 17] = vmm3.mult0
+                           self.data[index, 18] = vmm3.mult1
+   
+                       # self.data[index, 7] = vmm3.timeStamp
+
+                       # print('vmm3:'+str(vmm3.Ring)+'index:'+str(index))
+                       
+                       elif (vmm3.Ring > 11) and (vmm3.Ring != self.MONring) and (self.MONTTLtype is False):
                            
-                           # vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
-               
-                           index = self.overallDataIndex-1   
-                           
-                           # IMPORTANT this will load the MON data if comes from VMMs anyhow even if MON is OFF and TTl type is False                                 
-                           if (vmm3.Ring <= 11):
-                              
+                           print('\n \033[1;33mWARNING ---> Found Ring that does not belong to either detector or monitor -> check config file, TTLtype shuld be True! \033[1;37m')
+
+                       if self.MONTTLtype is True: # overwrite event with the right MON data format 
+
+                           if (vmm3.Ring == self.MONring):
+
+                               mondata = MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
+  
+                               # index = index+2000
                                
-                               self.data[index, 0] = vmm3.Ring
-                               self.data[index, 1] = vmm3.Fen
-                               self.data[index, 2] = vmm3.VMM
-                               self.data[index, 3] = vmm3.hybrid
-                               self.data[index, 4] = vmm3.ASIC
-                               self.data[index, 5] = vmm3.Channel
-                               self.data[index, 6] = vmm3.ADC
-                               self.data[index, 7] = vmm3.BC
-                               self.data[index, 8] = vmm3.OTh
-                               self.data[index, 9] = vmm3.TDC
-                               self.data[index, 10] = vmm3.GEO
-                               self.data[index, 11] = vmm3.timeCoarse
+                               # print('monring:'+str(mondata.Ring)+'index:'+str(index))
+                               
+                               self.data[index, 0] = mondata.Ring
+                               self.data[index, 1] = mondata.Fen
+                               self.data[index, 2] = 0   # VMM for MON always 0
+                               self.data[index, 3] = 0   # hybrid for MON always 0
+                               self.data[index, 4] = 0   # ASIC for MON always 0
+                               self.data[index, 5] = mondata.Channel
+                               self.data[index, 6] = mondata.ADC
+                               self.data[index, 7] = mondata.posX
+                               self.data[index, 8] = mondata.posY
+                               self.data[index, 9] = 0     # TDC for MON always 0
+                               self.data[index, 10] = mondata.Type
+                               self.data[index, 11] = mondata.timeCoarse
                                self.data[index, 12] = PulseT
                                self.data[index, 13] = PrevPT
-                               self.data[index, 14] = vmm3.G0  # if 1 is calibration
-                               self.data[index, 15] = vmm3.Channel1
-                               self.data[index, 16] = vmm3.ADC1
-                               self.data[index, 17] = vmm3.mult0
-                               self.data[index, 18] = vmm3.mult1
+                               self.data[index, 14] = 0  # if 1 is calibration
+                               self.data[index, 15] = -1
+                               self.data[index, 16] = -1
+                               self.data[index, 17] = -1
+                               self.data[index, 18] = -1
+                           
+                           elif (self.MONring != 11): 
+                           
+                               print('\n \033[1;33mWARNING ---> Ring for Monitor in TTL type not matching, usually Ring is 11! \033[1;37m')
+                           
+  
+                           
+                           
+                    # valid or normal mode 
+                       if debugMode is True:
+                           print(" \t Packet: {} ({} bytes), Readout: {}, Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time Coarse {} ns, BC {}, OverTh {}, ADC {}, TDC {}, GO {} " \
+                                       .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeCoarse,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.G0))
+
        
-                           # self.data[index, 7] = vmm3.timeStamp
-    
-                           # print('vmm3:'+str(vmm3.Ring)+'index:'+str(index))
-                           
-                           elif (vmm3.Ring > 11) and (vmm3.Ring != self.MONring) and (self.MONTTLtype is False):
-                               
-                               print('\n \033[1;33mWARNING ---> Found Ring that does not belong to either detector or monitor -> check config file, TTLtype shuld be True! \033[1;37m')
-    
-                           if self.MONTTLtype is True: # overwrite event with the right MON data format 
-    
-                               if (vmm3.Ring == self.MONring):
-    
-                                   mondata = MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
-      
-                                   # index = index+2000
-                                   
-                                   # print('monring:'+str(mondata.Ring)+'index:'+str(index))
-                                   
-                                   self.data[index, 0] = mondata.Ring
-                                   self.data[index, 1] = mondata.Fen
-                                   self.data[index, 2] = 0   # VMM for MON always 0
-                                   self.data[index, 3] = 0   # hybrid for MON always 0
-                                   self.data[index, 4] = 0   # ASIC for MON always 0
-                                   self.data[index, 5] = mondata.Channel
-                                   self.data[index, 6] = mondata.ADC
-                                   self.data[index, 7] = mondata.posX
-                                   self.data[index, 8] = mondata.posY
-                                   self.data[index, 9] = 0     # TDC for MON always 0
-                                   self.data[index, 10] = mondata.Type
-                                   self.data[index, 11] = mondata.timeCoarse
-                                   self.data[index, 12] = PulseT
-                                   self.data[index, 13] = PrevPT
-                                   self.data[index, 14] = 0  # if 1 is calibration
-                                   self.data[index, 15] = -1
-                                   self.data[index, 16] = -1
-                                   self.data[index, 17] = -1
-                                   self.data[index, 18] = -1
-                               
-                               elif (self.MONring != 11): 
-                               
-                                   print('\n \033[1;33mWARNING ---> Ring for Monitor in TTL type not matching, usually Ring is 11! \033[1;37m')
-                               
-      
-                               
-                               
-                        # valid or normal mode 
-                           if debugMode is True:
-                               print(" \t Packet: {} ({} bytes), Readout: {}, Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time Coarse {} ns, BC {}, OverTh {}, ADC {}, TDC {}, GO {} " \
-                                           .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeCoarse,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.G0))
-    
+                       ###########
+                       
+           self.readouts.heartbeats[indexPackets] = PulseT
+        
+
+        if np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0:
+            percents = int(round(100.0 * self.counterValidESSpackets / float(self.counterCandidatePackets), 1))
+            print('['+format(percents,'01d') + '%]',end=' ')  
            
-                           ###########
-                           
-               self.readouts.heartbeats[indexPackets] = PulseT
-            
-    
-           if np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0:
-                percents = int(round(100.0 * self.counterValidESSpackets / float(self.counterCandidatePackets), 1))
-                print('['+format(percents,'01d') + '%]',end=' ')  
-               
-            # pb.progressBar(self.counterValidESSpackets,self.counterCandidatePackets)
+        # pb.progressBar(self.counterValidESSpackets,self.counterCandidatePackets)
            
            
         
