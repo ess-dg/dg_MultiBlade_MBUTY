@@ -1126,9 +1126,13 @@ class pcapng_reader_PreAlloc():
         
     def extractFromBytes(self,packetData,packetLength,indexPackets,debugMode=False):
         
-        ICMPflag = False 
+        # ICMP packet has ESS data in it but must be discarded 
+        # the ICMP protocal adds 28 bytes 
+        ICMPbyteExtraLength = 28 
+        ICMPflag       = False 
         
-        indexESS = packetData.find(b'ESS')
+        
+        indexESS = packetData.find(b'ESS') # index of(cookie) ESS = 0x 45 53 53 it is always 44 with pcap 
         
         self.dprint('index where ESS word starts {}'.format(indexESS))
         #  it should be always 44 = 42+2
@@ -1145,14 +1149,20 @@ class pcapng_reader_PreAlloc():
                checkTimeSrc(packetData[indexESS+7])
                checkInstrumentID(packetData[indexESS+3])
                
+           # print('---')
+           # print('indexESS '+str(indexESS))    
+           # print('header '+str(self.ESSheaderSize))
+           # print('full header '+str(self.headerSize))
     
-           indexDataStart = indexESS + self.ESSheaderSize - 2   # index after (cookie) ESS = 0x 45 53 53 where data starts (eg 44+30-2=72 or 44+32-2=74 )
+           indexDataStart = self.ESSheaderSize +( indexESS - 2 )   # index after (cookie) ESS = 0x 45 53 53 where data starts (eg 44+30-2=72 or 44+32-2=74 )
 
-           #   give a warning if not 72,  check that ESS cookie is always in the same place
+           # print('data starts at: '+str(indexDataStart))
+
+           #   give a warning if not 72 or 74,  check that ESS cookie is always in the same place
            if indexDataStart != self.headerSize:
                print('\n \033[1;33mWARNING ---> ESS cookie is not in position! Data does not start at byte 72 or 74 or 42 or 44! \033[1;37m')
                
-               if (indexESS == 72):
+               if (indexDataStart == self.headerSize + ICMPbyteExtraLength):
                    # this is the case where the packet is sent instead of UDP but as a ping from RMM ICMP message -> need to skip this package 
                    print(' \033[1;33mWARNING ---> ICMP packet found in data -> skipping packet. \033[1;37m')
                    ICMPflag = True
@@ -1552,6 +1562,10 @@ if __name__ == '__main__':
    filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
    file = '20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng'
    
+   filePath = '/Users/francescopiscitelli/Desktop/'
+   file = 'DiagonaltestData.pcapng'
+   file = 'DataRMMWrongHeader.pcapng'
+   
    # filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    # file = 'sampleData_NormalMode.pcapng'
    # file = 'sampleData_ClusteredMode.pcapng'
@@ -1619,8 +1633,7 @@ if __name__ == '__main__':
    # pcapng.allocateMemory()
    # pcapng.read()
    # readouts = pcapng.readouts
-   
-   
+
    pcap = pcapng_reader(filePathAndFileName,NSperClockTick, MONTTLtype=True, MONring=11, timeResolutionType='fine', sortByTimeStampsONOFF=True, operationMode='normal')
 
    readouts = pcap.readouts
