@@ -1129,7 +1129,7 @@ class pcapng_reader_PreAlloc():
         # ICMP packet has ESS data in it but must be discarded 
         # the ICMP protocal adds 28 bytes 
         ICMPbyteExtraLength = 28 
-        ICMPflag       = False 
+        ICMPflag            = False 
         
         
         indexESS = packetData.find(b'ESS') # index of(cookie) ESS = 0x 45 53 53 it is always 44 with pcap 
@@ -1166,6 +1166,9 @@ class pcapng_reader_PreAlloc():
                    # this is the case where the packet is sent instead of UDP but as a ping from RMM ICMP message -> need to skip this package 
                    print(' \033[1;33mWARNING ---> ICMP packet found in data -> skipping packet. \033[1;37m')
                    ICMPflag = True
+               else:
+                   print(' \033[1;31mWARNING ---> this packet is not a ICMP packet that can be skipped, DATA MIGHT BE CORRUPTED. \033[1;37m')
+                   time.sleep(2)
                
            # ##########################################
            # # UDP ports here not used for now
