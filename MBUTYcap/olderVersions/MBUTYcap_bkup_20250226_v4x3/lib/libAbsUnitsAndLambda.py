@@ -9,7 +9,6 @@ Created on Mon Aug 30 14:18:41 2021
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-import copy
 
 
 from lib import libSampleData as sdat
@@ -78,8 +77,7 @@ class Tof2LambdaConverter():
 class gateToF():  
     def __init__(self, events, ToFGateRange): 
         
-         self.events       = copy.deepcopy(events)
-         # self.events= events 
+         self.events       = events
          self.ToFGateRange = ToFGateRange
 
          print(' \t Gating ToF between {}ms and {}ms'.format(self.ToFGateRange[0]*1e3,self.ToFGateRange[1]*1e3))

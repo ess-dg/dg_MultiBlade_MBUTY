@@ -194,9 +194,6 @@ class plotting():
           
           #  is you want stats of clusters per cassette or for all at once, 0 no  stat, individualStat stat per cass, globalStat stat all cass glob
           self.showStat = 'globalStat'
-          
-          self.plottingInSections       = False
-          self.plottingInSectionsBlocks = 5
                     
           self.plotRawReadouts         = False
           self.plotReadoutsTimeStamps  = False
@@ -295,22 +292,14 @@ class parameters():
         
         self.loadConfigAndSetParameters(config=None)
         
-    def loadConfig(self,config=None):
-        
-        self.config = config
-        
-        self.fileManagement.importConfigFileDetails(self.config)
-        
     def loadConfigAndSetParameters(self,config=None):
 
-        # self.config = config
+        self.config = config
         
-        # # self.acqMode = acqMode
+        # self.acqMode = acqMode
         
-        # # self.fileManagement = fileManagement(self.fileManagement.currentPath)
-        # self.fileManagement.importConfigFileDetails(self.config)
-        
-        self.loadConfig(config)
+        # self.fileManagement = fileManagement(self.fileManagement.currentPath)
+        self.fileManagement.importConfigFileDetails(self.config)
         
         self.dumpSettings   = dumpSettings(self.fileManagement.currentPath)
          

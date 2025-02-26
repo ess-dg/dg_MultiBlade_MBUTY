@@ -10,10 +10,9 @@ import numpy as np
 import json
 import os
 import sys
-import copy
 
 # import pandas as pd
-# from lib import libReadPcapngVMM as pcapr
+from lib import libReadPcapngVMM as pcapr
 # from lib import libSampleData as sdat
 # import libSampleData as sdat
 
@@ -189,24 +188,22 @@ class DETparameters():
       
 ################################################        
 
-class read_json_config:
-    
+class read_json_config():
     def __init__(self, configFile_PathAndFileName):
         
-        temp = os.path.split(configFile_PathAndFileName)
-        self.configFilePath = temp[0] + '/'
+        temp =  os.path.split(configFile_PathAndFileName)
+            
+        self.configFilePath = temp[0]+'/'
         self.configFileName = temp[1]
         
-        # Initialize other attributes
-        self.MONmap        = MONmap()
-        self.DETmap        = DETmap()
+        self.MONmap = MONmap()
+        self.DETmap = DETmap()
         self.DETparameters = DETparameters()
-        self.cassMap       = cassMap()
-        self.channelMap    = channelMap()
+        self.cassMap = cassMap()
+        self.channelMap = channelMap()
         
-        self.debug = False
-        
-        # Open the file
+        self.debug    = False
+         
         try:
             self.ff   = open(configFile_PathAndFileName,'r') 
         except:
@@ -214,7 +211,6 @@ class read_json_config:
             print('\n ---> in folder: ' + self.configFilePath + ' \n -> exiting.')
             sys.exit()
             
-        # Load JSON data
         try:    
             self.conf = json.load(self.ff)
         except:
@@ -222,35 +218,19 @@ class read_json_config:
             print(' ---> common mistake: last line of Cassette2ElectronicsConfig: {"ID" : X, "Ring" : X, "Fen" : X, "Hybrid" : X} must not have comma! \n -> exiting.')
             sys.exit()
             
-            
-        # Process parameters
+        
         self.get_allParameters()
-                
+        
         self.print_DETname()
         self.print_check_operationMode()
-                
+        
         self.check_cassetteLabelling()
-        
-        
+              
     def __del__(self):
         try:
             self.ff.close()
-        except AttributeError:
+        except:
             pass
-        
-    def __deepcopy__(self, memo):
-        # Create a shallow copy of the object
-        copied_obj = copy.copy(self)
-        # Deep copy all attributes except the file object
-        copied_obj.MONmap = copy.deepcopy(self.MONmap, memo)
-        copied_obj.DETmap = copy.deepcopy(self.DETmap, memo)
-        copied_obj.DETparameters = copy.deepcopy(self.DETparameters, memo)
-        copied_obj.cassMap = copy.deepcopy(self.cassMap, memo)
-        copied_obj.channelMap = copy.deepcopy(self.channelMap, memo)
-        # Skip copying the file object (self.ff) and JSON data (self.conf)
-        copied_obj.ff = None  # Or reinitialize if needed
-        copied_obj.conf = copy.deepcopy(self.conf, memo)  # Copy JSON data
-        return copied_obj
         
     def dprint(self, msg):
         if self.debug:
@@ -274,7 +254,8 @@ class read_json_config:
         else:
             print('\n\t\033[1;31mERROR: Operation mode (found {}) can only be either normal or clustered -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.DETparameters.operationMode),end='') 
             sys.exit()
-
+ 
+            
         
     def get_DETname(self):
         self.DETparameters.name = self.conf.get('Detector')
@@ -315,12 +296,12 @@ class read_json_config:
                 print('\033[1;37m')
                 
         else:
-              for cc in self.DETmap.cassettesMap:
-                  if cc.get("ID") == cassetteID:
-                      self.cassMap.RingID       = cc.get("Ring")
-                      self.cassMap.FenID        = cc.get("Fen")
-                      self.cassMap.hybridID     = cc.get("Hybrid")
-                      self.cassMap.hybridSerial = cc.get("HybridSerial")
+             for cc in self.DETmap.cassettesMap:
+                 if cc.get("ID") == cassetteID:
+                     self.cassMap.RingID       = cc.get("Ring")
+                     self.cassMap.FenID        = cc.get("Fen")
+                     self.cassMap.hybridID     = cc.get("Hybrid")
+                     self.cassMap.hybridSerial = cc.get("HybridSerial")
                      
     def check_cassetteLabelling(self):
 
@@ -371,57 +352,30 @@ class read_json_config:
         
         else:
             
-              # for cc in self.mapm:
+             # for cc in self.mapm:
                  
-                  # here supports only one monitor !!!
+                 # here supports only one monitor !!!
                  
-                  cc = mapm[0]
+                 cc = mapm[0]
             
-                  self.MONmap.ID      = cc.get("ID")
+                 self.MONmap.ID      = cc.get("ID")
    
-                  TTLtypeTemp = (cc.get("TTLtype"))
-                  TTLtypeBool = (TTLtypeTemp == "True") or (TTLtypeTemp == "true") or (TTLtypeTemp == "t") or (TTLtypeTemp == "T") or (TTLtypeTemp == "yes") or (TTLtypeTemp == "1")
+                 TTLtypeTemp = (cc.get("TTLtype"))
+                 TTLtypeBool = (TTLtypeTemp == "True") or (TTLtypeTemp == "true") or (TTLtypeTemp == "t") or (TTLtypeTemp == "T") or (TTLtypeTemp == "yes") or (TTLtypeTemp == "1")
                  
-                  # if TTLtypeBool is True:
-                  #        print("is true")
-                  # else:
-                  #        print("is false")
+                 # if TTLtypeBool is True:
+                 #        print("is true")
+                 # else:
+                 #        print("is false")
 
 
-                  self.MONmap.TTLtype = TTLtypeBool
-                  self.MONmap.RingID  = cc.get("Ring")
-                  self.MONmap.FenID   = cc.get("Fen")
-                  self.MONmap.hybridID      = cc.get("Hybrid")
-                  self.MONmap.hybridSerial  = cc.get("HybridSerial")
-                  self.MONmap.ASICID     = cc.get("ASIC")
-                  self.MONmap.channel    = cc.get("Channel")
-
-
-      
-        
-###############################################################################
-###############################################################################     
-
-class extractPartialConfig():
-
-    @staticmethod
-    
-    def extract(config, start, stop):
-        
-        print('\033[1;36m \t Extracting Partial Configuration for Cassettes from {} to {} \033[1;37m'.format(start,stop-1))
-        # Create a deep copy of the input config
-        configOUT = copy.deepcopy(config)
-        # Modify the copied object’s cassInConfig
-        configOUT.DETparameters.cassInConfig = config.DETparameters.cassInConfig[start:stop]
-    
-        if not(configOUT.DETparameters.cassInConfig):
-            configOUT.DETparameters.cassInConfig = [config.DETparameters.cassInConfig[-1]]
-            print('\t \033[1;33mWARNING: range for config out of range, setting to last item in list!')
-        
-        if not isinstance(configOUT.DETparameters.cassInConfig,list):
-            configOUT.DETparameters.cassInConfig = [configOUT.DETparameters.cassInConfig]
-    
-        return configOUT
+                 self.MONmap.TTLtype = TTLtypeBool
+                 self.MONmap.RingID  = cc.get("Ring")
+                 self.MONmap.FenID   = cc.get("Fen")
+                 self.MONmap.hybridID      = cc.get("Hybrid")
+                 self.MONmap.hybridSerial  = cc.get("HybridSerial")
+                 self.MONmap.ASICID     = cc.get("ASIC")
+                 self.MONmap.channel    = cc.get("Channel")
         
 
 ###############################################################################
@@ -713,37 +667,29 @@ class mapMonitor():
 
 if __name__ == '__main__':
 
-   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_devel/config/'+"AMOR.json"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"test.json"
    # filePathD = './'+"VMM3a_Freia.pcapng"
 
-   config1 = read_json_config(filePath)
+   config = read_json_config(filePath)
    
-   # print(config1.DETparameters.cassInConfig)
+   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
+   file = 'sampleData_NormalMode.pcapng'
+   # file = 'sampleData_ClusteredMode.pcapng'
    
-   config2 = extractPartialConfig.extract(config1,11,55)
-
-   print(config2.DETparameters.cassInConfig)
-
-   # print(config1.DETparameters.cassInConfig)
+   filePathAndFileName = filePath+file
    
-   # filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
-   # file = 'sampleData_NormalMode.pcapng'
-   # # file = 'sampleData_ClusteredMode.pcapng'
+   NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
    
-   # filePathAndFileName = filePath+file
-   
-   # NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
-   
-   # pcapng = pcapr.pcapng_reader(filePathAndFileName, NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode)
+   pcapng = pcapr.pcapng_reader(filePathAndFileName, NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode)
 
     
-   # readouts = pcapng.readouts
-   # readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+   readouts = pcapng.readouts
+   readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
    
-   # md  = mapDetector(readouts, config)
-   # md.mappAllCassAndChannelsGlob()
-   # hits = md.hits
-   # hitsArray  = hits.concatenateHitsInArrayForDebug()
+   md  = mapDetector(readouts, config)
+   md.mappAllCassAndChannelsGlob()
+   hits = md.hits
+   hitsArray  = hits.concatenateHitsInArrayForDebug()
    
    # parameters.loadConfigParameters(config)
    
