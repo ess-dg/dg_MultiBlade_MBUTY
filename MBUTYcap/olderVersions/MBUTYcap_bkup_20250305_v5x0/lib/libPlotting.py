@@ -11,13 +11,13 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 # import time
 
-# from lib import libSampleData as sdat
+from lib import libSampleData as sdat
 from lib import libMapping as maps
-# from lib import libCluster as clu
-# from lib import libAbsUnitsAndLambda as absu
+from lib import libCluster as clu
+from lib import libAbsUnitsAndLambda as absu
 from lib import libHistograms as hh
 from lib import libParameters as para
-from lib import libReadPcapngVMM as pcapr
+# from lib import libReadPcapngVMM as pcapr
 
 
 # import libSampleData as sdat
@@ -46,7 +46,7 @@ class preparePlotMatrix():
         self.axHandle.shape      = (self.Nrows,self.Ncols)
         self.axHandle            = np.atleast_2d(self.axHandle)
   
-########################################
+################################
 
 ########################################
 
@@ -63,27 +63,30 @@ class checkReadoutsClass():
              
              print('\t \033[1;33mWARNING: Readouts array is empty -> skipping plots')
                    
-########################################                   
+                   
         
 class plottingReadouts():
    
     def __init__(self, readouts, config):
     
+        # self.readouts = readouts
+        
         self.config   = config
         
         checkke = checkReadoutsClass(readouts)
         self.readouts = checkke.readouts
-        self.flag     = checkke.flag 
-
+        self.flag = checkke.flag 
+        
+        # self.parameters = parameters
         if self.flag is True:
             self.xbins = np.linspace(0,63,64)
-            
-    def selectHybridFromCassetteID(self,cassette1ID):
+        
+    def histChRaw1hybrid(self,cassette1ID):
         
         if self.flag is True:
             self.config.get_cassID2RingFenHybrid(cassette1ID)
     
-            # cassette correpsonds to a particluar triplet of ring fen and hybrid so I can use cassette to loop over hybrids
+            # cassette correpsonds to a particluar triplet of ring fen and hybrid so Icanuse cassette to loop over hybrids
             
             # print(self.config.cassMap.RingID)
             # print(self.config.cassMap.FenID)
@@ -93,14 +96,7 @@ class plottingReadouts():
             sel2 = self.readouts.Fen    == self.config.cassMap.FenID
             sel3 = self.readouts.hybrid == self.config.cassMap.hybridID
             
-            selectedHybridfromCassID_BoolArray = sel1 & sel2 & sel3
-            
-            return selectedHybridfromCassID_BoolArray
-        
-    def histChRaw1hybrid(self,cassette1ID):
-        
-        if self.flag is True:
-            sel = self.selectHybridFromCassetteID(cassette1ID)
+            sel = sel1 & sel2 & sel3
             
             # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],parameters.config.DETparameters.numOfWires)
             
@@ -114,15 +110,15 @@ class plottingReadouts():
                 self.histo0 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel])
                 self.histo1 = hh.histog().hist1D(self.xbins, self.readouts.Channel1[sel])
         
-    def plotChRaw(self,cassetteIDs): 
+    def plotChRaw(self,hybrids): 
         
         if self.flag is True:
         
-            self.ploth = preparePlotMatrix(1001, 2, len(cassetteIDs))
+            self.ploth = preparePlotMatrix(1001, 2, len(hybrids))
             
             self.ploth.figHandle.suptitle('Readouts - raw channels')
     
-            for k, cc in enumerate(cassetteIDs):
+            for k, cc in enumerate(hybrids):
                 
                 self.histChRaw1hybrid(cc)  
     
@@ -131,16 +127,19 @@ class plottingReadouts():
                 self.ploth.axHandle[0][k].set_xlabel('ASIC 0 ch no.')
                 self.ploth.axHandle[1][k].set_xlabel('ASIC 1 ch no.')
                 self.ploth.axHandle[0][k].set_title('hyb.'+str(cc)) 
-                if k == 0:
-                   self.ploth.axHandle[0][k].set_ylabel('counts')
-                   self.ploth.axHandle[1][k].set_ylabel('counts')
             
     def extractTimeStamp1hybrid(self,cassette1ID):
         
         if self.flag is True:
         
-            sel = self.selectHybridFromCassetteID(cassette1ID)
-
+            self.config.get_cassID2RingFenHybrid(cassette1ID)
+            
+            sel1 = self.readouts.Ring   == self.config.cassMap.RingID
+            sel2 = self.readouts.Fen    == self.config.cassMap.FenID
+            sel3 = self.readouts.hybrid == self.config.cassMap.hybridID
+            
+            sel = sel1 & sel2 & sel3
+            
             if self.config.DETparameters.operationMode == 'normal':
                 asic0  = self.readouts.ASIC == 0
                 asic1  = self.readouts.ASIC == 1
@@ -152,15 +151,15 @@ class plottingReadouts():
                 self.timeStamp1 = self.timeStamp0
             
             
-    def plotTimeStamps(self,cassetteIDs):
+    def plotTimeStamps(self,hybrids):
         
         if self.flag is True:
         
-            self.plotht = preparePlotMatrix(1002, 2, len(cassetteIDs))
+            self.plotht = preparePlotMatrix(1002, 2, len(hybrids))
             
             self.plotht.figHandle.suptitle('Readouts - raw channels time stamps')
             
-            for k, cc in enumerate(cassetteIDs):
+            for k, cc in enumerate(hybrids):
                 
                 self.extractTimeStamp1hybrid(cc)  
                 
@@ -201,66 +200,7 @@ class plottingReadouts():
                 self.plothc.axHandle[0][1].set_xlabel('trigger no.')
                 self.plothc.axHandle[0][1].set_ylabel('delta time betweeen resets (s)')
             
-    def plotADCvsCh(self,cassetteIDs,allAxis,logScale = False):
-        
-        self.allAxis = allAxis
-        
-        if self.flag is True:
-
-            normColors = logScaleMap(logScale).normColors
-            
-            self.plothtch = preparePlotMatrix(1006, 2, len(cassetteIDs))
-            
-            self.plothtch.figHandle.suptitle('ADC vs CH')
-                     
-            for k, cc in enumerate(cassetteIDs):
-                
-                sel = self.selectHybridFromCassetteID(cc)
-                
-                if self.config.DETparameters.operationMode == 'normal':
-                    asic0  = self.readouts.ASIC == 0
-                    asic1  = self.readouts.ASIC == 1
-                    self.histoch0 = hh.histog().hist2D(self.allAxis.axEnergy.axis, self.readouts.ADC[sel & asic0] , self.xbins, self.readouts.Channel[sel & asic0])
-                    self.histoch1 = hh.histog().hist2D(self.allAxis.axEnergy.axis, self.readouts.ADC[sel & asic1] , self.xbins, self.readouts.Channel[sel & asic1])
-                    
-                elif self.config.DETparameters.operationMode == 'clustered':
-                    self.histoch0 = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.readouts.ADC[sel], self.xbins, self.readouts.Channel[sel])
-                    self.histoch1 = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.readouts.ADC1[sel],self.xbins, self.readouts.Channel1[sel])
-                    
-                   
-                self.plothtch.axHandle[0][k].imshow(self.histoch0,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,self.xbins[0],self.xbins[-1]], origin='lower',cmap='jet')
-                self.plothtch.axHandle[1][k].imshow(self.histoch1,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,self.xbins[0],self.xbins[-1]], origin='lower',cmap='jet')
-              
-                self.plothtch.axHandle[0][k].set_xlabel('ASIC 0 ch no.')
-                self.plothtch.axHandle[1][k].set_xlabel('ASIC 1 ch no.')
-                
-                self.plothtch.axHandle[0][k].set_title('hyb.'+str(cc)) 
-                
-                if k == 0:
-                   self.plothtch.axHandle[0][k].set_ylabel('ch. no.')
-                   self.plothtch.axHandle[1][k].set_ylabel('ch. no.')
-                
-    
-            #                 
-            #                 self.plotPHS.axHandle[0][k].set_title('cass ID '+str(cass))
-      
-                       
-            #                    #global PHS
-            #                 PHSGw  = np.sum(PHSw,axis=0)
-            #                 PHSGs  = np.sum(PHSs,axis=0)
-            #                 PHSGwc = np.sum(PHSwc,axis=0)
-                   
-            #                 # global PHS plot
-            #                 self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGw,'r',where='mid',label='w')
-            #                 self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGs,'b',where='mid',label='s')
-            #                 self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGwc,'k',where='mid',label='w/s')
-            #                 self.plotPHS.axHandle[3][k].set_xlabel('pulse height (a.u.)')
-            #                 self.plotPHS.axHandle[3][k].legend(loc='upper right', shadow=False, fontsize='large')
-            #                 if k == 0:
-            #                    self.plotPHS.axHandle[3][k].set_ylabel('counts')
-            
-################################################################################################
-################################################################################################
+################################
         
 class plottingHits():
    
@@ -289,13 +229,13 @@ class plottingHits():
             self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass])
         
 
-    def plotChRaw(self,cassetteIDs): 
+    def plotChRaw(self,cassettes): 
         
-        self.ploth = preparePlotMatrix(1003, 2, len(cassetteIDs))
+        self.ploth = preparePlotMatrix(1003, 2, len(cassettes))
         
         self.ploth.figHandle.suptitle('Hits - raw channels')
 
-        for k, cc in enumerate(cassetteIDs):
+        for k, cc in enumerate(cassettes):
             
             self.histChRaw1Cass(cc)  
 
@@ -359,13 +299,13 @@ class plottingHits():
         self.WireCh  = self.WireCh   - 10
         self.StripCh = self.StripCh  - 20 + self.parameters.config.DETparameters.numOfWires
         
-    def plotTimeStamps(self,cassetteIDs):
+    def plotTimeStamps(self,cassettes):
         
-        self.plotht = preparePlotMatrix(1004, 1, len(cassetteIDs))
+        self.plotht = preparePlotMatrix(1004, 1, len(cassettes))
         
         self.plotht.figHandle.suptitle('Hits - W and S time stamps')
         
-        for k, cc in enumerate(cassetteIDs):
+        for k, cc in enumerate(cassettes):
             
             self.extractTimeStamp1Cass(cc)  
             
@@ -380,13 +320,13 @@ class plottingHits():
             self.plotht.axHandle[0][k].grid(axis='x', alpha=0.75)
             self.plotht.axHandle[0][k].grid(axis='y', alpha=0.75)
             
-    def plotTimeStampsVSCh(self,cassetteIDs):
+    def plotTimeStampsVSCh(self,cassettes):
         
-        self.plothtvs = preparePlotMatrix(1005, 1, len(cassetteIDs))
+        self.plothtvs = preparePlotMatrix(1005, 1, len(cassettes))
         
         self.plothtvs.figHandle.suptitle('Hits - W and S VS time stamps')
         
-        for k, cc in enumerate(cassetteIDs):
+        for k, cc in enumerate(cassettes):
             
             self.extractTimeStampAndCh1Cass(cc)  
             
@@ -399,8 +339,7 @@ class plottingHits():
             self.plothtvs.axHandle[0][k].grid(axis='y', alpha=0.75)
         
 
-################################################################################################
-################################################################################################
+################################
 
 class logScaleMap():
     def __init__(self,logScale):
@@ -410,8 +349,7 @@ class logScaleMap():
         elif logScale is False:
             self.normColors = None
 
-################################################################################################
-################################################################################################
+########################################
 
 class checkEventsClass():
      def __init__(self, events):
@@ -434,7 +372,7 @@ class checkEventsClass():
                      
         
 
-################################################################################################
+#######################################
         
 class plottingEvents():
     
@@ -675,7 +613,7 @@ class plottingEvents():
                 axl.set_xlabel('wavelength (A)')
                 figl.suptitle('DET wavelength')
 
-    def plotMultiplicity(self, cassetteIDs):
+    def plotMultiplicity(self, cassettes):
         
         if self.flag is True:
         
@@ -684,13 +622,13 @@ class plottingEvents():
 
             ########
 
-            self.plotMult = preparePlotMatrix(401, 2, len(cassetteIDs))
+            self.plotMult = preparePlotMatrix(401, 2, len(cassettes))
             
             self.plotMult.figHandle.suptitle('Events - multiplicity')
             
             xx =  self.allAxis.axMult.axis
 
-            for k, cass in enumerate(cassetteIDs):
+            for k, cass in enumerate(cassettes):
    
                 selc  = self.events.Cassette  == cass
                 sel2D = self.events.positionS >= 0
@@ -735,13 +673,13 @@ class plottingEvents():
                 plt.colorbar(pos1,ax=self.plotMult.axHandle[1][k])
        
 
-    def plotPHS(self, cassetteIDs, parameters, logScale = False):
+    def plotPHS(self, cassettes, parameters, logScale = False):
         
         if self.flag is True:
         
             normColors = logScaleMap(logScale).normColors
             
-            self.plotPHS = preparePlotMatrix(601, 4, len(cassetteIDs))
+            self.plotPHS = preparePlotMatrix(601, 4, len(cassettes))
             
             self.plotPHS.figHandle.suptitle('Pulse Heigth Spectra')
             
@@ -753,7 +691,7 @@ class plottingEvents():
             
             stripAx = np.linspace(0,parameters.config.DETparameters.numOfStrips-1, parameters.config.DETparameters.numOfStrips)
             
-            for k, cass in enumerate(cassetteIDs):
+            for k, cass in enumerate(cassettes):
        
                     selc  = self.events.Cassette  == cass
                     sel2D = self.events.positionS >= 0
@@ -786,17 +724,17 @@ class plottingEvents():
                     if k == 0:
                        self.plotPHS.axHandle[3][k].set_ylabel('counts')
                    
-    def plotPHScorrelation(self, cassetteIDs, logScale = False):
+    def plotPHScorrelation(self, cassettes, logScale = False):
         
         if self.flag is True:
               
            normColors = logScaleMap(logScale).normColors
         
-           self.plotPHScorr = preparePlotMatrix(602, 1, len(cassetteIDs), figSize=(12,6))
+           self.plotPHScorr = preparePlotMatrix(602, 1, len(cassettes), figSize=(12,6))
            
            self.plotPHScorr.figHandle.suptitle('Pulse Heigth Spectrum - Correlation W/S')
         
-           for k, cass in enumerate(cassetteIDs):
+           for k, cass in enumerate(cassettes):
    
                 selc  = self.events.Cassette  == cass
                 sel2D = self.events.positionS >= 0
@@ -810,15 +748,15 @@ class plottingEvents():
                 if k == 0:
                     self.plotPHScorr.axHandle[0][k].set_ylabel('pulse height strips (a.u.)')
             
-    def plotInstantaneousRate(self, cassetteIDs):
+    def plotInstantaneousRate(self, cassettes):
         
         if self.flag is True:
            
-           self.plotInst = preparePlotMatrix(209, 1, len(cassetteIDs))
+           self.plotInst = preparePlotMatrix(209, 1, len(cassettes))
            
            self.plotInst.figHandle.suptitle('Instantaneous Rate')
            
-           for k, cass in enumerate(cassetteIDs):
+           for k, cass in enumerate(cassettes):
                
                selc  = self.events.Cassette  == cass
                sel2D = self.events.positionS >= 0
@@ -833,15 +771,15 @@ class plottingEvents():
                    self.plotInst.axHandle[0][k].set_ylabel('num of events')
                    
                    
-    def plotToF(self, cassetteIDs):
+    def plotToF(self, cassettes):
         
         if self.flag is True:
            
-          self.plotTT = preparePlotMatrix(333, 1, len(cassetteIDs))
+          self.plotTT = preparePlotMatrix(333, 1, len(cassettes))
           
           self.plotTT.figHandle.suptitle('ToF distr per cassette')
           
-          for k, cass in enumerate(cassetteIDs):
+          for k, cass in enumerate(cassettes):
                
                selc  = self.events.Cassette  == cass
                sel2D = self.events.positionS >= 0
@@ -860,15 +798,15 @@ class plottingEvents():
               
                legend = self.plotTT.axHandle[0][k].legend(loc='upper right', shadow=False, fontsize='large')
                
-    def plotLambda(self, cassetteIDs):
+    def plotLambda(self, cassettes):
         
         if self.flag is True:
            
-          self.plotWA = preparePlotMatrix(339, 1, len(cassetteIDs))
+          self.plotWA = preparePlotMatrix(339, 1, len(cassettes))
           
           self.plotWA.figHandle.suptitle('Wavelength distr per cassette')
           
-          for k, cass in enumerate(cassetteIDs):
+          for k, cass in enumerate(cassettes):
                
                selc  = self.events.Cassette  == cass
                sel2D = self.events.positionS >= 0
@@ -889,8 +827,7 @@ class plottingEvents():
   
 
   
-################################################################################################
-################################################################################################
+###############################################################################
   
 class plottingMON():
     
@@ -939,7 +876,7 @@ if __name__ == '__main__' :
     
     plt.close("all")
     
-    configFilePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"AMOR.json"
+    configFilePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MB300_AMOR_config.json"
     
     
     parameters  = para.parameters('./')
@@ -948,14 +885,12 @@ if __name__ == '__main__' :
     
     
     config = maps.read_json_config(configFilePath)
-    parameters.loadConfigAndSetParameters(config)
+    parameters.loadConfigParameters(config)
+
 
     parameters.plotting.positionReconstruction = 'W.max-S.max'
     
-    parameters.pulseHeigthSpect.energyBins = 128
-    parameters.pulseHeigthSpect.maxEnerg   = 1700
-    
-    # parameters.config.DETparameters.cassInConfig = [1,2,3,4,5]
+    parameters.cassettes.cassettes = [1,2,3]
     
     # parameters.wavelength.distance = 19000
     
@@ -967,33 +902,29 @@ if __name__ == '__main__' :
     # bb = sdat.sampleHitsMultipleCassettes()
     # bb.generateGlob(Nhits)
     
-    # bb = sdat.sampleHitsMultipleCassettes_2()
-    # bb.generateGlob()
+    bb = sdat.sampleHitsMultipleCassettes_2()
+    bb.generateGlob()
     
-    # aa = sdat.sampleReadouts_2()
-    # aa.fill()
-    # readouts = aa.readouts
     
-    # readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
     
-    # hits = bb.hits 
+    hits = bb.hits 
     
-    # hitsArray = hits.concatenateHitsInArrayForDebug()
+    hitsArray = hits.concatenateHitsInArrayForDebug()
 
     
     
-    # timeWindow = 2e-6
+    timeWindow = 2e-6
     
-    # cc = clu.clusterHits(hits,0)
-    # cc.clusterizeManyCassettes(parameters.cassettes.cassettes, timeWindow)
+    cc = clu.clusterHits(hits,0)
+    cc.clusterizeManyCassettes(parameters.cassettes.cassettes, timeWindow)
     
-    # vv = absu.calculateAbsUnits(cc.events, parameters)
+    vv = absu.calculateAbsUnits(cc.events, parameters)
    
-    # vv.calculatePositionAbsUnit()
+    vv.calculatePositionAbsUnit()
 
-    # vv.calculateToFandWavelength(0)
+    vv.calculateToFandWavelength(0)
    
-    # events = vv.events
+    events = vv.events
     
     # events = cc.events
     
@@ -1024,31 +955,18 @@ if __name__ == '__main__' :
     
     # 
     
-    filePathD = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develADC/data/'+"ESSmask2023.pcapng"
+    # filePathD = './'+"VMM3a.pcapng"
+    
+    # pr = pcapr.pcap_reader(filePathD)
+    #   #  # pr.debug = True
+    # pr.read()
+    # vmm1 = pr.readouts
     
 
-    pr = pcapr.pcapng_reader(filePathD, parameters.clockTicks.NSperClockTick, MONTTLtype = config.MONmap.TTLtype, MONring = config.MONmap.RingID, \
-    timeResolutionType = parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF = parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
-    operationMode = config.DETparameters.operationMode)
-
-    readouts = pr.readouts
-    readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
-
-    ppp = plottingReadouts(readouts, config)
+    # ppp = plottingReadouts(vmm1, config)
+    # ppp.plotChRaw([1,2,3,4])
     
-    ppp.plotChRaw([0,1,2,3,4,5])
-    
-
-    
-    ppp.plotTimeStamps([1,2,3,4])
-    
-    
-    ppp.plotChoppResets()
-    
-    
-    ppp.plotADCvsCh([1,2,3,4],allAxis,True)
-    
-    
+    # ppp.plotTimeStamps([1,2,3,4])
    
     # vmm2 = sdat.sampleData()
     # vmm2.fill()
@@ -1065,7 +983,7 @@ if __name__ == '__main__' :
     # dd = plottingHits(hits2, parameters)
     # dd.plotChRaw(parameters.cassettes.cassettes)
     
-    # pp = plottingEvents(events,allAxis,coincidenceWS_ONOFF=True)
+    pp = plottingEvents(events,allAxis,coincidenceWS_ONOFF=True)
     # pp.plotXYToF(logScale=True, absUnits = True)
     
     # pp.plotXLambda(logScale=False, absUnits = False)
@@ -1076,7 +994,7 @@ if __name__ == '__main__' :
     
     # pp.plotPHScorrelation([1,2,3])
     
-    # h2D = pp.plotXYToF(logScale = False, absUnits = False, orientation='vertical')
+    h2D = pp.plotXYToF(logScale = False, absUnits = False, orientation='vertical')
 
         
     ##################

@@ -9,14 +9,12 @@ Created on Fri Sep  3 11:34:33 2021
 import numpy as np
 # import os
 import sys
-import pkg_resources
 import time
 from lib import libEventsSoftThresholds as thre
-# from lib import libMapping as maps
+from lib import libMapping as maps
 
 # import libEventsSoftThresholds as thre
 # import libMapping as maps
-
 
 ###############################################################################
 
@@ -28,52 +26,6 @@ class checkPythonVersion():
            print('------------------------------------------------------------- \n')
            sys.exit()
            
-           
-###############################################################################
-
-
-class checkPackageInstallation():
-    
-    def __init__(self):
-    
-        self.installed = {pkg.key for pkg in pkg_resources.working_set}
-        
-    def checkPackagePcap(self):
- 
-           required = {'python-pcapng'}
-           
-           missing = required - self.installed
-           
-           if missing: 
-               
-               print('\n \033[1;31mpython-pcapng package missing, install with command: pip install python-pcapng\033[1;37m\n')
-               print(' ---> Exiting ... \n')
-               print('------------------------------------------------------------- \n')
-               sys.exit()
-           
-    def checkPackageKafka(self):
-        
-         flag = True   
-         
-         required = {'flatbuffers','configargparse','confluent_kafka'}
-         
-         missing = required - self.installed
-        
-         if missing:
-             
-             flag = False
-             
-             for pkg in missing:
-             
-                 print('\n \033[1;31m{} package missing, install with command: pip install {}\033[1;37m\n'.format(pkg,pkg))
-                 print('\n \033[1;31mor if you are not using kafka streaming mode switch off mode')
-             
-             print(' ---> Exiting ... \n')
-             print('------------------------------------------------------------- \n')
-             
-             sys.exit()
-             
-         return flag     
            
 ###############################################################################
 class profiling():
@@ -232,7 +184,7 @@ class pulseHeigthSpect():
           self.plotPHS    = False
           self.plotPHSlog = False
           self.energyBins = 128
-          self.maxEnerg   = 2048
+          self.maxEnerg   = 70e3
           self.plotPHScorrelation = False
           
 class plotting():
@@ -248,14 +200,11 @@ class plotting():
                     
           self.plotRawReadouts         = False
           self.plotReadoutsTimeStamps  = False
-          self.plotADCvsCh             = False
-          self.plotADCvsChlog          = False
-          self.plotChopperResets       = False
-          
           self.plotRawHits             = False
           self.plotHitsTimeStamps      = False
           self.plotHitsTimeStampsVSChannels   = False
-
+          self.plotChopperResets       = False
+           
           self.plotInstRate    = False
           self.instRateBin     = 1e-6  # s
           
@@ -509,19 +458,19 @@ if __name__ == '__main__' :
     
     # parameters2  = parameters('/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/')
 
-    # currentPath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/'
-    # configFilePath  = currentPath +'config/'
-    # # configFileName  = "MB300_AMOR_config.json"
-    # configFileName  = "AMOR.json"
+    currentPath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/'
+    configFilePath  = currentPath +'config/'
+    # configFileName  = "MB300_AMOR_config.json"
+    configFileName  = "AMOR.json"
     
-    # # config = maps.read_json_config(configFilePath+configFileName)
-    # # # parameters.loadConfigParameters(config)
-    
-    # parameters  = parameters(currentPath)
     # config = maps.read_json_config(configFilePath+configFileName)
-    # parameters.loadConfigAndSetParameters(config)
+    # # parameters.loadConfigParameters(config)
     
-    # parameters.set_acqMode('pcap-local-overwrite')
+    parameters  = parameters(currentPath)
+    config = maps.read_json_config(configFilePath+configFileName)
+    parameters.loadConfigAndSetParameters(config)
+    
+    parameters.set_acqMode('pcap-local-overwrite')
     
     
     # parameters2.loadConfigParameters()
@@ -543,10 +492,3 @@ if __name__ == '__main__' :
     # parameters.dataReduction.softThArray.ThW[:,1] = 5000
     
     
-    aa = checkPackageInstallation()
-    
-    aa.checkPackagePcap()
-    
-    flag = aa.checkPackageKafka()
-    
-    print(flag)

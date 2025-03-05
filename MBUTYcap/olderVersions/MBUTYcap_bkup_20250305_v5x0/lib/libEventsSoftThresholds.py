@@ -24,7 +24,7 @@ from lib import libParameters as para
 # from lib import libParameters as para
 # from lib import libTerminal as ta
 # from lib import libPlotting as plo
-from lib import libAbsUnitsAndLambda as absu
+# from lib import libAbsUnitsAndLambda as absu
 
 
 # import libSampleData as sdat

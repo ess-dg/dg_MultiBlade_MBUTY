@@ -79,10 +79,8 @@ class sampleReadouts_2():
             self.readouts.VMM   = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.hybrid  = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.ASIC    = rando*np.ones((Nreadouts), dtype = 'int64')
-            self.readouts.Channel  = rando*np.ones((Nreadouts), dtype = 'int64')
-            self.readouts.Channel1 = rando*np.ones((Nreadouts), dtype = 'int64')
+            self.readouts.Channel = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.ADC     = rando*np.ones((Nreadouts), dtype = 'int64')
-            self.readouts.ADC1    = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.timeStamp  = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.timeCoarse = rando*np.ones((Nreadouts), dtype = 'int64')
             self.readouts.BC      = rando*np.ones((Nreadouts), dtype = 'int64')
@@ -92,15 +90,13 @@ class sampleReadouts_2():
             self.readouts.G0      = np.zeros((Nreadouts), dtype = 'int64')
             self.readouts.PulseT  = np.zeros((Nreadouts), dtype = 'int64')
             self.readouts.PrevPT  = np.zeros((Nreadouts), dtype = 'int64')
-            self.readouts.mult0  = np.zeros((Nreadouts), dtype = 'int64')
-            self.readouts.mult1  = np.zeros((Nreadouts), dtype = 'int64')
         
         def fill(self):
             # ring 0
             self.readouts.Ring[0:800] = 0
             
-            self.readouts.Fen[0:400]   = 0
-            self.readouts.Fen[400:800] = 0
+            self.readouts.Fen[0:400]   = 1
+            self.readouts.Fen[400:800] = 2
             
             self.readouts.hybrid[0:200]   = 0
             self.readouts.hybrid[200:400] = 1
@@ -138,9 +134,6 @@ class sampleReadouts_2():
             self.readouts.Channel[1100:1164]   = np.arange(0,64,1)
             self.readouts.Channel[1200:1264]   = np.arange(0,64,1)
             self.readouts.Channel[1300:1364]   = np.arange(0,64,1)
-            
-            # self.readouts.Channel1[:]   = 0
-            # self.readouts.ADC1[:]       = 0
  
                            
 ###############################################################################

@@ -11,10 +11,10 @@ import time
 import sys
 
 
-# from lib import libSampleData as sdat
+from lib import libSampleData as sdat
 from lib import libMapping as maps
 from lib import libHistograms as hh
-# from lib import libParameters as para
+from lib import libParameters as para
 # from lib import libProgressBar as pb
 
 from lib import libReadPcapngVMM as pcapr
