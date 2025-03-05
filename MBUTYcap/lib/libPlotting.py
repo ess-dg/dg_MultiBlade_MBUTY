@@ -231,14 +231,14 @@ class plottingReadouts():
                 self.plothtch.axHandle[0][k].imshow(self.histoch0,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,self.xbins[0],self.xbins[-1]], origin='lower',cmap='jet')
                 self.plothtch.axHandle[1][k].imshow(self.histoch1,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,self.xbins[0],self.xbins[-1]], origin='lower',cmap='jet')
               
-                self.plothtch.axHandle[0][k].set_xlabel('ASIC 0 ch no.')
-                self.plothtch.axHandle[1][k].set_xlabel('ASIC 1 ch no.')
+                self.plothtch.axHandle[0][k].set_xlabel('ADC')
+                self.plothtch.axHandle[1][k].set_xlabel('ADC')
                 
                 self.plothtch.axHandle[0][k].set_title('hyb.'+str(cc)) 
                 
                 if k == 0:
-                   self.plothtch.axHandle[0][k].set_ylabel('ch. no.')
-                   self.plothtch.axHandle[1][k].set_ylabel('ch. no.')
+                   self.plothtch.axHandle[0][k].set_ylabel('ASIC 0 ch no.')
+                   self.plothtch.axHandle[1][k].set_ylabel('ASIC 1 ch no.')
                 
     
             #                 
