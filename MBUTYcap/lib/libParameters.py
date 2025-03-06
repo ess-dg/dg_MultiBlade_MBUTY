@@ -66,7 +66,7 @@ class checkPackageInstallation():
              for pkg in missing:
              
                  print('\n \033[1;31m{} package missing, install with command: pip install {}\033[1;37m\n'.format(pkg,pkg))
-                 print('\n \033[1;31mor if you are not using kafka streaming mode switch off mode')
+             print(' \033[1;31mor if you are not using kafka streaming mode, switch off mode')
              
              print(' ---> Exiting ... \n')
              print('------------------------------------------------------------- \n')

@@ -515,7 +515,6 @@ if parameters.plotting.bareReadoutsCalculation is False:
 
     ########################################################################### 
     
-    
     md  = maps.mapDetector(readouts, config)
     md.mappAllCassAndChannelsGlob()
     hits = md.hits

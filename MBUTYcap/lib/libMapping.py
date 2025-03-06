@@ -437,12 +437,11 @@ class mapDetector():
     
         self.debug    = False
         
-        self.readouts = readouts 
+        self.readouts = readouts
         self.config   = config
 
         self.hits = hits()
-        self.hits.importReadouts(self.readouts)
-   
+        self.hits.importReadouts(copy.deepcopy(self.readouts))
            
     def initCatData(self):    # debug
 
@@ -584,7 +583,7 @@ class mapDetector():
         # self.hits.WorS[~selectionWires & ~selectionStrips] = -1
         
         elif self.config.DETparameters.operationMode == 'clustered':
-            
+                
             #############
             #  wires
             if self.config.channelMap.WireASIC == 0:
@@ -596,12 +595,18 @@ class mapDetector():
             
             selectionWires  = sel2 & sel3
             
-            # always for any adapter the wirestips1 is for wires !!! 
+            # always for any adapter the wirestips is for wires !!! 
             if self.config.channelMap.WireASIC == 0:
-                self.hits.WiresStrips1[selectionWires] = 31 - (self.readouts.Channel[selectionWires] - 16)
+                self.hits.WiresStrips[selectionWires] = 31 - (self.readouts.Channel[selectionWires] - 16)
+                self.hits.ADC[selectionWires]         = self.readouts.ADC[selectionWires]
+                self.hits.mult0[selectionWires]       = self.readouts.mult0[selectionWires]
+                
             elif self.config.channelMap.WireASIC == 1: 
-                self.hits.WiresStrips1[selectionWires] = self.readouts.Channel1[selectionWires] - 16
+                self.hits.WiresStrips[selectionWires] = self.readouts.Channel1[selectionWires] - 16
+                self.hits.ADC[selectionWires]         = self.readouts.ADC1[selectionWires]
+                self.hits.mult0[selectionWires]       = self.readouts.mult1[selectionWires]
   
+                
             #############
             # strips
             if self.config.channelMap.StripASIC == 0:  
@@ -613,13 +618,18 @@ class mapDetector():
             
             selectionStrips  = sel2s & sel3s
             
-            # always for any adapter the wirestips is for strips !!! 
+            # always for any adapter the wirestips1 is for strips !!! 
             if self.config.channelMap.StripASIC == 1:
-                self.hits.WiresStrips[selectionStrips] = self.readouts.Channel1[selectionStrips]
+                self.hits.WiresStrips1[selectionStrips] = self.readouts.Channel1[selectionStrips]
+                self.hits.ADC1[selectionStrips]         = self.readouts.ADC1[selectionStrips]
+                self.hits.mult1[selectionStrips]        = self.readouts.mult1[selectionStrips]
+                
             elif self.config.channelMap.StripASIC == 0:  
-                self.hits.WiresStrips[selectionStrips] = 63 - self.readouts.Channel[selectionStrips]
-      
-            
+                self.hits.WiresStrips1[selectionStrips] = 63 - self.readouts.Channel[selectionStrips]
+                self.hits.ADC1[selectionStrips]         = self.readouts.ADC[selectionStrips]
+                self.hits.mult1[selectionStrips]        = self.readouts.mult0[selectionStrips]
+                
+                
     def mapChannelsGlob(self):
         
         self.mapChannels()
@@ -642,14 +652,21 @@ class mapDetector():
             index = k
             
             if self.config.DETparameters.operationMode == 'normal':
+                
                 selection = np.logical_and( self.hits.Cassette == cass , self.hits.WorS == 0 ) #  wires is WorS = 0
                 self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
+                
             elif self.config.DETparameters.operationMode == 'clustered':
+                
                 selection = self.hits.Cassette == cass
-                if self.config.channelMap.WireASIC == 0:
-                   self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
-                elif self.config.channelMap.WireASIC == 1: 
-                   self.hits.WiresStrips1[selection] = self.hits.WiresStrips1[selection] + index*self.config.DETparameters.numOfWires
+                
+                # always for any adapter the wirestips is for wires !!! 
+                
+                # if self.config.channelMap.WireASIC == 0:
+                #    self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
+                # elif self.config.channelMap.WireASIC == 1: 
+                    
+                self.hits.WiresStrips[selection] = self.hits.WiresStrips[selection] + index*self.config.DETparameters.numOfWires
             
             #  IMPORTANT NOTE 
             #  if just add +32 every cassette in json config does not matter the ID

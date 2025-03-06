@@ -207,24 +207,18 @@ class events():
         self.Cassette     = hits.Cassette
         self.CassettedIDs = np.unique(hits.Cassette)
         
-        if config.channelMap.WireASIC == 0:
-            self.positionW    = hits.WiresStrips
-            self.PHW          = hits.ADC
-            self.multW        = hits.mult0
-        elif config.channelMap.WireASIC == 1:
-            self.positionW    = hits.WiresStrips1
-            self.PHW          = hits.ADC1
-            self.multW        = hits.mult1
-            
-        if config.channelMap.StripASIC == 1:
-            self.positionS    = hits.WiresStrips1
-            self.PHS          = hits.ADC1
-            self.multS        = hits.mult1
-        elif config.channelMap.StripASIC == 0:
-            self.positionS    = hits.WiresStrips
-            self.PHS          = hits.ADC
-            self.multS        = hits.mult0
-            
+        # always for any adapter the wirestips is for wires !!! 
+        # always for any adapter the wirestips1 is for strips !!! 
+        #  from libMapping 
+        
+        self.positionW    = hits.WiresStrips
+        self.PHW          = hits.ADC
+        self.multW        = hits.mult0
+        
+        self.positionS    = hits.WiresStrips1
+        self.PHS          = hits.ADC1
+        self.multS        = hits.mult1
+        
         # self.multW = -1*np.ones((self.Nevents), dtype = 'int64') 
         # self.multS = -1*np.ones((self.Nevents), dtype = 'int64') 
 
