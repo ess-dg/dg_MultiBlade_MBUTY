@@ -144,8 +144,6 @@ class fileManagement():
             # self.openMode = 'window'
             self.openMode = 'latest'
             
-            self.pcapLoadingMethod = 'allocate'
-            
             self.saveReducedFileONOFF = False
             self.saveReducedPath = './'
             self.reducedNameMainFolder  = 'entry1'

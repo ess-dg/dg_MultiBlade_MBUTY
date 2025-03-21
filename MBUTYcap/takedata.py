@@ -3,7 +3,6 @@ import os
 import subprocess
 import re
 import sys
-#
 
 try:
         args = ['./MBUTY_DUMP.py', '-i', 'en0', '-f', 'test.pcapng', '-n', '1', '-e', '/Users/dpfeiffe/programming/dg_MultiBlade_MBUTY/MBUTYcap/', '-t', '/usr/local/bin/tshark', '-s','10']

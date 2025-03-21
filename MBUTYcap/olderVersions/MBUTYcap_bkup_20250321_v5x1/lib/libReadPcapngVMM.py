@@ -728,12 +728,12 @@ class checkIfFileExistInFolder():
 ################################################## 
 
 class pcapng_reader():
-    def __init__(self, filePathAndFileName, NSperClockTick, MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, operationMode = 'normal', pcapLoadingMethod='allocate'):
+    def __init__(self, filePathAndFileName, NSperClockTick, MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, operationMode = 'normal'):
         
         # try:
             # print('PRE-ALLOC method to load data ...')
         pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
-        pcapng.allocateMemory(pcapLoadingMethod)
+        pcapng.allocateMemory()
         pcapng.read()
         self.readouts = pcapng.readouts
 
@@ -876,20 +876,9 @@ class pcapng_reader_PreAlloc():
         if self.debug:
             print("{}".format(msg))
 
-    def allocateMemory(self, pcapLoadingMethod='allocate'):  
+    def allocateMemory(self):  
         
-        if (pcapLoadingMethod != 'allocate') and (pcapLoadingMethod != 'quick') :
-            print('\033[1;33mWARNING: Wrong data loading option: select either quick or allocate --> setting it to allocate method!\033[1;37m')
-            pcapLoadingMethod = 'allocate'
-            
-        if pcapLoadingMethod == 'allocate':
-            endCounter = np.inf
-            print('pcap loading method: allocate')
-        elif pcapLoadingMethod == 'quick':
-            endCounter = 2
-            print('pcap loading method: quick')    
-        
-        print('allocating memory...',end='')
+        print('allocating memory',end='')
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
@@ -901,33 +890,31 @@ class pcapng_reader_PreAlloc():
         
         for block in scanner:
             
-            if counter <= endCounter:
-            
-                counter+=1
+            counter+=1
+
+            if counter == 1 or np.mod(counter,5000) == 0:
+                print('.',end='')
     
-                if counter == 4 or np.mod(counter,5000) == 0:
-                    print('.',end='')
-        
-                self.counterPackets += 1
-                self.dprint("packet {}".format(self.counterPackets))
-        
-                try:
-                    packetSize = block.packet_len
-                    self.dprint("packetSize {} bytes".format(packetSize))
-                    
-                    packetData = block.packet_data
-                    
-                    indexESS   = packetData.find(b'ESS')
-                    
-                    if indexESS != -1:
-                       FWversionTemp = self.extractFWversion(packetData, indexESS)
-           
-                except:
-                    self.dprint('--> other packet found No. {}'.format(self.counterPackets-self.counterCandidatePackets))
-                else:
-                    self.counterCandidatePackets += 1
-                    packetsSizes     = np.append(packetsSizes,packetSize)
-                    packetsFWversion = np.append(packetsFWversion,FWversionTemp)
+            self.counterPackets += 1
+            self.dprint("packet {}".format(self.counterPackets))
+    
+            try:
+                packetSize = block.packet_len
+                self.dprint("packetSize {} bytes".format(packetSize))
+                
+                packetData = block.packet_data
+                
+                indexESS   = packetData.find(b'ESS')
+                
+                if indexESS != -1:
+                   FWversionTemp = self.extractFWversion(packetData, indexESS)
+       
+            except:
+                self.dprint('--> other packet found No. {}'.format(self.counterPackets-self.counterCandidatePackets))
+            else:
+                self.counterCandidatePackets += 1
+                packetsSizes     = np.append(packetsSizes,packetSize)
+                packetsFWversion = np.append(packetsFWversion,FWversionTemp)
                 
         self.dprint('counterPackets {}, counterCandidatePackets {}'.format(self.counterPackets,self.counterCandidatePackets))    
         
@@ -942,23 +929,16 @@ class pcapng_reader_PreAlloc():
             self.dprint('overallSize {} bytes'.format(overallSize))
 
         numOfReadoutsInPackets = (packetsSizes - self.headerSize)/self.singleReadoutSize  #in principle this is 447 for every packet
+
+        #  if negative there was a non ESS packetso length < 72bytes 
+        #  and if much bigger wee anyhowallocate morethan needed and remove zeros aftyerwards at the end 
+        numOfReadoutsTotal = np.sum(numOfReadoutsInPackets[ numOfReadoutsInPackets >= 0])
         
-        
-        if pcapLoadingMethod == 'allocate':
-            # #  if negative there was a non ESS packetso length < 72bytes 
-            # #  and if much bigger wee anyhowallocate morethan needed and remove zeros aftyerwards at the end 
-            numOfReadoutsTotal = np.sum(numOfReadoutsInPackets[ numOfReadoutsInPackets >= 0])
-        
-        elif pcapLoadingMethod == 'quick':
-            numOfReadoutsTotal  = self.fileSize/self.singleReadoutSize
-            self.counterCandidatePackets = int(round(numOfReadoutsTotal))
-     
-        self.preallocLength = int(round(numOfReadoutsTotal))
+        self.preallocLength = round(numOfReadoutsTotal)
         self.dprint('preallocLength {}'.format(self.preallocLength))
         
         ff.close()
         
-
         # # quick and drity just file size divided by the single readout is an approx for excess of the readouts, they will be removed afterwards 
         # numOfReadoutsTotal = self.fileSize/self.singleReadoutSize
         # self.preallocLength = int(round(numOfReadoutsTotal))
@@ -982,7 +962,7 @@ class pcapng_reader_PreAlloc():
         
         self.overallDataIndex = 0 
         
-        self.stepsForProgress = int(self.counterCandidatePackets/5)+1  # 4 means 25%, 50%, 75% and 100%
+        self.stepsForProgress = int(self.counterCandidatePackets/4)+1  # 4 means 25%, 50%, 75% and 100%
         
         indexPackets = 0 
         
@@ -1589,12 +1569,6 @@ if __name__ == '__main__':
    file = 'DiagonaltestData.pcapng'
    file = 'DataRMMWrongHeader.pcapng'
    
-   filePath = '/Users/francescopiscitelli/Documents/PYTHON/06_MBUTYcap_DETtests_Utgard/data/'
-   file = 'ESSmask2023.pcapng'
-   
-   filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
-   file ='20250320_095029_duration_s_1800_testCAB5-C0to3_00014.pcapng'
-   
    # filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    # file = 'sampleData_NormalMode.pcapng'
    # file = 'sampleData_ClusteredMode.pcapng'
@@ -1663,12 +1637,7 @@ if __name__ == '__main__':
    # pcapng.read()
    # readouts = pcapng.readouts
 
-   
-   typeOfLoading = 'allocate'
-   
-   typeOfLoading = 'quick'
-
-   pcap = pcapng_reader(filePathAndFileName,NSperClockTick, MONTTLtype=True, MONring=11, timeResolutionType='fine', sortByTimeStampsONOFF=True, operationMode='normal',pcapLoadingMethod=typeOfLoading)
+   pcap = pcapng_reader(filePathAndFileName,NSperClockTick, MONTTLtype=True, MONring=11, timeResolutionType='fine', sortByTimeStampsONOFF=True, operationMode='normal')
 
    readouts = pcap.readouts
    
