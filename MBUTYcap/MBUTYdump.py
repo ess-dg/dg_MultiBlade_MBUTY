@@ -102,6 +102,7 @@ if __name__ == '__main__':
         
     rec = dumpToFile(pathToTshark=args.tshark, interface=args.interface, destPath=args.destination, fileName=args.file,typeOfCapture=typeOfCapture,quantity=quantity,numOfFiles=args.numoffiles,delay=args.delay)
 
+    # status = os.system('chmod -R 777 /opt/mb_tools/pcaps/*')
 
 # print('--------------------')
 # print('interface: '+args.interface)
