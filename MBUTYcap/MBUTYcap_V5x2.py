@@ -45,6 +45,10 @@ from lib import libVMMcalibration as cal
 #     - TDC calibration 
 #     - now the mon events stay in the events array,they need  to be taken out 
 
+# NOTES:
+    # in some sytems the command plt.show(block=False) at the end does not work for showing plots 
+    # so try using plt.show() instead 
+    
 ###############################################################################
 ###############################################################################
 profiling = para.profiling()

@@ -14,7 +14,10 @@ import pcapng as pg
 import os
 import time
 import sys
+
 # from lib import libPlotting as plo
+
+PulseTimes = []
 
 
 ###############################################################################
@@ -728,12 +731,12 @@ class checkIfFileExistInFolder():
 ################################################## 
 
 class pcapng_reader():
-    def __init__(self, filePathAndFileName, NSperClockTick, MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, operationMode = 'normal', pcapLoadingMethod='allocate'):
+    def __init__(self, filePathAndFileName, NSperClockTick, MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, operationMode = 'normal'):
         
         # try:
             # print('PRE-ALLOC method to load data ...')
         pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
-        pcapng.allocateMemory(pcapLoadingMethod)
+        pcapng.allocateMemory()
         pcapng.read()
         self.readouts = pcapng.readouts
 
@@ -867,8 +870,8 @@ class pcapng_reader_PreAlloc():
                 self.ESSheaderSize = 30  # 30 bytes if version is 0  or 32 bytes if version is 1   
                 self.calculateHeaderSize()  
                 
-        elif packetsFWversion[0] >= 1:
-                self.ESSheaderSize = 32  # 30 bytes if version is 0  or 32 bytes if version is >= 1    
+        elif packetsFWversion[0] == 1:
+                self.ESSheaderSize = 32  # 30 bytes if version is 0  or 32 bytes if version is 1   
                 self.calculateHeaderSize()
 
 
@@ -876,20 +879,9 @@ class pcapng_reader_PreAlloc():
         if self.debug:
             print("{}".format(msg))
 
-    def allocateMemory(self, pcapLoadingMethod='allocate'):  
+    def allocateMemory(self):  
         
-        if (pcapLoadingMethod != 'allocate') and (pcapLoadingMethod != 'quick') :
-            print('\033[1;33mWARNING: Wrong data loading option: select either quick or allocate --> setting it to allocate method!\033[1;37m')
-            pcapLoadingMethod = 'allocate'
-            
-        if pcapLoadingMethod == 'allocate':
-            endCounter = np.inf
-            print('pcap loading method: allocate')
-        elif pcapLoadingMethod == 'quick':
-            endCounter = 2
-            print('pcap loading method: quick')    
-        
-        print('allocating memory...',end='')
+        print('allocating memory',end='')
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
@@ -901,33 +893,31 @@ class pcapng_reader_PreAlloc():
         
         for block in scanner:
             
-            if counter <= endCounter:
-            
-                counter+=1
+            counter+=1
+
+            if counter == 1 or np.mod(counter,5000) == 0:
+                print('.',end='')
     
-                if counter == 4 or np.mod(counter,5000) == 0:
-                    print('.',end='')
-        
-                self.counterPackets += 1
-                self.dprint("packet {}".format(self.counterPackets))
-        
-                try:
-                    packetSize = block.packet_len
-                    self.dprint("packetSize {} bytes".format(packetSize))
-                    
-                    packetData = block.packet_data
-                    
-                    indexESS   = packetData.find(b'ESS')
-                    
-                    if indexESS != -1:
-                       FWversionTemp = self.extractFWversion(packetData, indexESS)
-           
-                except:
-                    self.dprint('--> other packet found No. {}'.format(self.counterPackets-self.counterCandidatePackets))
-                else:
-                    self.counterCandidatePackets += 1
-                    packetsSizes     = np.append(packetsSizes,packetSize)
-                    packetsFWversion = np.append(packetsFWversion,FWversionTemp)
+            self.counterPackets += 1
+            self.dprint("packet {}".format(self.counterPackets))
+    
+            try:
+                packetSize = block.packet_len
+                self.dprint("packetSize {} bytes".format(packetSize))
+                
+                packetData = block.packet_data
+                
+                indexESS   = packetData.find(b'ESS')
+                FWversionTemp=0
+                if indexESS != -1:
+                   FWversionTemp = self.extractFWversion(packetData, indexESS)
+       
+            except:
+                self.dprint('--> other packet found No. {}'.format(self.counterPackets-self.counterCandidatePackets))
+            else:
+                self.counterCandidatePackets += 1
+                packetsSizes     = np.append(packetsSizes,packetSize)
+                packetsFWversion = np.append(packetsFWversion,FWversionTemp)
                 
         self.dprint('counterPackets {}, counterCandidatePackets {}'.format(self.counterPackets,self.counterCandidatePackets))    
         
@@ -942,23 +932,16 @@ class pcapng_reader_PreAlloc():
             self.dprint('overallSize {} bytes'.format(overallSize))
 
         numOfReadoutsInPackets = (packetsSizes - self.headerSize)/self.singleReadoutSize  #in principle this is 447 for every packet
+
+        #  if negative there was a non ESS packetso length < 72bytes 
+        #  and if much bigger wee anyhowallocate morethan needed and remove zeros aftyerwards at the end 
+        numOfReadoutsTotal = np.sum(numOfReadoutsInPackets[ numOfReadoutsInPackets >= 0])
         
-        
-        if pcapLoadingMethod == 'allocate':
-            # #  if negative there was a non ESS packetso length < 72bytes 
-            # #  and if much bigger wee anyhowallocate morethan needed and remove zeros aftyerwards at the end 
-            numOfReadoutsTotal = np.sum(numOfReadoutsInPackets[ numOfReadoutsInPackets >= 0])
-        
-        elif pcapLoadingMethod == 'quick':
-            numOfReadoutsTotal  = self.fileSize/self.singleReadoutSize
-            self.counterCandidatePackets = int(round(numOfReadoutsTotal))
-     
-        self.preallocLength = int(round(numOfReadoutsTotal))
+        self.preallocLength = round(numOfReadoutsTotal)
         self.dprint('preallocLength {}'.format(self.preallocLength))
         
         ff.close()
         
-
         # # quick and drity just file size divided by the single readout is an approx for excess of the readouts, they will be removed afterwards 
         # numOfReadoutsTotal = self.fileSize/self.singleReadoutSize
         # self.preallocLength = int(round(numOfReadoutsTotal))
@@ -982,7 +965,7 @@ class pcapng_reader_PreAlloc():
         
         self.overallDataIndex = 0 
         
-        self.stepsForProgress = int(self.counterCandidatePackets/5)+1  # 4 means 25%, 50%, 75% and 100%
+        self.stepsForProgress = int(self.counterCandidatePackets/4)+1  # 4 means 25%, 50%, 75% and 100%
         
         indexPackets = 0 
         
@@ -1024,7 +1007,7 @@ class pcapng_reader_PreAlloc():
         if self.preallocLength > self.totalReadoutCount:
             
             datanew = np.delete(self.data,np.arange(self.totalReadoutCount,self.preallocLength),axis=0)
-            print('removing extra allocated length not used ...',end='') 
+            print('removing extra allocated length not used ...')
             
         elif self.preallocLength < self.totalReadoutCount:
             print('something wrong with the preallocation: allocated length {}, total readouts {}'.format(self.preallocLength,self.totalReadoutCount))
@@ -1146,13 +1129,7 @@ class pcapng_reader_PreAlloc():
         
     def extractFromBytes(self,packetData,packetLength,indexPackets,debugMode=False):
         
-        # ICMP packet has ESS data in it but must be discarded 
-        # the ICMP protocal adds 28 bytes 
-        ICMPbyteExtraLength = 28 
-        ICMPflag            = False 
-        
-        
-        indexESS = packetData.find(b'ESS') # index of(cookie) ESS = 0x 45 53 53 it is always 44 with pcap 
+        indexESS = packetData.find(b'ESS')
         
         self.dprint('index where ESS word starts {}'.format(indexESS))
         #  it should be always 44 = 42+2
@@ -1169,26 +1146,12 @@ class pcapng_reader_PreAlloc():
                checkTimeSrc(packetData[indexESS+7])
                checkInstrumentID(packetData[indexESS+3])
                
-           # print('---')
-           # print('indexESS '+str(indexESS))    
-           # print('header '+str(self.ESSheaderSize))
-           # print('full header '+str(self.headerSize))
     
-           indexDataStart = self.ESSheaderSize +( indexESS - 2 )   # index after (cookie) ESS = 0x 45 53 53 where data starts (eg 44+30-2=72 or 44+32-2=74 )
+           indexDataStart = indexESS + self.ESSheaderSize - 2   # index after (cookie) ESS = 0x 45 53 53 where data starts (eg 44+30-2=72)
 
-           # print('data starts at: '+str(indexDataStart))
-
-           #   give a warning if not 72 or 74,  check that ESS cookie is always in the same place
+           #   give a warning if not 72,  check that ESS cookie is always in the same place
            if indexDataStart != self.headerSize:
-               print('\n \033[1;33mWARNING ---> ESS cookie is not in position! Data does not start at byte 72 or 74 or 42 or 44! \033[1;37m')
-               
-               if (indexDataStart == self.headerSize + ICMPbyteExtraLength):
-                   # this is the case where the packet is sent instead of UDP but as a ping from RMM ICMP message -> need to skip this package 
-                   print(' \033[1;33mWARNING ---> ICMP packet found in data -> skipping packet. \033[1;37m')
-                   ICMPflag = True
-               else:
-                   print(' \033[1;31mWARNING ---> this packet is not a ICMP packet that can be skipped, DATA MIGHT BE CORRUPTED. \033[1;37m')
-                   time.sleep(2)
+               print('\n \033[1;31mWARNING ---> ESS cookie is not in position 72 or 74 or 42 or 44! \033[1;37m')
                
            # ##########################################
            # # UDP ports here not used for now
@@ -1197,154 +1160,163 @@ class pcapng_reader_PreAlloc():
            # portDest    = int.from_bytes(packetData[indexUDPstart+2:indexUDPstart+4], byteorder='big') 
            # self.dprint('source: '+str(portSource)+' -> dest: '+str(portDest))
            # ##########################################
+       
+           readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
+           # or alternatively
+           # readoutsInPacket = (ESSlength - self.ESSheaderSize) / self.singleReadoutSize
            
-           if ICMPflag == False:
+           if (packetLength - indexDataStart) == 0: #empty packet 72 bytes 
                
-               readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
-               # or alternatively
-               # readoutsInPacket = (ESSlength - self.ESSheaderSize) / self.singleReadoutSize
+               self.counterEmptyESSpackets += 1
+               self.dprint('empty packet No. {}'.format(self.counterEmptyESSpackets))
                
-               if (packetLength - indexDataStart) == 0: #empty packet 72 bytes 
-                   
-                   self.counterEmptyESSpackets += 1
-                   self.dprint('empty packet No. {}'.format(self.counterEmptyESSpackets))
-                   
-                   PulseT, _, _  = self.extractPulseTime(packetData,indexESS)
-    
+               PulseT, _, _  = self.extractPulseTime(packetData,indexESS)
+               if PulseT not in PulseTimes:
+                   PulseTimes.append(PulseT)
+                   if len(PulseTimes) > 200:
+                       PulseTimes.pop(0)
+           else:
+               
+               if readoutsInPacket.is_integer() is not True:
+                   print('\n \033[1;31mWARNING ---> something wrong with data bytes dimensions \033[1;37m')
+                   time.sleep(2)
                else:
                    
-                   if readoutsInPacket.is_integer() is not True:
-                       print('\n \033[1;31mWARNING ---> something wrong with data bytes dimensions \033[1;37m')
-                       time.sleep(2)
-                   else:
-                       
-                       # only read header if there is no emplty packet
-                       PulseT, PrevPT, ESSlength  = self.extractPulseTime(packetData,indexESS)
-                     
-                       # ESSlength is only 30 if the packet is an ESS packet but empty= 72-42 =30
-                       self.dprint('ESS packet length {} bytes, packetLength {} bytes, readouts in packet {}'.format(ESSlength, packetLength,readoutsInPacket))  
+                   # only read header if there is no emplty packet
+                   PulseT, PrevPT, ESSlength  = self.extractPulseTime(packetData,indexESS)
+                   if PulseT not in PulseTimes:
+                       PulseTimes.append(PulseT)
+                       if len(PulseTimes) > 200:
+                           PulseTimes.pop(0)                 
+                   # ESSlength is only 30 if the packet is an ESS packet but empty= 72-42 =30
+                   self.dprint('ESS packet length {} bytes, packetLength {} bytes, readouts in packet {}'.format(ESSlength, packetLength,readoutsInPacket))  
+               
+                   readoutsInPacket = int(readoutsInPacket)
+                   self.totalReadoutCount += readoutsInPacket
                    
-                       readoutsInPacket = int(readoutsInPacket)
-                       self.totalReadoutCount += readoutsInPacket
+                   for currentReadout in range(readoutsInPacket):
                        
-                       for currentReadout in range(readoutsInPacket):
-                           
-                       # for currentReadout in range(1):
-                           
-                           self.overallDataIndex += 1 
+                   # for currentReadout in range(1):
                        
-                           indexStart = indexDataStart + self.singleReadoutSize * currentReadout
-                           indexStop  = indexDataStart + self.singleReadoutSize * (currentReadout + 1)
-               
-                           if self.operationMode == 'normal':  # expected G0 is 0 or 1 
-                               vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
-                               # vmm3.G0 = 2
-                           elif self.operationMode == 'clustered':  # expected G0 is 2
-                               vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
-                               # vmm3.G0 = 2
-                           else:
-                               print('\n\t\033[1;31mERROR: Operation mode ({} found) is not one of these: normal or clustered mode! --> Exiting!\033[1;37m'.format(self.operationMode),end='') 
-                               sys.exit()
+                       self.overallDataIndex += 1 
+                   
+                       indexStart = indexDataStart + self.singleReadoutSize * currentReadout
+                       indexStop  = indexDataStart + self.singleReadoutSize * (currentReadout + 1)
+           
+                       if self.operationMode == 'normal':  # expected G0 is 0 or 1 
+                           vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
+                           # vmm3.G0 = 2
+                       elif self.operationMode == 'clustered':  # expected G0 is 2
+                           vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
+                           # vmm3.G0 = 2
+                       else:
+                           print('\n\t\033[1;31mERROR: Operation mode ({} found) is not one of these: normal or clustered mode! --> Exiting!\033[1;37m'.format(self.operationMode),end='') 
+                           sys.exit()
+                       
+                       # mode = VMM3A_modes(packetData[indexStart:indexStop])
+                       # G0   = mode.G0
+                       # if G0 == 0 or G0 == 1:  # normal hit mode or calibration mode 
+                       #      vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
+                       # elif G0 == 2: # clustered mode 
+                       #      # print('clustered')
+                       #      vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
+                       # else:
+                       #      print('\n\t\033[1;33mWARNING: Found (G0=-1) Operation mode which is not one of these three: Normal hit mode or calibration or clustered mode!\033[1;37m',end='') 
+                       
+                       # vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
+           
+                       index = self.overallDataIndex-1   
+                       
+                       # IMPORTANT this will load the MON data if comes from VMMs anyhow even if MON is OFF and TTl type is False                                 
+                       if (vmm3.Ring <= 11):
+                          
+                           if vmm3.timeCoarse-PrevPT < 0:
+                               for ts in reversed(PulseTimes):
+                                   if vmm3.timeCoarse-ts > 0:
+                                       #PrevPT = ts
+                                       break 
+
+                           self.data[index, 0] = vmm3.Ring
+                           self.data[index, 1] = vmm3.Fen
+                           self.data[index, 2] = vmm3.VMM
+                           self.data[index, 3] = vmm3.hybrid
+                           self.data[index, 4] = vmm3.ASIC
+                           self.data[index, 5] = vmm3.Channel
+                           self.data[index, 6] = vmm3.ADC
+                           self.data[index, 7] = vmm3.BC
+                           self.data[index, 8] = vmm3.OTh
+                           self.data[index, 9] = vmm3.TDC
+                           self.data[index, 10] = vmm3.GEO
+                           self.data[index, 11] = vmm3.timeCoarse
+                           self.data[index, 12] = PulseT
+                           self.data[index, 13] = PrevPT
+                           self.data[index, 14] = vmm3.G0  # if 1 is calibration
+                           self.data[index, 15] = vmm3.Channel1
+                           self.data[index, 16] = vmm3.ADC1
+                           self.data[index, 17] = vmm3.mult0
+                           self.data[index, 18] = vmm3.mult1
+   
+                       # self.data[index, 7] = vmm3.timeStamp
+
+                       # print('vmm3:'+str(vmm3.Ring)+'index:'+str(index))
+                       
+                       elif (vmm3.Ring > 11) and (vmm3.Ring != self.MONring) and (self.MONTTLtype is False):
                            
-                           # mode = VMM3A_modes(packetData[indexStart:indexStop])
-                           # G0   = mode.G0
-                           # if G0 == 0 or G0 == 1:  # normal hit mode or calibration mode 
-                           #      vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
-                           # elif G0 == 2: # clustered mode 
-                           #      # print('clustered')
-                           #      vmm3 = VMM3Aclustered(packetData[indexStart:indexStop], self.NSperClockTick)
-                           # else:
-                           #      print('\n\t\033[1;33mWARNING: Found (G0=-1) Operation mode which is not one of these three: Normal hit mode or calibration or clustered mode!\033[1;37m',end='') 
-                           
-                           # vmm3 = VMM3A(packetData[indexStart:indexStop], self.NSperClockTick)
-               
-                           index = self.overallDataIndex-1   
-                           
-                           # IMPORTANT this will load the MON data if comes from VMMs anyhow even if MON is OFF and TTl type is False                                 
-                           if (vmm3.Ring <= 11):
-                              
+                           print('\n \033[1;33mWARNING ---> Found Ring that does not belong to either detector or monitor -> check config file, TTLtype shuld be True! \033[1;37m')
+
+                       if self.MONTTLtype is True: # overwrite event with the right MON data format 
+
+                           if (vmm3.Ring == self.MONring):
+
+                               mondata = MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
+  
+                               # index = index+2000
                                
-                               self.data[index, 0] = vmm3.Ring
-                               self.data[index, 1] = vmm3.Fen
-                               self.data[index, 2] = vmm3.VMM
-                               self.data[index, 3] = vmm3.hybrid
-                               self.data[index, 4] = vmm3.ASIC
-                               self.data[index, 5] = vmm3.Channel
-                               self.data[index, 6] = vmm3.ADC
-                               self.data[index, 7] = vmm3.BC
-                               self.data[index, 8] = vmm3.OTh
-                               self.data[index, 9] = vmm3.TDC
-                               self.data[index, 10] = vmm3.GEO
-                               self.data[index, 11] = vmm3.timeCoarse
+                               # print('monring:'+str(mondata.Ring)+'index:'+str(index))
+                               
+                               self.data[index, 0] = mondata.Ring
+                               self.data[index, 1] = mondata.Fen
+                               self.data[index, 2] = 0   # VMM for MON always 0
+                               self.data[index, 3] = 0   # hybrid for MON always 0
+                               self.data[index, 4] = 0   # ASIC for MON always 0
+                               self.data[index, 5] = mondata.Channel
+                               self.data[index, 6] = mondata.ADC
+                               self.data[index, 7] = mondata.posX
+                               self.data[index, 8] = mondata.posY
+                               self.data[index, 9] = 0     # TDC for MON always 0
+                               self.data[index, 10] = mondata.Type
+                               self.data[index, 11] = mondata.timeCoarse
                                self.data[index, 12] = PulseT
                                self.data[index, 13] = PrevPT
-                               self.data[index, 14] = vmm3.G0  # if 1 is calibration
-                               self.data[index, 15] = vmm3.Channel1
-                               self.data[index, 16] = vmm3.ADC1
-                               self.data[index, 17] = vmm3.mult0
-                               self.data[index, 18] = vmm3.mult1
+                               self.data[index, 14] = 0  # if 1 is calibration
+                               self.data[index, 15] = -1
+                               self.data[index, 16] = -1
+                               self.data[index, 17] = -1
+                               self.data[index, 18] = -1
+                           
+                           elif (self.MONring != 11): 
+                           
+                               print('\n \033[1;33mWARNING ---> Ring for Monitor in TTL type not matching, usually Ring is 11! \033[1;37m')
+                           
+  
+                           
+                           
+                    # valid or normal mode 
+                       if debugMode is True:
+                           print(" \t Packet: {} ({} bytes), Readout: {}, Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time Coarse {} ns, BC {}, OverTh {}, ADC {}, TDC {}, GO {} " \
+                                       .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeCoarse,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.G0))
+
        
-                           # self.data[index, 7] = vmm3.timeStamp
-    
-                           # print('vmm3:'+str(vmm3.Ring)+'index:'+str(index))
-                           
-                           elif (vmm3.Ring > 11) and (vmm3.Ring != self.MONring) and (self.MONTTLtype is False):
-                               
-                               print('\n \033[1;33mWARNING ---> Found Ring that does not belong to either detector or monitor -> check config file, TTLtype shuld be True! \033[1;37m')
-    
-                           if self.MONTTLtype is True: # overwrite event with the right MON data format 
-    
-                               if (vmm3.Ring == self.MONring):
-    
-                                   mondata = MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
-      
-                                   # index = index+2000
-                                   
-                                   # print('monring:'+str(mondata.Ring)+'index:'+str(index))
-                                   
-                                   self.data[index, 0] = mondata.Ring
-                                   self.data[index, 1] = mondata.Fen
-                                   self.data[index, 2] = 0   # VMM for MON always 0
-                                   self.data[index, 3] = 0   # hybrid for MON always 0
-                                   self.data[index, 4] = 0   # ASIC for MON always 0
-                                   self.data[index, 5] = mondata.Channel
-                                   self.data[index, 6] = mondata.ADC
-                                   self.data[index, 7] = mondata.posX
-                                   self.data[index, 8] = mondata.posY
-                                   self.data[index, 9] = 0     # TDC for MON always 0
-                                   self.data[index, 10] = mondata.Type
-                                   self.data[index, 11] = mondata.timeCoarse
-                                   self.data[index, 12] = PulseT
-                                   self.data[index, 13] = PrevPT
-                                   self.data[index, 14] = 0  # if 1 is calibration
-                                   self.data[index, 15] = -1
-                                   self.data[index, 16] = -1
-                                   self.data[index, 17] = -1
-                                   self.data[index, 18] = -1
-                               
-                               elif (self.MONring != 11): 
-                               
-                                   print('\n \033[1;33mWARNING ---> Ring for Monitor in TTL type not matching, usually Ring is 11! \033[1;37m')
-                               
-      
-                               
-                               
-                        # valid or normal mode 
-                           if debugMode is True:
-                               print(" \t Packet: {} ({} bytes), Readout: {}, Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time Coarse {} ns, BC {}, OverTh {}, ADC {}, TDC {}, GO {} " \
-                                           .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeCoarse,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.G0))
-    
+                       ###########
+                       
+           self.readouts.heartbeats[indexPackets] = PulseT
+        
+
+        if np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0:
+            percents = int(round(100.0 * self.counterValidESSpackets / float(self.counterCandidatePackets), 1))
+            print('['+format(percents,'01d') + '%]',end=' ')  
            
-                           ###########
-                           
-               self.readouts.heartbeats[indexPackets] = PulseT
-            
-    
-           if np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0:
-                percents = int(round(100.0 * self.counterValidESSpackets / float(self.counterCandidatePackets), 1))
-                print('['+format(percents,'01d') + '%]',end=' ')  
-               
-            # pb.progressBar(self.counterValidESSpackets,self.counterCandidatePackets)
+        # pb.progressBar(self.counterValidESSpackets,self.counterCandidatePackets)
            
            
         
@@ -1585,16 +1557,6 @@ if __name__ == '__main__':
    filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
    file = '20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng'
    
-   filePath = '/Users/francescopiscitelli/Desktop/'
-   file = 'DiagonaltestData.pcapng'
-   file = 'DataRMMWrongHeader.pcapng'
-   
-   filePath = '/Users/francescopiscitelli/Documents/PYTHON/06_MBUTYcap_DETtests_Utgard/data/'
-   file = 'ESSmask2023.pcapng'
-   
-   filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
-   file ='20250320_095029_duration_s_1800_testCAB5-C0to3_00014.pcapng'
-   
    # filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    # file = 'sampleData_NormalMode.pcapng'
    # file = 'sampleData_ClusteredMode.pcapng'
@@ -1662,13 +1624,9 @@ if __name__ == '__main__':
    # pcapng.allocateMemory()
    # pcapng.read()
    # readouts = pcapng.readouts
-
    
-   typeOfLoading = 'allocate'
    
-   typeOfLoading = 'quick'
-
-   pcap = pcapng_reader(filePathAndFileName,NSperClockTick, MONTTLtype=True, MONring=11, timeResolutionType='fine', sortByTimeStampsONOFF=True, operationMode='normal',pcapLoadingMethod=typeOfLoading)
+   pcap = pcapng_reader(filePathAndFileName,NSperClockTick, MONTTLtype=True, MONring=11, timeResolutionType='fine', sortByTimeStampsONOFF=True, operationMode='normal')
 
    readouts = pcap.readouts
    

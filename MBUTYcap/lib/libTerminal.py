@@ -210,7 +210,11 @@ class dumpToPcapngUtil():
         # delay in seconds 
         delay = int(round(delay)) 
         
-        command1 = self.pathToTshark+'tshark'+' -i '+str(self.interface)
+        # capture all packets 
+        # command1 = self.pathToTshark+'tshark'+' -i '+str(self.interface)
+        
+        # capture only UDP packets 
+        command1 = self.pathToTshark+'tshark'+' -i '+str(self.interface) + ' -f "udp"'
 
         nowTime = datetime.now()
         current_date = nowTime.strftime("%Y%m%d")
