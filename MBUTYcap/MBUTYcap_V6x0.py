@@ -52,11 +52,16 @@ from lib import libVMMcalibration as cal
 ###############################################################################
 # parameters come from GUI or set them via the file MBUTYcap_setParameters
 
-runFromGUI    = False
-
-if runFromGUI is False:
+if len(sys.argv) > 1:
+    print('running with GUI')
+    
+    # add import GUI param 
+    
+else:
+    print('running w/o GUI')
     from MBUTYcap_setParameters import parameters, config
- 
+
+
 ###############################################################################
 ###############################################################################
 ########    PARAMETERS COME FROM  MBUTYcap_setParameters  #####################
