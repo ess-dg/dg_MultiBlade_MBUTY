@@ -12,7 +12,7 @@ import sys
 import pkg_resources
 import time
 from lib import libEventsSoftThresholds as thre
-# from lib import libMapping as maps
+from lib import libMapping as maps
 
 # import libEventsSoftThresholds as thre
 # import libMapping as maps
@@ -224,9 +224,17 @@ class dataReduction():
           self.calibrateVMM_ADC_ONOFF = False
 
          
-    def createThArrays(self, cassettes, parameters):      
+    def createThArrays(self, parameters):   
         
-          self.softThArray = thre.softThresholds(cassettes, parameters)
+        if (parameters.config) is None :
+            config = maps.read_json_config(parameters.fileManagement.configFilePath+parameters.fileManagement.configFileName)
+            parameters.config = config
+            cassettes = config.DETparameters.cassInConfig
+        else:
+            cassettes = parameters.config.DETparameters.cassInConfig
+            
+            
+        self.softThArray = thre.softThresholds(cassettes, parameters)
 
 class pulseHeigthSpect():
     def __init__(self):
@@ -238,9 +246,9 @@ class pulseHeigthSpect():
           self.plotPHScorrelation = False
           
 class plotting():
-      def __init__(self, config):
+      def __init__(self):
      
-          self.config = config
+          # self.config = config
           
           #  is you want stats of clusters per cassette or for all at once, 0 no  stat, individualStat stat per cass, globalStat stat all cass glob
           self.showStat = 'globalStat'
@@ -286,7 +294,9 @@ class plotting():
           
           self.bareReadoutsCalculation = False
           
-      def calculateDerivedParam(self):
+      def calculateDerivedParam(self, config):
+          
+          self.config = config
              
           if self.config is not None:
                if self.positionReconstruction == 'W.max-S.max': # w x s max max
@@ -344,24 +354,9 @@ class parameters():
         
         self.acqMode = None
         
-    def init_empty(self):
+        self.initializeParam(config=None)
         
-        self.loadConfigAndSetParameters(config=None)
-        
-    def loadConfig(self,config=None):
-        
-        self.config = config
-        
-        self.fileManagement.importConfigFileDetails(self.config)
-        
-    def loadConfigAndSetParameters(self,config=None):
-
-        # self.config = config
-        
-        # # self.acqMode = acqMode
-        
-        # # self.fileManagement = fileManagement(self.fileManagement.currentPath)
-        # self.fileManagement.importConfigFileDetails(self.config)
+    def initializeParam(self,config=None):
         
         self.loadConfig(config)
         
@@ -373,8 +368,8 @@ class parameters():
         
         self.pulseHeigthSpect = pulseHeigthSpect()
         
-        self.plotting = plotting(self.config)
-        self.plotting.calculateDerivedParam()
+        self.plotting = plotting()
+        self.plotting.calculateDerivedParam(self.config)
         
         self.wavelength = wavelength()
         
@@ -383,11 +378,25 @@ class parameters():
         self.kafkaSettings = kafkaSettings()
         
         self.VMMsettings   = VMMsettings()
-    
-    def update(self):
+           
+    def loadConfig(self,config=None):
         
-        self.plotting.calculateDerivedParam()
+        self.config = config
+        self.fileManagement.importConfigFileDetails(self.config)
+        
+        
+    def update(self,config):
+            
+        self.plotting.calculateDerivedParam(config)
         self.wavelength.update()
+        
+    def loadConfigAndUpdate(self,config=None):
+            
+        self.loadConfig(config)
+        self.update(config)
+
+             
+#################
     
     def HistNotification(self):
         

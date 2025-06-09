@@ -206,7 +206,7 @@ class readReducedDataFromHDF():
         
         
         self.parameters = para.parameters()
-        self.parameters.init_empty()
+        # self.parameters.init_empty()
         
         self.events    = clu.events()
         

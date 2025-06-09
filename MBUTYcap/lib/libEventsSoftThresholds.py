@@ -65,6 +65,8 @@ class thresholdDef():
         if self.parameters.dataReduction.softThresholdType == 'fromFile' : 
             
             self.softThresholds = softThresholds(cassettes, self.parameters)
+            
+            # print(self.parameters.fileManagement.thresholdFilePath+self.parameters.fileManagement.thresholdFileName)
              
             sthfullpath = self.parameters.fileManagement.thresholdFilePath+self.parameters.fileManagement.thresholdFileName
             print('\t loading thresholds from file ...')
