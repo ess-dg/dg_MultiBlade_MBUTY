@@ -4,31 +4,82 @@ Created on Thu Jun  5 11:51:22 2025
 
 @author: sheilamonera
 """
+"""
+GUI Configuration File for MBUTY Detector Interface
+---------------------------------------------------
 
-# gui_config.py
+This module defines a centralized configuration dictionary `config` that specifies all user-configurable parameters
+exposed via the GUI. These parameters are grouped by section (e.g. 'static', 'file_management', 'analysis', etc.),
+and each parameter entry follows a structured schema:
+
+Each parameter item (within a section) supports the following fields:
+
+- `label` (str): The user-visible label for the GUI widget.
+
+- `type` (str): The type of widget. Must be one of:
+    - 'entry'         : standard validated text input
+    - 'dropdown'      : dropdown selection menu
+    - 'multiSelect'   : multi-select dropdown
+    - 'radio'         : horizontal/vertical radio button group
+    - 'bool'          : horizontal toggle between two options (True/False or custom)
+    - 'range'         : validated numeric range input (e.g., [min, max])
+
+- `options` (list, optional): Static list of selectable values. Required for 'dropdown', 'multiSelect', 'radio', and 'bool'.
+    - If dynamic loading is used (see `optionsFromPath`), this can be set to an empty list or omitted.
+
+- `default` (any, optional): Default value used to initialize the widget.
+    - Type should match the expected input type: str for dropdowns, list[str] for multiSelect, int/float for entries, etc.
+
+- `info` (str, optional): Description text shown in a tooltip for that setting.
+
+- `inputValidation` (str, optional): Validation rule (for entry widgets only). Must be one of:
+    - 'int', 'float', 'scientific', 'localPath', 'remotepath', 'host:port'
+
+- `range` (tuple[int|float, int|float], optional): Applicable only to 'entry' widgets with numeric inputValidation.
+
+- `dependsOn` (tuple, optional): Conditionally show this item only when another parameter has a certain value.
+    Format:
+        ("other_parameter_key", ["valid_value1", "valid_value2", ...]) 
+    or:
+        ("other_parameter_key", "valid_value") 
+
+- `optionsFromPath` (str, optional): For 'dropdown' and 'multiSelect' widgets only.
+    Indicates that this widget's options should be dynamically loaded from the folder path given by another widget.
+    The value should be the config key of the controlling path entry (e.g., "parameters.fileManagement.filePath").
+
+- `fileTypeFilter` (str, optional): Used with `optionsFromPath` to filter files by extension (e.g., ".json", ".pcapng").
+    Must be used together with `optionsFromPath`.
+
+- `set` (callable): A lambda function that takes the selected value and sets it in the underlying `parameters` object.
+
+Notes:
+- Providing extra keys not used by a widget type is harmless and simply ignored.
+- Omitting required fields (like `options` for static dropdowns) will result in incomplete widgets (e.g. empty list).
+- If `optionsFromPath` is provided, the `options` field is ignored after initialization and dynamically populated at runtime.
+"""
+
 import os
+import numpy as np
+import sys
+
+# Fix import path to allow access to lib from GUI folder
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from lib import libParameters as para
 
 # Set current path
 currentPath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + '/'
 parameters = para.parameters(currentPath)
-para.checkPythonVersion()
-profiling = para.profiling()
 
 # Load available config files
-configFilePath = os.path.join(currentPath, 'config')
-config_json_files = [f for f in os.listdir(configFilePath) if f.endswith('.json')]
+parameters.fileManagement.configFilePath = os.path.join(currentPath, 'config') + '/'
+config_json_files = [f for f in os.listdir(parameters.fileManagement.configFilePath) if f.endswith('.json')]
 
 # Define configuration structure
 config = {
     "static": {
-        "configFileName": {
-            "label": "Select Config File",
-            "type": "dropdown",
-            "options": config_json_files,
-            "info": "Must select config file",
-            "set": lambda val: globals().__setitem__('configFileName', val)
-
+        "subtitle.acqMode": {
+            "type": "subheading",
+            "label": "Acquisition mode settings"
         },
         "parameters.acqMode": {
             "label": "Acquisition Mode",
@@ -37,24 +88,22 @@ config = {
             "default": "off",
             "set": lambda val: setattr(parameters, 'acqMode', val)
 
-        }
-    }, 
-    "file_management": {
+        },
         "parameters.dumpSettings.interface": {
             "label": "Network Interface",
             "type": "entry",
             "default": "ens2",
-            "info": "Used for acqMode = pcap-local, pcap-local-overwrite, or kafka",
             "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite", "kafka"]),
+            "info": "Used for acqMode = pcap-local, pcap-local-overwrite, or kafka",
             "set": lambda val: setattr(parameters.dumpSettings, 'interface', val)
         },
         "parameters.dumpSettings.typeOfCapture": {
             "label": "Type of Capture",
             "type": "radio",
-            "options": ["packets", "duration"],
+            "options": ["packets", "duration", "filesize"],
             "default": "packets",
-            "info": "Choose whether to capture by number of packets or duration (in seconds)",
-            "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite", "kafka"]),
+            "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite"]),
+            "info": "Choose whether to capture by number of packets, duration (in seconds) or filesize (in kbytes)",
             "set": lambda val: setattr(parameters.dumpSettings, 'typeOfCapture', val)
         },
         "parameters.dumpSettings.quantity": {
@@ -62,14 +111,15 @@ config = {
             "type": "entry",
             "inputValidation": "int",
             "default": 100,
-            "info": "Number of packets or seconds to capture based on 'typeOfCapture'",
-            "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite", "kafka"]),
+            "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite"]),
+            "info": "Number of packets, seconds (duration) or kbytes (filesize) to capture based on 'typeOfCapture'",
             "set": lambda val: setattr(parameters.dumpSettings, 'quantity', val)
         },
         "parameters.fileManagement.fileNameSave": {
             "label": "Save File Name",
             "type": "entry",
             "default": "test",
+            "dependsOn": ("parameters.acqMode", "pcap-local"),
             "info": "Name of the file to save captured data",
             "set": lambda val: setattr(parameters.fileManagement, 'fileNameSave', val)
         },
@@ -78,8 +128,8 @@ config = {
             "type": "entry",
             "inputValidation": "host:port",
             "default": "127.0.0.1:9092",
-            "info": "Broker address in the format host:port. Relevant for acqMode = kafka",
             "dependsOn": ("parameters.acqMode", "kafka"),
+            "info": "Broker address in the format host:port. Relevant for acqMode = kafka",
             "set": lambda val: setattr(parameters.kafkaSettings, 'broker', val)
         },
         "parameters.kafkaSettings.topic": {
@@ -115,139 +165,86 @@ config = {
             "dependsOn": ("parameters.acqMode", "pcap-sync"),
             "set": lambda val: setattr(parameters.fileManagement, 'destPath', val)
         },
+        "selectDifferentDataPath": {
+            "label": "Select Different Data Path",
+            "type": "bool",
+            "options": ["True", "False"],
+            "default": "False",
+            "info": "By default the data path = the destination path for pcap-sync if you want to get data from a different path select 'True' and enter path",
+            "dependsOn": ("parameters.acqMode", "pcap-sync"),
+        },
         "parameters.fileManagement.filePath": {
             "label": "Data Folder Path",
             "type": "entry",
             "inputValidation": "localPath",
-            "default": currentPath+'data/',
+            "default": currentPath + 'data/',
             "info": "Path to the folder containing data files. Relevant for acqMode = off, pcap-sync, and pcap-local",
-            "dependsOn": ("parameters.acqMode", ["off", "pcap-sync", "pcap-local"]),
+            "dependsOn": {
+                "or": [
+                    ("parameters.acqMode", ["off", "pcap-local"]),
+                    {
+                        "and": [
+                            ("parameters.acqMode", "pcap-sync"),
+                            ("selectDifferentDataPath", True)
+                        ]
+                    }
+                ]
+            },
             "set": lambda val: setattr(parameters.fileManagement, 'filePath', val)
         },
-        "parameters.fileManagement.fileName": {######################################################################### deal with this later passing a list of files
+        "parameters.fileManagement.fileName": {
             "label": "Data File Name(s)",
             "type": "multiSelect",
-            "default": ["ESSmask2023.pcapng"], #
-            "options": None, #[f for f in os.listdir(parameters.fileManagement.filePath) if f.endswith('.pcapng')]
-            "info": "List of file(s) to load from the data folder. Relevant for acqMode = off, pcap-sync, and pcap-local",
-            "dependsOn": ("parameters.acqMode", ["off", "pcap-sync", "pcap-local"]),
+            "default": ["ESSmask2023.pcapng"], 
+            "optionsFromPath": "parameters.fileManagement.filePath",
+            "fileTypeFilter": ".pcapng",
+            "dependsOn": ("parameters.acqMode", "off"),
+            "info": "List of file(s) to load from the data folder. Relevant for acqMode = off",
+            "set": lambda val: setattr(parameters.fileManagement, 'fileName', val)
+        },
+        "parameters.fileManagement.fileName2": {
+            "label": "Data File Name(s)",
+            "type": "entry",
+            "default": ["ESSmask2023.pcapng"], ######################################################################################################## deal with later - passing a list of files
+            "dependsOn": ("parameters.acqMode", "pcap-sync"),
+            "info": "List of file(s) to load from the data folder. Relevant for acqMode = pcap-sync",
             "set": lambda val: setattr(parameters.fileManagement, 'fileName', val)
         },
         "parameters.fileManagement.openMode": {
             "label": "File Open Mode",
             "type": "radio",
-            "options": ["window", "fileName", "latest", "secondLast", "wholeFolder", "sequence"],
+            "options": ["fileName", "latest", "secondLast", "wholeFolder", "sequence"],
             "default": "fileName",
+            "dependsOn": ("parameters.acqMode", ["off", "pcap-sync"]),
             "info": "Choose how files should be selected and loaded: 'window' opens file browser, 'fileName' uses preset file, 'latest' and 'secondLast' load most recent files, 'wholeFolder' analyzes all files, 'sequence' uses fileSerials.",
             "set": lambda val: setattr(parameters.fileManagement, 'openMode', val)
         },
         "parameters.fileManagement.fileSerials": { 
             "label": "File Serials",
-            "type": "range",
-            "default": [18,27],
-            "inputValidation": "int",
-            "info": "Used when openMode is 'sequence' to indicate file serial range (e.g., 18-27). Both boundaries are inclusive.",  
+            "type": "entry",
+            "default": "18,27",
+            "inputValidation": "fileNumbers",
+            "info": "Used when openMode is 'sequence' to indicate file serial numbers of files to be opened. Accepts comma separated lists and ranges e.g 5-10,15,17 ",  
             "dependsOn": ("parameters.fileManagement.openMode", "sequence"),
             "set": lambda val: setattr(parameters.fileManagement, 'fileSerials', np.arange(val[0], val[1]+1, 1))
+        },
+        "parameters.fileManagement.pathToTshark": {
+            "label": "Path to Tshark",
+            "type": "entry",
+            "inputValidation": "localPath",
+            "default": "/usr/sbin/",
+            "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite"]),
+            "info": "Filesystem path to the Tshark binary. Used to convert PCAP to PCAPNG if needed.",
+            "set": lambda val: setattr(parameters.fileManagement, 'pathToTshark', val)
         },
         "parameters.fileManagement.pcapLoadingMethod": {
             "label": "PCAP Loading Method",
             "type": "bool",
             "options": ["allocate", "quick"],
             "default": "allocate",
+            "dependsOn": ("parameters.acqMode", ["off", "pcap-sync", "pcap-local", "pcap-local-overwrite"]),
             "info": "Controls how memory is allocated when loading PCAP files. 'allocate' is more rigorous, \n'quick' estimates the memory and is faster.",
             "set": lambda val: setattr(parameters.fileManagement, 'pcapLoadingMethod', val)
-        },
-        "parameters.fileManagement.calibFilePath": {
-            "label": "Calibration File Path",
-            "type": "entry",
-            "inputValidation": "localPath",
-            "default": parameters.fileManagement.currentPath+'calib/',
-            "info": "Path to the calibration file folder.",
-            "set": lambda val: setattr(parameters.fileManagement, 'calibFilePath', val)
-        },
-        "parameters.fileManagement.calibFileName": {
-            "label": "Calibration File Name",
-            "type": "dropdown",
-            "options": [f for f in os.listdir(os.path.join(currentPath, 'calib')) if f.endswith('.json')],
-            "default": "AMOR_calib_20231111002842.json",
-            "info": "Name of the calibration file.",
-            "set": lambda val: setattr(parameters.fileManagement, 'calibFileName', val)
-        },
-        "parameters.fileManagement.thresholdFilePath": {
-            "label": "Threshold File Path",
-            "type": "entry",
-            "inputValidation": "localPath",
-            "default": parameters.fileManagement.currentPath+'config/',
-            "info": "Path to the threshold file folder.",
-            "set": lambda val: setattr(parameters.fileManagement, 'thresholdFilePath', val)
-        },
-        "parameters.fileManagement.thresholdFileName": {
-            "label": "Threshold File Name",
-            "type": "entry",
-            "default": [f for f in os.listdir(os.path.join(currentPath, 'config')) if f.endswith('.xlsx')],
-            "info": "Name of the Excel threshold file.",
-            "set": lambda val: setattr(parameters.fileManagement, 'thresholdFileName', val)
-        },
-        "parameters.fileManagement.pathToTshark": {
-            "label": "Path to Tshark",
-            "type": "entry",
-            "inputValidation": "localPath",
-            "default": "/Applications/Wireshark.app/Contents/MacOS/",
-            "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite"]),
-            "info": "Filesystem path to the Tshark binary. Used to convert PCAP to PCAPNG if needed.",
-            "set": lambda val: setattr(parameters.fileManagement, 'pathToTshark', val)
-        },
-        "parameters.fileManagement.saveReducedFileONOFF": {
-            "label": "Save Reduced File",
-            "type": "bool",
-            "options": ["True", "False"],
-            "default": "False",
-            "info": "Enable or disable saving a reduced HDF file with clusters.",
-            "set": lambda val: setattr(parameters.fileManagement, 'saveReducedFileONOFF', val)
-        },
-        "parameters.fileManagement.saveReducedPath": {
-            "label": "Reduced File Path",
-            "type": "entry",
-            "inputValidation": "localPath",
-            "default": "/Users/francescopiscitelli/Desktop/reducedFile/",
-            "dependsOn": ("parameters.fileManagement.saveReducedFileONOFF", True),
-            "info": "Destination path for saving reduced HDF files.",
-            "set": lambda val: setattr(parameters.fileManagement, 'saveReducedPath', val)
-        },
-        "parameters.fileManagement.reducedNameMainFolder": { # don't know if there are more options - if no more options remove from GUI and set fixed value
-            "label": "Main Folder in HDF",
-            "type": "entry",
-            "default": "entry1",
-            "set": lambda val: setattr(parameters.fileManagement, 'reducedNameMainFolder', val)
-        },
-        "parameters.fileManagement.reducedCompressionHDFT": {# don't know if there are more options - if no more options remove from GUI and set fixed value
-            "label": "HDF Compression Type",
-            "type": "radio",
-            "options": ["gzip"],
-            "default": "gzip",
-            "info": "Compression method used for saving HDF files.",
-            "set": lambda val: setattr(parameters.fileManagement, 'reducedCompressionHDFT', val)
-        },
-        "parameters.fileManagement.reducedCompressionHDFL": {
-            "label": "HDF Compression Level",
-            "type": "entry",
-            "inputValidation": "int",
-            "range": (0,9),
-            "default": 9,
-            "info": "Compression level (0-9) used with HDF file saving.",
-            "set": lambda val: setattr(parameters.fileManagement, 'reducedCompressionHDFL', val)
-        }
-
-    },
-    "analysis": {
-        "parameters.dataReduction.calibrateVMM_ADC_ONOFF": {
-            "label": "Calibrate VMM ADC",
-            "type": "bool",
-            "options": ["True", "False"],
-            "default": "False",
-            "info": "Calibration VMM ADC",
-            "set": lambda val: setattr(parameters.dataReduction, 'calibrateVMM_ADC_ONOFF', val)
         },
         "parameters.VMMsettings.sortReadoutsByTimeStampsONOFF": {
             "label": "Sort Readouts by Time Stamps",
@@ -265,14 +262,60 @@ config = {
             "info": "Time stamp is time HI + time LO or if fine corrected with TDC ",
             "set": lambda val: setattr(parameters.VMMsettings, 'timeResolutionType', val)
         },
+        "subtitle.bareReadouts": {
+            "type": "subheading",
+            "label": "Readouts"
+        },
+        "parameters.plotting.bareReadoutsCalculation": {
+            "label": "Stop at readouts",
+            "type": "bool",
+            "options": ["True", "False"],
+            "default": "False",
+            "info": "Disables clustering and mapping for speed. Stops analysis at raw readouts.",
+            "set": lambda val: setattr(parameters.plotting, 'bareReadoutsCalculation', val)
+        },
+        "subtitle.config": {
+            "type": "subheading",
+            "label": "Detector config"
+        },
+        "parameters.fileManagement.configFilePath": {
+            "label": "Enter path to config file",
+            "type": "entry",
+            "inputValidation": "localPath",
+            "default": parameters.fileManagement.configFilePath,
+            "set": lambda val: setattr(parameters.fileManagement,'configFilePath', val)
+        },
+        
+        "parameters.fileManagement.configFileName": {
+            "label": "Select Config File",
+            "type": "dropdown",
+            "default": "AMOR.json",
+            "optionsFromPath": "parameters.fileManagement.configFilePath",
+            "fileTypeFilter": ".json",
+            "info": "Must select config file",
+            "set": lambda val: setattr(parameters.fileManagement,'configFileName', val)
+
+        }
+    },
+    "clustering": {
         "parameters.dataReduction.timeWindow": {
-            "label": "Time Window (s)",
+            "label": "Time Window for clustering (s)",
             "type": "entry",
             "inputValidation": "scientific",
             "default": "0.3e-6",
             "info": "Time window to search for clusters.\nThis is the maximum time allowed between events in a cluster.\nHalf the value is used as the recursive threshold between adjacent hits.",
             "set": lambda val: setattr(parameters.dataReduction, 'timeWindow', val)
         },
+        "parameters.plotting.positionReconstruction": {
+            "label": "Position Reconstruction Method",
+            "type": "radio",
+            "options": ["W.max-S.max", "W.cog-S.cog", "W.max-S.cog"],
+            "default": "W.max-S.cog",
+            "info": "'W.max-S.max' is max max,  'W.cog-S.cog' is CoG CoG, 'W.max-S.cog' is wires max and strips CoG ",
+            "set": lambda val: setattr(parameters.plotting, 'positionReconstruction', val)
+        },
+    },
+    "threshold": {
         "parameters.dataReduction.softThresholdType": {
             "label": "Soft Threshold Type",
             "type": "radio",
@@ -285,32 +328,116 @@ config = {
                     if val == "userDefined" else None
                 )[-1]
         },
+        "parameters.fileManagement.thresholdFilePath": {
+            "label": "Threshold File Path",
+            "type": "entry",
+            "inputValidation": "localPath",
+            "default": parameters.fileManagement.currentPath+'config/',
+            "dependsOn": ("parameters.dataReduction.softThresholdType","fromFile"),
+            "info": "Path to the threshold file folder.",
+            "set": lambda val: setattr(parameters.fileManagement, 'thresholdFilePath', val)
+        },
+        "parameters.fileManagement.thresholdFileName": {
+            "label": "Threshold File Name",
+            "type": "dropdown",
+            "optionsFromPath": "parameters.fileManagement.thresholdFilePath",
+            "fileTypeFilter": ".xlsx",
+            "default": "MB.ESTIA_achitecture.xlsx", 
+            "dependsOn": ("parameters.dataReduction.softThresholdType","fromFile"),
+            "info": "Name of the Excel threshold file.",
+            "set": lambda val: setattr(parameters.fileManagement, 'thresholdFileName', val)
+        },
         "parameters.dataReduction.softThArray.ThW[:,0]": {
             "label": "Soft Threshold W",
             "type": "entry",
             "inputValidation": "float",
+            "default": 200,
             "dependsOn": ("parameters.dataReduction.softThresholdType", "userDefined"),
-            "default": 15000,
-            "set": lambda val: setattr(parameters.dataReduction.softThArray, 'ThW[:,0]', val)
+            "set": lambda val: setattr(parameters.dataReduction.softThArray, 'ThW[:,:]', val)
         },
         "parameters.dataReduction.softThArray.ThS[:,0]": {
             "label": "Soft Threshold S",
             "type": "entry",
             "inputValidation": "float",
+            "default": 100,
             "dependsOn": ("parameters.dataReduction.softThresholdType", "userDefined"),
-            "default": 500,
-            "set": lambda val: setattr(parameters.dataReduction.softThArray, 'ThS[:,0]', val)
+            "set": lambda val: setattr(parameters.dataReduction.softThArray, 'ThS[:,:]', val)
+        }
+    }, 
+    "calibration": {
+        "parameters.dataReduction.calibrateVMM_ADC_ONOFF": {
+            "label": "Calibrate VMM ADC",
+            "type": "bool",
+            "options": ["True", "False"],
+            "default": "False",
+            "info": "Calibration VMM ADC",
+            "set": lambda val: setattr(parameters.dataReduction, 'calibrateVMM_ADC_ONOFF', val)
+        },
+        "parameters.fileManagement.calibFilePath": {
+            "label": "Calibration File Path",
+            "type": "entry",
+            "inputValidation": "localPath",
+            "default": parameters.fileManagement.currentPath+'calib/',
+            "dependsOn": ("parameters.dataReduction.calibrateVMM_ADC_ONOFF", True),
+            "info": "Path to the calibration file folder.",
+            "set": lambda val: setattr(parameters.fileManagement, 'calibFilePath', val)
+        },
+        "parameters.fileManagement.calibFileName": {
+            "label": "Calibration File Name",
+            "type": "dropdown",
+            "optionsFromPath": "parameters.fileManagement.calibFilePath",
+            "fileTypeFilter": ".json",
+            "default": "AMOR_calib_20231111002842.json",
+            "dependsOn": ("parameters.dataReduction.calibrateVMM_ADC_ONOFF", True),
+            "info": "Name of the calibration file.",
+            "set": lambda val: setattr(parameters.fileManagement, 'calibFileName', val)
+        }
+    },
+    "pulse_height": {
+        "parameters.pulseHeigthSpect.plotPHS": {
+            "label": "Plot PHS",
+            "type": "bool",
+            "options": ["True", "False"],
+            "default": "True",
+            "info": "Enable or disable pulse height spectra per channel and globally.",
+            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'plotPHS', val)
+        },
+        "parameters.pulseHeigthSpect.plotPHSlog": {
+            "label": "PHS Log Scale",
+            "type": "bool",
+            "options": ["True", "False"],
+            "default": "False",
+            "dependsOn": ("parameters.pulseHeigthSpect.plotPHS", True),
+            "info": "If True, plot pulse height spectra using a logarithmic scale.",
+            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'plotPHSlog', val)
+        },
+        "parameters.pulseHeigthSpect.energyBins": {
+            "label": "Energy Bins",
+            "type": "entry",
+            "default": 128,
+            "inputValidation": "int",
+            "dependsOn": ("parameters.pulseHeigthSpect.plotPHS", True),
+            "info": "Number of bins to use in the pulse height histogram.",
+            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'energyBins', val)
+        },
+        "parameters.pulseHeigthSpect.maxEnerg": {
+            "label": "Max Energy",
+            "type": "entry",
+            "default": 1700,
+            "inputValidation": "int",
+            "dependsOn": ("parameters.pulseHeigthSpect.plotPHS", True),
+            "info": "Maximum energy value considered in pulse height analysis.",
+            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'maxEnerg', val)
+        },
+        "parameters.pulseHeigthSpect.plotPHScorrelation": {
+            "label": "Plot PHS Correlation (Wires vs Strips)",
+            "type": "bool",
+            "options": ["True", "False"],
+            "default": "False",
+            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'plotPHScorrelation', val)
         }
     },
     "wavelength": {
-        "parameters.wavelength.distance": {
-            "label": "Distance (mm)",
-            "type": "entry",
-            "default": 8000,
-            "inputValidation": "int",
-            "info": "Distance in mm from chopper and wires 0 of detector",
-            "set": lambda val: setattr(parameters.wavelength, 'distance', val)
-        },
         "parameters.wavelength.calculateLambda": {
             "label": "Calculate Lambda",
             "type": "bool",
@@ -318,11 +445,22 @@ config = {
             "default": "False",
             "set": lambda val: setattr(parameters.wavelength, 'calculateLambda', val)
         },
+        "parameters.wavelength.distance": {
+            "label": "Distance (mm)",
+            "type": "entry",
+            "default": 8000,
+            "inputValidation": "int",
+            "dependsOn": ("parameters.wavelength.calculateLambda", True),
+            "info": "Distance in mm from chopper and wires 0 of detector",
+            "set": lambda val: setattr(parameters.wavelength, 'distance', val)
+        },
+    
         "parameters.wavelength.plotXLambda": {
             "label": "Plot X vs Lambda",
             "type": "bool",
             "options": ["True", "False"],
             "default": "False",
+            "dependsOn": ("parameters.wavelength.calculateLambda", True),
             "info": "2D plot of X vs Lambda",
             "set": lambda val: setattr(parameters.wavelength, 'plotXLambda', val)
         },
@@ -331,6 +469,7 @@ config = {
             "type": "bool",
             "options": ["True", "False"],
             "default": "False",
+            "dependsOn": ("parameters.wavelength.calculateLambda", True),
             "info": "ON/OFF integrated over single cassettes",
             "set": lambda val: setattr(parameters.wavelength, 'plotLambdaDistr', val)
         },
@@ -339,6 +478,7 @@ config = {
             "type": "entry",
             "default": 128,
             "inputValidation": "int",
+            "dependsOn": ("parameters.wavelength.calculateLambda", True),
             "info": "Number of bins for the lambda histogram",
             "set": lambda val: setattr(parameters.wavelength, 'lambdaBins', val)
         },
@@ -347,6 +487,7 @@ config = {
             "type": "range",
             "default": [1, 16],
             "inputValidation": "int",
+            "dependsOn": ("parameters.wavelength.calculateLambda", True),
             "info": "Range of lambda values (in Å) as [min, max]",
             "set": lambda val: setattr(parameters.wavelength, 'lambdaRange', val)
         },
@@ -355,6 +496,7 @@ config = {
             "type": "entry",
             "default": 0.12,
             "inputValidation": "float",
+            "dependsOn": ("parameters.wavelength.calculateLambda", True),
             "info": "Chopper period in seconds (relevant if multipleFramesPerRest > 1)",
             "set": lambda val: setattr(parameters.wavelength, 'chopperPeriod', val)
         },
@@ -363,6 +505,7 @@ config = {
             "type": "bool",
             "options": ["True", "False"],
             "default": "False",
+            "dependsOn": ("parameters.wavelength.calculateLambda", True),
             "info": "ON/OFF toggle for if chopper has two openings or more per reset of ToF \n(This only affects the lambda calculation)",
             "set": lambda val: setattr(parameters.wavelength, 'multipleFramePerReset', val)
         },
@@ -371,6 +514,7 @@ config = {
             "type": "entry",
             "default": 2,
             "inputValidation": "int",
+            "dependsOn": ("parameters.wavelength.calculateLambda", True),
             "info": "Number of neutron bunches per pulse",
             "set": lambda val: setattr(parameters.wavelength, 'numOfBunchesPerPulse', val)
         },
@@ -379,53 +523,11 @@ config = {
             "type": "entry",
             "default": 2.5,
             "inputValidation": "float",
+            "dependsOn": ("parameters.wavelength.calculateLambda", True),
             "set": lambda val: setattr(parameters.wavelength, 'lambdaMIN', val)
         }
     },
-    "monitor": {
-        "parameters.MONitor.MONOnOff": {
-            "label": "Enable Monitor",
-            "type": "bool",
-            "options": ["True", "False"],
-            "default": "False",
-            "info": "ON/OFF switch for including the monitor in the analysis.",
-            "set": lambda val: setattr(parameters.MONitor, 'MONOnOff', val)
-        },
-        "parameters.MONitor.MONThreshold": {
-            "label": "Monitor Threshold",
-            "type": "entry",
-            "default": 0,
-            "inputValidation": "float",
-            "info": "Threshold on monitor events. 0 disables threshold; any other value enables it.",
-            "set": lambda val: setattr(parameters.MONitor, 'MONThreshold', val)
-        },
-        "parameters.MONitor.plotMONtofPHS": {
-            "label": "Plot Monitor ToF & PHS",
-            "type": "bool",
-            "options": ["True", "False"],
-            "default": "True",
-            "info": "ON/OFF plotting for Monitor Time-of-Flight and Pulse Height spectra.",
-            "set": lambda val: setattr(parameters.MONitor, 'plotMONtofPHS', val)
-        },
-        "parameters.MONitor.MONDistance": {
-            "label": "Monitor Distance (mm)",
-            "type": "entry",
-            "default": 6000,
-            "inputValidation": "int",
-            "info": "Distance in mm from chopper to monitor (needed for lambda calculation of ToF).", 
-            "dependsOn": ("parameters.MONitor.plotMONtofPHS", True),
-            "set": lambda val: setattr(parameters.MONitor, 'MONDistance', val)
-        }
-    },
     "plotting": {
-        "parameters.plotting.bareReadoutsCalculation": {
-            "label": "Bare Readouts Only",
-            "type": "bool",
-            "options": ["True", "False"],
-            "default": "False",
-            "info": "Disables clustering and mapping for speed. Stops analysis at raw readouts.",
-            "set": lambda val: setattr(parameters.plotting, 'bareReadoutsCalculation', val)
-        },
         "parameters.plottingInSections": {
             "label": "Plot in Sections",
             "type": "bool",
@@ -446,7 +548,7 @@ config = {
         "parameters.plotting.showStat": {
             "label": "Statistics Display",
             "type": "radio",
-            "options": ["None", "globalStat", "individualStat"],
+            "options": ["globalStat", "individualStat"],
             "default": "globalStat",
             "info": "Choose how to display statistical summaries.",
             "set": lambda val: setattr(parameters.plotting, 'showStat', val)
@@ -569,14 +671,6 @@ config = {
             "default": "False",
             "set": lambda val: setattr(parameters.plotting, 'plotMultiplicity', val)
         },
-        "parameters.plotting.positionReconstruction": {
-            "label": "Position Reconstruction Method",
-            "type": "radio",
-            "options": ["W.max-S.max", "W.cog-S.cog", "W.max-S.cog"],
-            "default": "W.max-S.cog",
-            "info": "'W.max-S.max' is max max,  'W.cog-S.cog' is CoG CoG, 'W.max-S.cog' is wires max and strips CoG ",
-            "set": lambda val: setattr(parameters.plotting, 'positionReconstruction', val)
-        },
         "parameters.plotting.plotABSunits": {
             "label": "Use Absolute Units",
             "type": "bool",
@@ -618,48 +712,88 @@ config = {
             "set": lambda val: setattr(parameters.plotting, 'hitogOutBounds', val)
         }
     },
-    "pulse_height": {
-        "parameters.pulseHeigthSpect.plotPHS": {
-            "label": "Plot PHS",
+    "monitor": {
+        "parameters.MONitor.MONOnOff": {
+            "label": "Enable Monitor",
+            "type": "bool",
+            "options": ["True", "False"],
+            "default": "False",
+            "info": "ON/OFF switch for including the monitor in the analysis.",
+            "set": lambda val: setattr(parameters.MONitor, 'MONOnOff', val)
+        },
+        "parameters.MONitor.MONThreshold": {
+            "label": "Monitor Threshold",
+            "type": "entry",
+            "default": 0,
+            "inputValidation": "float",
+            "dependsOn": ("parameters.MONitor.MONOnOff", True),
+            "info": "Threshold on monitor events. 0 disables threshold; any other value enables it.",
+            "set": lambda val: setattr(parameters.MONitor, 'MONThreshold', val)
+        },
+        "parameters.MONitor.plotMONtofPHS": {
+            "label": "Plot Monitor ToF & PHS",
             "type": "bool",
             "options": ["True", "False"],
             "default": "True",
-            "info": "Enable or disable pulse height spectra per channel and globally.",
-            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'plotPHS', val)
+            "dependsOn": ("parameters.MONitor.MONOnOff", True),
+            "info": "ON/OFF plotting for Monitor Time-of-Flight and Pulse Height spectra.",
+            "set": lambda val: setattr(parameters.MONitor, 'plotMONtofPHS', val)
         },
-        "parameters.pulseHeigthSpect.plotPHSlog": {
-            "label": "PHS Log Scale",
+        "parameters.MONitor.MONDistance": {
+            "label": "Monitor Distance (mm)",
+            "type": "entry",
+            "default": 6000,
+            "inputValidation": "int",
+            "info": "Distance in mm from chopper to monitor (needed for lambda calculation of ToF).", 
+            "dependsOn": ("parameters.MONitor.MONOnOff", True),
+            "set": lambda val: setattr(parameters.MONitor, 'MONDistance', val)
+        }
+    },
+    "reduced_file": {#####################################################################################################################
+        "parameters.fileManagement.saveReducedFileONOFF": {
+            "label": "Save Reduced File",
             "type": "bool",
             "options": ["True", "False"],
             "default": "False",
-            "info": "If True, plot pulse height spectra using a logarithmic scale.",
-            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'plotPHSlog', val)
+            "info": "Enable or disable saving a reduced HDF file with clusters.",
+            "set": lambda val: setattr(parameters.fileManagement, 'saveReducedFileONOFF', val)
         },
-        "parameters.pulseHeigthSpect.energyBins": {
-            "label": "Energy Bins",
+        "parameters.fileManagement.saveReducedPath": {
+            "label": "Reduced File Path",
             "type": "entry",
-            "default": 128,
-            "inputValidation": "int",
-            "info": "Number of bins to use in the pulse height histogram.",
-            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'energyBins', val)
+            "inputValidation": "localPath",
+            "dependsOn": ("parameters.fileManagement.saveReducedFileONOFF", True),
+            "info": "Destination path for saving reduced HDF files.",
+            "set": lambda val: setattr(parameters.fileManagement, 'saveReducedPath', val)
         },
-        "parameters.pulseHeigthSpect.maxEnerg": {
-            "label": "Max Energy",
+        "parameters.fileManagement.reducedNameMainFolder": { # don't know if there are more options - if no more options remove from GUI and set fixed value
+            "label": "Main Folder in HDF",
             "type": "entry",
-            "default": 1700,
-            "inputValidation": "int",
-            "info": "Maximum energy value considered in pulse height analysis.",
-            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'maxEnerg', val)
+            "default": "entry1",
+            "dependsOn": ("parameters.fileManagement.saveReducedFileONOFF", True),
+            "set": lambda val: setattr(parameters.fileManagement, 'reducedNameMainFolder', val)
         },
-        "parameters.pulseHeigthSpect.plotPHScorrelation": {
-            "label": "Plot PHS Correlation (Wires vs Strips)",
-            "type": "bool",
-            "options": ["True", "False"],
-            "default": "False",
-            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'plotPHScorrelation', val)
+        "parameters.fileManagement.reducedCompressionHDFT": {
+            "label": "HDF Compression Type",
+            "type": "radio",
+            "options": ["gzip"],
+            "default": "gzip",
+            "dependsOn": ("parameters.fileManagement.saveReducedFileONOFF", True),
+            "info": "Compression method used for saving HDF files.",
+            "set": lambda val: setattr(parameters.fileManagement, 'reducedCompressionHDFT', val)
+        },
+        "parameters.fileManagement.reducedCompressionHDFL": {
+            "label": "HDF Compression Level",
+            "type": "entry",
+            "inputValidation": "int",
+            "range": (0,9),
+            "default": 9,
+            "dependsOn": ("parameters.fileManagement.saveReducedFileONOFF", True),
+            "info": "Compression level (0-9) used with HDF file saving.",
+            "set": lambda val: setattr(parameters.fileManagement, 'reducedCompressionHDFL', val)
         }
     }
 }
 
 # Export
-__all__ = ["config", "parameters", "profiling", "currentPath"]
+__all__ = ["config", "parameters"]

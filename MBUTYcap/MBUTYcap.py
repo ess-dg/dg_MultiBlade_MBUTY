@@ -12,12 +12,12 @@ import numpy as np
 # import time
 import os
 import sys
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # import matplotlib
-# # matplotlib.use(‘Qt5Agg’)
-from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QGridLayout, QLabel, QLineEdit
-app = QApplication(sys.argv)
+# matplotlib.use(‘Qt5Agg’)
+# from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QGridLayout, QLabel, QLineEdit
+# app = QApplication(sys.argv)
 
 ### import the library with all specific functions that this code uses 
 from lib import libReadPcapngVMM as pcapr
@@ -64,14 +64,19 @@ from lib import libVMMcalibration as cal
 
 class MBUTYmain():
     
-    def __init__(self,parameters):
-    
+    def __init__(self,parameters, runFromGui=False):
+        self.runFromGui = runFromGui
+        if runFromGui: # if runing from gui use "Agg" version of matplotlib as this does not interfere with GUI, otherwise import as normal
+            import matplotlib
+            matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
         self.parameters = parameters
         #  config is embedded in parameters
 
         profiling = para.profiling()
+        user_name = os.environ.get('USER', os.environ.get('USERNAME', 'User'))
         print('----------------------------------------------------------------------')
-        print('\033[1;32mCiao '+os.environ['USER']+'! Welcome to MBUTY 6.0\033[1;37m')
+        print('\033[1;32mCiao '+user_name+'! Welcome to MBUTY 6.0\033[1;37m')
         print('----------------------------------------------------------------------')
         plt.close("all")
         ### check version ###
@@ -143,6 +148,7 @@ class MBUTYmain():
         ### select data
         fileDialogue = fd.fileDialogue(self.parameters)
         fileDialogue.openFile()
+
         ###############################################################################
         ###############################################################################
         
@@ -450,27 +456,42 @@ class MBUTYmain():
                         plMON.plotLambda_MON()
                         
             #########################################################          
-            plt.show(block=False)    
+            self.show_plots()   
             #########################################################           
-            if self.parameters.plottingInSections is True:    
-            
-                plt.pause(0.5)
-                
-                inp = input('\033[1;32m--> press (enter) to continue to the next block or (q + enter) to quit \033[1;37m')
-                
-                if inp == 'q':
-                    plt.close()
-                    profiling.stop()
-                    print('----------------------------------------------------------------------')
-                    sys.exit()        
+            if self.parameters.plottingInSections is True:
+                if self.runFromGui:
+                    # Just wait briefly between plot blocks in GUI mode
+                    plt.pause(0.5)
+                else:
+                    # CLI mode: allow interactive plot navigation
+                    plt.pause(0.5)
+                    inp = input('\033[1;32m--> press (enter) to continue to the next block or (q + enter) to quit \033[1;37m')
+                    if inp == 'q':
+                        plt.close()
+                        profiling.stop()
+                        print('----------------------------------------------------------------------')
+                        sys.exit()
+                   
  
         ###############################################################################
         ###############################################################################
-        plt.show(block=False)
+        # Final plotting and display logic
+        self.show_plots()
         profiling.stop()
         print('----------------------------------------------------------------------')
         ###############################################################################
         ###############################################################################
+    def show_plots(self):
+        import matplotlib.pyplot as plt
+        if self.runFromGui:
+            plot_dir = os.path.join(os.getcwd(), "gui_plots")
+            os.makedirs(plot_dir, exist_ok=True)
+            for i in plt.get_fignums():
+                fig = plt.figure(i)
+                fig.savefig(os.path.join(plot_dir, f"plot_{i}.png"), dpi=150)
+            plt.close("all")
+        else:
+            plt.show(block=False)
 
 ###############################################################################
 ###############################################################################
@@ -567,7 +588,7 @@ if __name__ == '__main__':
 
     parameters.fileManagement.filePath = currentPath+'data/'
 
-    # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
+    #parameters.fileManagement.filePath = '/Users/sheilamonera/Desktop/data/'
 
     # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
     # parameters.fileManagement.fileName = [ 'sampleData_NormalMode.pcapng']
@@ -577,13 +598,13 @@ if __name__ == '__main__':
 
     # parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
     # parameters.fileManagement.fileName = ['freiatest.pcapng']
-    # parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
+    #parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
     parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
 
     # parameters.fileManagement.fileName = ['DiagonaltestData.pcapng']
 
 
-    # parameters.fileManagement.fileSerials = np.arange(18,28,1)
+    parameters.fileManagement.fileSerials = [1,2,3,39]
 
     ### valid otions: 'window','fileName', 'latest', 'secondLast', 'wholeFolder', 'sequence' 
     ### window opens to selcet file, filename speficified  earlier, last or sencond last file crearted in folder, 
@@ -591,10 +612,10 @@ if __name__ == '__main__':
     ### sequence opens all filens in     parameters.fileManagement.fileSerials and with fileName
     parameters.fileManagement.openMode = 'window'
     parameters.fileManagement.openMode = 'fileName'
-    # parameters.fileManagement.openMode = 'latest'
+    #parameters.fileManagement.openMode = 'latest'
     # parameters.fileManagement.openMode = 'secondLast'
-    # parameters.fileManagement.openMode = 'wholeFolder'
-    # parameters.fileManagement.openMode = 'sequence'
+    #parameters.fileManagement.openMode = 'wholeFolder'
+    #parameters.fileManagement.openMode = 'sequence'
 
     ###############
     ### type of pcap file loading, prealloc of memeory with allocate or quick, allocate is more rigorous, quick estimates the memory and it is faster 
@@ -789,8 +810,6 @@ if __name__ == '__main__':
     ###############################################################################
 
     mbuty = MBUTYmain(parameters)
-    
-    parameters = mbuty.out_parameters 
     
     heartbeats1 = mbuty.heartbeats1
     heartbeats2 = mbuty.heartbeats2

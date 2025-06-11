@@ -8,3 +8,11 @@ For Kafka streamer is needed:
 pip install flatbuffers
 pip install configargparse
 pip install confluent_kafka
+
+Other packages (included in anaconda):
+pkg_resources
+pillow
+matplotlib
+pandas
+PyQt5
+h5py

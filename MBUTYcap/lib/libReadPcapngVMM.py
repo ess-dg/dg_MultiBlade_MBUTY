@@ -926,8 +926,13 @@ class pcapng_reader_PreAlloc():
                     self.dprint('--> other packet found No. {}'.format(self.counterPackets-self.counterCandidatePackets))
                 else:
                     self.counterCandidatePackets += 1
+                    
                     packetsSizes     = np.append(packetsSizes,packetSize)
-                    packetsFWversion = np.append(packetsFWversion,FWversionTemp)
+                    try:
+                        packetsFWversion = np.append(packetsFWversion,FWversionTemp)
+                    except:
+                        # print('this data does not contain FW version')
+                        pass
                 
         self.dprint('counterPackets {}, counterCandidatePackets {}'.format(self.counterPackets,self.counterCandidatePackets))    
         
@@ -1595,6 +1600,11 @@ if __name__ == '__main__':
    filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
    file ='20250320_095029_duration_s_1800_testCAB5-C0to3_00014.pcapng'
    
+   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
+   file = 'clusters_3test_pulses_at_100_250_400BC_9strips_3wires.pcapng'
+   
+   # file  = 'ESSmask2023.pcapng'
+   
    # filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    # file = 'sampleData_NormalMode.pcapng'
    # file = 'sampleData_ClusteredMode.pcapng'
@@ -1666,7 +1676,7 @@ if __name__ == '__main__':
    
    typeOfLoading = 'allocate'
    
-   typeOfLoading = 'quick'
+   # typeOfLoading = 'quick'
 
    pcap = pcapng_reader(filePathAndFileName,NSperClockTick, MONTTLtype=True, MONring=11, timeResolutionType='fine', sortByTimeStampsONOFF=True, operationMode='normal',pcapLoadingMethod=typeOfLoading)
 

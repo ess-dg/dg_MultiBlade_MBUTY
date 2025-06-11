@@ -180,7 +180,7 @@ class fileDialogue():
         
         for fp in listOfFiles:
   
-            temp = fp.rsplit('/',1)[1]
+            temp = os.path.split(fp)[1]
             
             fileName.append(temp)
             
