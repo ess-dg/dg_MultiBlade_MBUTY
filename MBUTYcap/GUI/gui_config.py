@@ -17,7 +17,7 @@ Each parameter item (within a section) supports the following fields:
 - `label` (str): The user-visible label for the GUI widget.
 
 - `type` (str): The type of widget. Must be one of:
-    - 'entry'         : standard validated text input
+    - 'entry'         : text box entry that can be validated by one of the inputValidation types below.
     - 'dropdown'      : dropdown selection menu
     - 'multiSelect'   : multi-select dropdown
     - 'radio'         : horizontal/vertical radio button group
@@ -25,23 +25,69 @@ Each parameter item (within a section) supports the following fields:
     - 'range'         : validated numeric range input (e.g., [min, max])
 
 - `options` (list, optional): Static list of selectable values. Required for 'dropdown', 'multiSelect', 'radio', and 'bool'.
-    - If dynamic loading is used (see `optionsFromPath`), this can be set to an empty list or omitted.
+    - If dynamic loading is used (see `oplotionsFromPath`), this can be set to an empty list or omitted.
 
 - `default` (any, optional): Default value used to initialize the widget.
     - Type should match the expected input type: str for dropdowns, list[str] for multiSelect, int/float for entries, etc.
 
 - `info` (str, optional): Description text shown in a tooltip for that setting.
 
-- `inputValidation` (str, optional): Validation rule (for entry widgets only). Must be one of:
-    - 'int', 'float', 'scientific', 'localPath', 'remotepath', 'host:port'
+- `inputValidation` (str, optional): Validation rule (used only for 'entry' and 'range' widgets).
+  Must be one of:
+
+    - 'int'         : Accepts integer numbers (e.g., 42, -5)
+    - 'float'       : Accepts decimal numbers (e.g., 3.14, -0.01)
+    - 'scientific'  : Accepts scientific notation (e.g., 1e-3, -2.5E+4). Matches regex:
+                      r'[-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?'
+    - 'localPath'    : Path must exist on the local file system
+                       (checked via `os.path.exists(path)`)
+    - 'remotepath'   : Validates remote-style SSH paths (e.g., user@192.168.1.1:/path/to/data)
+                       Matches regex:
+                       r'^[\\w.-]+@[\\d.]+:.*'
+    - 'host:port'    : Validates a hostname and port pair (e.g., localhost:8080)
+                       - Host must match r'^[\\w\\.-]+$'
+                       - Port must be an integer between 1 and 65535
+    - 'fileNumbers'  : Accepts file number patterns (e.g., "1-5", "1,3,7", "1-10,12,15")
+                       Parsed via custom logic that supports:
+                         - comma-separated values
+                         - numeric ranges like "5-10"
+                         - mixed formats ("1-3,5,7-9")
+                       Invalid formats or malformed ranges are rejected
+    
+    Notes:
+        - If omitted, validation defaults to 'any' (no strict checking).
+        - Custom validation can be extended in the widget logic if needed.
+        
 
 - `range` (tuple[int|float, int|float], optional): Applicable only to 'entry' widgets with numeric inputValidation.
 
-- `dependsOn` (tuple, optional): Conditionally show this item only when another parameter has a certain value.
-    Format:
-        ("other_parameter_key", ["valid_value1", "valid_value2", ...]) 
-    or:
-        ("other_parameter_key", "valid_value") 
+- `dependsOn` (optional): Conditionally show this widget only when certain conditions are met.
+    - This field defines a **logic tree** for conditional visibility using key-value checks combined with `and` / `or` logic.
+        
+    This field supports both simple and complex conditional logic, such as:
+        
+        1. **Simple condition**  
+           Show this widget only if another widget has a specific value, tuple of the form:
+           ("other_parameter_key", "required_value")
+           ("other_parameter_key", ["allowed_value1", "allowed_value2", ...])
+        
+        2. **Logic tree (nested and / or structure)** :
+            Define more complicated dependecies using an and or tree logic,
+            Example (show if acqMode is "off" OR "pcap-local" OR (acqMode is "pcap-sync" AND selectDifferentDataPath is True)):
+                
+           {
+                "or": [
+                    ("parameters.acqMode", ["off", "pcap-local"]),
+                    {
+                        "and": [
+                            ("parameters.acqMode", "pcap-sync"),
+                            ("selectDifferentDataPath", True)
+                        ]
+                    }
+                ]
+            }
+
+
 
 - `optionsFromPath` (str, optional): For 'dropdown' and 'multiSelect' widgets only.
     Indicates that this widget's options should be dynamically loaded from the folder path given by another widget.
@@ -56,6 +102,8 @@ Notes:
 - Providing extra keys not used by a widget type is harmless and simply ignored.
 - Omitting required fields (like `options` for static dropdowns) will result in incomplete widgets (e.g. empty list).
 - If `optionsFromPath` is provided, the `options` field is ignored after initialization and dynamically populated at runtime.
+- By default all of the fields are required to have some input before the back end can run, if there is a field which is optional,
+    control this using a radio button and 'dependsOn' logic to turn this field on/off or set a default value
 """
 
 import os
@@ -226,7 +274,7 @@ config = {
             "inputValidation": "fileNumbers",
             "info": "Used when openMode is 'sequence' to indicate file serial numbers of files to be opened. Accepts comma separated lists and ranges e.g 5-10,15,17 ",  
             "dependsOn": ("parameters.fileManagement.openMode", "sequence"),
-            "set": lambda val: setattr(parameters.fileManagement, 'fileSerials', np.arange(val[0], val[1]+1, 1))
+            "set": lambda val: setattr(parameters.fileManagement, 'fileSerials', val)
         },
         "parameters.fileManagement.pathToTshark": {
             "label": "Path to Tshark",
@@ -302,7 +350,7 @@ config = {
             "label": "Time Window for clustering (s)",
             "type": "entry",
             "inputValidation": "scientific",
-            "default": "0.3e-6",
+            "default": "0.5e-6",
             "info": "Time window to search for clusters.\nThis is the maximum time allowed between events in a cluster.\nHalf the value is used as the recursive threshold between adjacent hits.",
             "set": lambda val: setattr(parameters.dataReduction, 'timeWindow', val)
         },
@@ -324,7 +372,7 @@ config = {
             "info": "Select how to define soft thresholds: off, from file, or user-defined.",
             "set": lambda val: (
                     setattr(parameters.dataReduction, 'softThresholdType', val),
-                    parameters.dataReduction.createThArrays(parameters.config.DETparameters.cassInConfig, parameters)
+                    parameters.dataReduction.createThArrays(parameters)
                     if val == "userDefined" else None
                 )[-1]
         },
@@ -342,7 +390,7 @@ config = {
             "type": "dropdown",
             "optionsFromPath": "parameters.fileManagement.thresholdFilePath",
             "fileTypeFilter": ".xlsx",
-            "default": "MB.ESTIA_achitecture.xlsx", 
+            "default": "MB300L_thresholds.xlsx", 
             "dependsOn": ("parameters.dataReduction.softThresholdType","fromFile"),
             "info": "Name of the Excel threshold file.",
             "set": lambda val: setattr(parameters.fileManagement, 'thresholdFileName', val)
@@ -402,12 +450,25 @@ config = {
             "info": "Enable or disable pulse height spectra per channel and globally.",
             "set": lambda val: setattr(parameters.pulseHeigthSpect, 'plotPHS', val)
         },
+  
+        "parameters.pulseHeigthSpect.plotPHScorrelation": {
+            "label": "Plot PHS Correlation (Wires vs Strips)",
+            "type": "bool",
+            "options": ["True", "False"],
+            "default": "False",
+            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'plotPHScorrelation', val)
+        },
+        
         "parameters.pulseHeigthSpect.plotPHSlog": {
             "label": "PHS Log Scale",
             "type": "bool",
             "options": ["True", "False"],
             "default": "False",
-            "dependsOn": ("parameters.pulseHeigthSpect.plotPHS", True),
+            "dependsOn":  {
+                    "or": [
+                    ("parameters.pulseHeigthSpect.plotPHS", True),
+                    ("parameters.pulseHeigthSpect.plotPHScorrelation", True)
+                    ]},
             "info": "If True, plot pulse height spectra using a logarithmic scale.",
             "set": lambda val: setattr(parameters.pulseHeigthSpect, 'plotPHSlog', val)
         },
@@ -416,7 +477,11 @@ config = {
             "type": "entry",
             "default": 128,
             "inputValidation": "int",
-            "dependsOn": ("parameters.pulseHeigthSpect.plotPHS", True),
+            "dependsOn":  {
+                    "or": [
+                    ("parameters.pulseHeigthSpect.plotPHS", True),
+                    ("parameters.pulseHeigthSpect.plotPHScorrelation", True)
+                    ]},
             "info": "Number of bins to use in the pulse height histogram.",
             "set": lambda val: setattr(parameters.pulseHeigthSpect, 'energyBins', val)
         },
@@ -425,17 +490,14 @@ config = {
             "type": "entry",
             "default": 1700,
             "inputValidation": "int",
-            "dependsOn": ("parameters.pulseHeigthSpect.plotPHS", True),
+            "dependsOn":  {
+                    "or": [
+                    ("parameters.pulseHeigthSpect.plotPHS", True),
+                    ("parameters.pulseHeigthSpect.plotPHScorrelation", True)
+                    ]},
             "info": "Maximum energy value considered in pulse height analysis.",
             "set": lambda val: setattr(parameters.pulseHeigthSpect, 'maxEnerg', val)
-        },
-        "parameters.pulseHeigthSpect.plotPHScorrelation": {
-            "label": "Plot PHS Correlation (Wires vs Strips)",
-            "type": "bool",
-            "options": ["True", "False"],
-            "default": "False",
-            "set": lambda val: setattr(parameters.pulseHeigthSpect, 'plotPHScorrelation', val)
-        }
+         }
     },
     "wavelength": {
         "parameters.wavelength.calculateLambda": {
@@ -514,7 +576,12 @@ config = {
             "type": "entry",
             "default": 2,
             "inputValidation": "int",
-            "dependsOn": ("parameters.wavelength.calculateLambda", True),
+            "dependsOn": {
+                "and": [ 
+                    ("parameters.wavelength.calculateLambda", True),
+                    ("parameters.wavelength.multipleFramePerReset", True)
+                    ]
+                },
             "info": "Number of neutron bunches per pulse",
             "set": lambda val: setattr(parameters.wavelength, 'numOfBunchesPerPulse', val)
         },
@@ -523,8 +590,26 @@ config = {
             "type": "entry",
             "default": 2.5,
             "inputValidation": "float",
-            "dependsOn": ("parameters.wavelength.calculateLambda", True),
+            "dependsOn": {
+                "and": [ 
+                    ("parameters.wavelength.calculateLambda", True),
+                    ("parameters.wavelength.multipleFramePerReset", True)
+                    ]
+                },
             "set": lambda val: setattr(parameters.wavelength, 'lambdaMIN', val)
+        },
+        "parameters.wavelength.chopperPickUpDelay": {
+            "label": "Chopper PickUp Delay (s)",
+            "type": "entry",
+            "default": 0.00225,
+            "inputValidation": "float",
+            "dependsOn": {
+                "and": [ 
+                    ("parameters.wavelength.calculateLambda", True),
+                    ("parameters.wavelength.multipleFramePerReset", True)
+                    ]
+                },
+            "set": lambda val: setattr(parameters.wavelength, 'chopperPickUpDelay', val)
         }
     },
     "plotting": {
@@ -640,6 +725,7 @@ config = {
             "type": "entry",
             "default": 0.15,
             "inputValidation": "float",
+            "dependsOn": ("parameters.plotting.plotToFDistr", True),
             "set": lambda val: setattr(parameters.plotting, 'ToFrange', val)
         },
         "parameters.plotting.ToFbinning": {
@@ -647,6 +733,7 @@ config = {
             "type": "entry",
             "default": "100e-6",
             "inputValidation": "scientific",
+            "dependsOn": ("parameters.plotting.plotToFDistr", True),
             "set": lambda val: setattr(parameters.plotting, 'ToFbinning', val)
         },
         "parameters.plotting.ToFGate": {

@@ -7,7 +7,7 @@ Created on Fri Sep  3 11:34:33 2021
 """
 
 import numpy as np
-# import os
+import os
 import sys
 import pkg_resources
 import time
@@ -102,7 +102,7 @@ class dumpSettings():
         
         self.interface = 'p4p1'
         
-        self.destTestData  = currentPath+'data/'
+        self.destTestData  = os.path.join(currentPath,'data')
         
         self.typeOfCapture = 'packets'
         
@@ -128,17 +128,17 @@ class fileManagement():
             self.sourcePath = ''
             self.destPath   = ''
             
-            self.filePath = self.currentPath+'data/'
+            self.filePath = os.path.join(self.currentPath,'data')
             self.fileName = []
             self.fileSerials = []
                      
-            self.configFilePath = self.currentPath+'config/'
+            self.configFilePath = os.path.join(self.currentPath,'config')
             self.configFileName = 'temp.json'
                         
-            self.calibFilePath  = self.currentPath+'calib/'
+            self.calibFilePath  = os.path.join(self.currentPath,'calib')
             self.calibFileName  = 'temp.json'
             
-            self.thresholdFilePath = self.currentPath+'config/'
+            self.thresholdFilePath = os.path.join(self.currentPath,'config')
             self.thresholdFileName = 'temp.xlsx'
             
             # self.openMode = 'window'
@@ -227,7 +227,7 @@ class dataReduction():
     def createThArrays(self, parameters):   
         
         if (parameters.config) is None :
-            config = maps.read_json_config(parameters.fileManagement.configFilePath+parameters.fileManagement.configFileName)
+            config = maps.read_json_config(os.path.join(parameters.fileManagement.configFilePath,parameters.fileManagement.configFileName))
             parameters.config = config
             cassettes = config.DETparameters.cassInConfig
         else:

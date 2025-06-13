@@ -142,7 +142,7 @@ class ValidatedEntry:
         # _parse_file_input returns an empty list for invalid/empty inputs.
         # We consider empty input valid for file numbers, but malformed input invalid.
         if not value_string.strip():
-            return True # An empty input means no files, which is valid.
+            return False # An empty input means no files, which is invalid.
 
         parsed_list = self._parse_file_input(value_string)
         # If parsing results in an empty list AND the original string was not empty,

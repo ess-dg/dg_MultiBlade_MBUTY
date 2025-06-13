@@ -45,7 +45,7 @@ class ANSIColorTextWidget(tk.Text):
     def _configure_tags(self):
         """Configures the Tkinter Text widget tags based on ANSI codes."""
         # Default tag for resetting
-        self.tag_configure("reset", foreground="white", font=("Courier New", 10))
+        self.tag_configure("reset", foreground="white", font=("Courier New", 14))
 
         # Color tags
         for code, color_name in self.COLOR_MAP.items():

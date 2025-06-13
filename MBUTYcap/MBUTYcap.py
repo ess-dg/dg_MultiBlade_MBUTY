@@ -108,7 +108,7 @@ class MBUTYmain():
         ###############################################################################
         self.parameters.set_acqMode(self.parameters.acqMode)
         ### read json and create parameters for plotting and analisys ###
-        config = maps.read_json_config(parameters.fileManagement.configFilePath+parameters.fileManagement.configFileName)
+        config = maps.read_json_config(os.path.join(parameters.fileManagement.configFilePath , parameters.fileManagement.configFileName))
         self.parameters.loadConfigAndUpdate(config)
         # self.parameters.update()
         ###############################################################################
@@ -163,14 +163,14 @@ class MBUTYmain():
                 
                 ### check if a file is pcapng otherwise pcap is converted into pcapng
                 conv = ta.pcapConverter(self.parameters)
-                conv.checkExtensionAndConvertPcap(fileDialogue.filePath+fileName)
+                conv.checkExtensionAndConvertPcap(os.path.join(fileDialogue.filePath,fileName))
                 if conv.flag is False:
                     fileName = conv.fileName_OUT
                     
                 ### check which Ring, Fen and Hybrid is present in the selected File 
                 # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,self.parameters.clockTicks.NSperClockTick).check()
                 ### load data  
-                pcap = pcapr.pcapng_reader(fileDialogue.filePath+fileName, self.parameters.clockTicks.NSperClockTick, MONTTLtype = self.parameters.config.MONmap.TTLtype, MONring = self.parameters.config.MONmap.RingID, \
+                pcap = pcapr.pcapng_reader(os.path.join(fileDialogue.filePath,fileName), self.parameters.clockTicks.NSperClockTick, MONTTLtype = self.parameters.config.MONmap.TTLtype, MONring = self.parameters.config.MONmap.RingID, \
                 timeResolutionType = self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF = self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
                 operationMode = self.parameters.config.DETparameters.operationMode, pcapLoadingMethod=self.parameters.fileManagement.pcapLoadingMethod)
         
@@ -512,6 +512,8 @@ if __name__ == '__main__':
     ### read json and create parameters for plotting and analisys ###
 
     configFileName  = "AMOR.json"
+    
+    configFileName  = "test2.json"
 
     # configFileName  = "ESTIA.json"
 
@@ -588,7 +590,7 @@ if __name__ == '__main__':
 
     parameters.fileManagement.filePath = currentPath+'data/'
 
-    #parameters.fileManagement.filePath = '/Users/sheilamonera/Desktop/data/'
+    # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/dataVMM'
 
     # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
     # parameters.fileManagement.fileName = [ 'sampleData_NormalMode.pcapng']
@@ -601,10 +603,10 @@ if __name__ == '__main__':
     #parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
     parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
 
-    # parameters.fileManagement.fileName = ['DiagonaltestData.pcapng']
+    # parameters.fileManagement.fileName = ['20250307_101420_duration_s_1800_testCAB3_00006.pcapng']
 
 
-    parameters.fileManagement.fileSerials = [1,2,3,39]
+    # parameters.fileManagement.fileSerials = [6,2,4,9]
 
     ### valid otions: 'window','fileName', 'latest', 'secondLast', 'wholeFolder', 'sequence' 
     ### window opens to selcet file, filename speficified  earlier, last or sencond last file crearted in folder, 
@@ -615,7 +617,7 @@ if __name__ == '__main__':
     #parameters.fileManagement.openMode = 'latest'
     # parameters.fileManagement.openMode = 'secondLast'
     #parameters.fileManagement.openMode = 'wholeFolder'
-    #parameters.fileManagement.openMode = 'sequence'
+    # parameters.fileManagement.openMode = 'sequence'
 
     ###############
     ### type of pcap file loading, prealloc of memeory with allocate or quick, allocate is more rigorous, quick estimates the memory and it is faster 
@@ -641,7 +643,7 @@ if __name__ == '__main__':
     ### save a hdf file with clusters (reduced file)
 
     ### ON/OFF
-    parameters.fileManagement.saveReducedFileONOFF = False   
+    parameters.fileManagement.saveReducedFileONOFF = True   
     parameters.fileManagement.saveReducedPath = '/Users/francescopiscitelli/Desktop/reducedFile/'
 
     parameters.fileManagement.reducedNameMainFolder  = 'entry1'
@@ -669,13 +671,13 @@ if __name__ == '__main__':
     ### 'OFF', 'fromFile' = File With Threhsolds Loaded, 'userDefined' = User defines the Thresholds in an array softTh
     parameters.dataReduction.softThresholdType = 'off' 
     # parameters.dataReduction.softThresholdType = 'fromFile' 
-    # parameters.dataReduction.softThresholdType = 'userDefined' 
+    parameters.dataReduction.softThresholdType = 'userDefined' 
 
     if parameters.dataReduction.softThresholdType == 'userDefined':
         
         parameters.dataReduction.createThArrays(parameters)    
-        parameters.dataReduction.softThArray.ThW[:,:] = 500
-        parameters.dataReduction.softThArray.ThS[:,:] = 500   
+        parameters.dataReduction.softThArray.ThW[:,:] = 700
+        parameters.dataReduction.softThArray.ThS[:,:] = 1000   
               
     ###############################################################################
     ### WAVELENGTH PARAMETERS:

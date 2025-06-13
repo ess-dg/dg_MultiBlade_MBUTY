@@ -43,8 +43,10 @@ class saveReducedDataToHDF():
             else:    
                 print(' --> exiting, data reduced not saved.')
                 sys.exit()
+                
+        fileName2 =  fileName +'.h5' 
 
-        self.outfile = saveReducedPath+fileName+'.h5'
+        self.outfile = os.path.join(saveReducedPath,fileName2)
     
         # check if file already exist and in case yes delete it 
         if os.path.exists(self.outfile):

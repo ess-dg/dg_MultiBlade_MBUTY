@@ -68,7 +68,7 @@ class thresholdDef():
             
             # print(self.parameters.fileManagement.thresholdFilePath+self.parameters.fileManagement.thresholdFileName)
              
-            sthfullpath = self.parameters.fileManagement.thresholdFilePath+self.parameters.fileManagement.thresholdFileName
+            sthfullpath = os.path.join(self.parameters.fileManagement.thresholdFilePath,self.parameters.fileManagement.thresholdFileName)
             print('\t loading thresholds from file ...')
             
             if os.path.exists(sthfullpath) is False:
