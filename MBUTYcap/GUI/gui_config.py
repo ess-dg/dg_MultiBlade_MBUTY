@@ -107,7 +107,6 @@ Notes:
 """
 
 import os
-import numpy as np
 import sys
 
 # Fix import path to allow access to lib from GUI folder
@@ -115,12 +114,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from lib import libParameters as para
 
 # Set current path
-currentPath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + '/'
+currentPath = os.path.abspath(os.path.dirname(os.path.dirname(__file__))) 
 parameters = para.parameters(currentPath)
 
-# Load available config files
-parameters.fileManagement.configFilePath = os.path.join(currentPath, 'config') + '/'
-config_json_files = [f for f in os.listdir(parameters.fileManagement.configFilePath) if f.endswith('.json')]
+def set_ThW(val):
+    parameters.dataReduction.softThArray.ThW[:, :] = val
+
+def set_ThS(val):
+    parameters.dataReduction.softThArray.ThS[:, :] = val
 
 # Define configuration structure
 config = {
@@ -225,7 +226,7 @@ config = {
             "label": "Data Folder Path",
             "type": "entry",
             "inputValidation": "localPath",
-            "default": currentPath + 'data/',
+            "default": os.path.join(currentPath, 'data'),
             "info": "Path to the folder containing data files. Relevant for acqMode = off, pcap-sync, and pcap-local",
             "dependsOn": {
                 "or": [
@@ -330,7 +331,7 @@ config = {
             "label": "Enter path to config file",
             "type": "entry",
             "inputValidation": "localPath",
-            "default": parameters.fileManagement.configFilePath,
+            "default": os.path.join(currentPath, 'config'),
             "set": lambda val: setattr(parameters.fileManagement,'configFilePath', val)
         },
         
@@ -380,7 +381,7 @@ config = {
             "label": "Threshold File Path",
             "type": "entry",
             "inputValidation": "localPath",
-            "default": parameters.fileManagement.currentPath+'config/',
+            "default": os.path.join(parameters.fileManagement.currentPath, 'config'),
             "dependsOn": ("parameters.dataReduction.softThresholdType","fromFile"),
             "info": "Path to the threshold file folder.",
             "set": lambda val: setattr(parameters.fileManagement, 'thresholdFilePath', val)
@@ -395,21 +396,21 @@ config = {
             "info": "Name of the Excel threshold file.",
             "set": lambda val: setattr(parameters.fileManagement, 'thresholdFileName', val)
         },
-        "parameters.dataReduction.softThArray.ThW[:,0]": {
+        "parameters.dataReduction.softThArray.ThW[:,:]": {
             "label": "Soft Threshold W",
             "type": "entry",
             "inputValidation": "float",
             "default": 200,
             "dependsOn": ("parameters.dataReduction.softThresholdType", "userDefined"),
-            "set": lambda val: setattr(parameters.dataReduction.softThArray, 'ThW[:,:]', val)
+            "set": set_ThW
         },
-        "parameters.dataReduction.softThArray.ThS[:,0]": {
+        "parameters.dataReduction.softThArray.ThS[:,:]": {
             "label": "Soft Threshold S",
             "type": "entry",
             "inputValidation": "float",
             "default": 100,
             "dependsOn": ("parameters.dataReduction.softThresholdType", "userDefined"),
-            "set": lambda val: setattr(parameters.dataReduction.softThArray, 'ThS[:,:]', val)
+            "set": set_ThS
         }
     }, 
     "calibration": {
@@ -425,7 +426,7 @@ config = {
             "label": "Calibration File Path",
             "type": "entry",
             "inputValidation": "localPath",
-            "default": parameters.fileManagement.currentPath+'calib/',
+            "default": os.path.join(parameters.fileManagement.currentPath,'calib'),
             "dependsOn": ("parameters.dataReduction.calibrateVMM_ADC_ONOFF", True),
             "info": "Path to the calibration file folder.",
             "set": lambda val: setattr(parameters.fileManagement, 'calibFilePath', val)
@@ -881,6 +882,11 @@ config = {
         }
     }
 }
+
+def set_soft_threshold(val):
+    parameters.dataReduction.softThresholdType = val
+    if val == "userDefined":
+        parameters.dataReduction.createThArrays(parameters)
 
 # Export
 __all__ = ["config", "parameters"]

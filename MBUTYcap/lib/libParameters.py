@@ -443,7 +443,7 @@ class parameters():
                 
                 print('Acquisition mode: {} - Sync turned OFF since you selected pcap-local-overwrite mode'.format(self.acqMode))
                 
-                self.dumpSettings.destTestData = self.fileManagement.currentPath + 'data/'
+                self.dumpSettings.destTestData = os.path.join(self.fileManagement.currentPath , 'data')
                 
                 self.dumpSettings.fileName     = 'testData'
                 

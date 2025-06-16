@@ -559,6 +559,7 @@ def run_analysis():
             print("\nRunning analysis with selected parameters...\n")
             # for k, v in selected.items():  # debug code - use to check if params are interpreted properly e.g True vs "True", string vs int etc
             #     print(f"{k}: {v}")
+            # print(parameters.dataReduction.softThArray.ThW[:,:])
             MBUTYmain(parameters, runFromGui=True)
             print("\n Analysis complete.\n")
             output_wrapper.after(100, launch_plot_viewer)

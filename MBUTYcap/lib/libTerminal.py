@@ -106,23 +106,10 @@ class pcapConverter():
         
         pathToTshark = self.parameters.fileManagement.pathToTshark
         
-        if os.path.isfile(pathToTshark+'tshark') is False:
-            
-            # try first to find the path 
-            pathToTshark, flag = findPathApp().check('wireshark')
-            
-            if flag is False:   
-                print('\n \033[1;31mFile conversion pcap to pcapng cannot be performed. \n Tshark not found in your system, either set right path to Thark in parameters or install it.\033[1;37m\n')
-                print('... exiting.')
-                sys.exit()
+        pathToTshark, flag = verifyTsharkInstallation().verify(pathToTshark)
         
-        # if os.path.isfile(pathToTshark+'tshark') is False: 
-        #     print('\n \033[1;31mFile conversion pcap to pcapng cannot be performed. \n Tshark not found in your system, either set right path to Thark in parameters or install it.\033[1;37m\n')
-        #     print('... exiting.')
-        #     sys.exit()
-        
-        else:
-        
+        if flag is True:
+
             print(' -> converting pcap to pcapng ...')
 
             status = os.system(pathToTshark+'tshark -F pcapng -r ' + pcapFile_PathAndFileName_IN + ' -w '+ pcapngFile_PathAndFileName_OUT )
@@ -183,53 +170,82 @@ class pcapConverter():
               sys.exit()
 
 ############################################################################### 
+
+class verifyTsharkInstallation():
+    def verify(self, initial_pathToTshark):
+        
+        if os.path.isfile(os.path.join(initial_pathToTshark,'tshark')) is True:
+            
+            flag = True
+            verified_pathToTshark = initial_pathToTshark
+            
+        else:
+            
+            flag = False
+            
+            # print('1 not found in'+initial_pathToTshark)
+  
+            # try first to find the path 
+            verified_pathToTshark, flag = findPathApp().check('wireshark')
+            
+            if flag is False:
+                
+                # print('2 not found in'+pathToTshark)
+                
+                verified_pathToTshark, flag = findPathApp().check('tshark')
+                
+                if flag is False:
+                
+                    # print('2 not found in'+pathToTshark)
+                    
+                    # print('go for the loop ... ')
+                
+                    presetPaths = [ '/usr/sbin/', '/usr/bin/','/Applications/Wireshark.app/Contents/MacOS/']
+                    
+                    # presetPaths = [ '/usr/sbin/', '/Applications/Wireshark.app/Contents/MacOS/', '/usr/bin/','ff']
+
+
+                    # cont = 3
+                    
+                    for pat in presetPaths:
+                    
+        
+                        if os.path.isfile(os.path.join(pat,'tshark')) is True:
+                            verified_pathToTshark = pat
+                            flag = True
+                            # print(str(cont)+' ---> found in'+pathToTshark)
+                            break
+                        else:
+                            flag = False
+                            # print(str(cont)+' not found in'+pat)
+                            
+                        # cont = cont + 1 
+  
+            if flag is False:  
+                
+                flag = False
+                print('\n \033[1;31mFile Tshark not found in your system, either set right path to Thark in parameters or install it.\033[1;37m\n')
+                print('... exiting.')
+                sys.exit()
+ 
+        return verified_pathToTshark, flag 
+    
+############################################################################### 
     
 class dumpToPcapngUtil():
     def __init__(self, pathToTshark, interface='en0', destPath='./', fileName='temp'):
         
-
-        if os.path.isfile(os.path.join(pathToTshark,'tshark')) is False:
-            
-            # print('1 not found in'+pathToTshark)
-  
-            # try first to find the path 
-            pathToTshark, flag1 = findPathApp().check('wireshark')
-            
-            # if not found 
-            if flag1 == False: 
-                
-                # print('2 not found in'+pathToTshark)
-                
-                presetPaths = [ '/usr/sbin/', '/usr/bin/','/Applications/Wireshark.app/Contents/MacOS/']
-
-                flag2 = False
-                
-                
-                # cont = 3
-                
-                for pat in presetPaths:
-                
-                    # print(str(cont)+' not found in'+pathToTshark)
-
-                    if os.path.isfile(os.path.join(pat,'tshark')) is True:
-                        pathToTshark = pat
-                        flag2 = True
-                        # print(str(cont)+' ---> found in'+pathToTshark)
-                        
-                    # cont = cont + 1 
-  
-            if flag2 is False:   
-                print('\n \033[1;31mFile Tshark not found in your system, either set right path to Thark in parameters or install it.\033[1;37m\n')
-                print('... exiting.')
-                sys.exit()
-
         self.pathToTshark = pathToTshark
         self.interface    = interface
         self.destPath     = destPath
         self.fileName     = fileName
         
-        # checks if path exist if not asks for creation
-        checkPathCreate(self.destPath)
+        pathToTshark, flag = verifyTsharkInstallation().verify(self.pathToTshark)
+        
+        if flag is True:
+            # checks if path exist if not asks for creation
+            checkPathCreate(self.destPath)
+            self.pathToTshark = pathToTshark
  
     def dump(self,typeOfCapture='packets',extraArgs=100,numOfFiles=1,delay=0,fileNameOnly=False):
         
@@ -342,7 +358,7 @@ class dumpToPcapngUtil():
 class acquisitionStatus():
     def __init__(self, destPath):
         
-        self.pathFile = destPath+'acquisition.status'
+        self.pathFile = os.path.join(destPath,'acquisition.status')
 
     def checkExist(self):   
 
@@ -464,6 +480,12 @@ if __name__ == '__main__':
    
    ########
     pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
+    
+    # ret_pathToTshark, flag= verifyTsharkInstallation().verify(pathToTshark)
+    
+    # print('------')
+    # print(ret_pathToTshark)
+    # print(flag)
 
     rec = dumpToPcapngUtil(pathToTshark, interface='en0', destPath='/Users/francescopiscitelli/Desktop/reducedFile/', fileName='temp')
     status=rec.dump('duration',2,3)

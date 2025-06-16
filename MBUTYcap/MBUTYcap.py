@@ -403,7 +403,7 @@ class MBUTYmain():
             if self.parameters.plotting.bareReadoutsCalculation is False:
                 ### hits
                 if (self.parameters.plotting.plotRawHits or self.parameters.plotting.plotHitsTimeStamps or self.parameters.plotting.plotHitsTimeStampsVSChannels) is True:
-                    plhits = plo.plottingHits(hits, self.parameters)
+                    plhits = plo.plottingHits(self.hits, self.parameters)
                     if self.parameters.plotting.plotRawHits is True:
                         plhits.plotChRaw(self.parameters.config.DETparameters.cassInConfig)
                     if self.parameters.plotting.plotHitsTimeStamps is True:
