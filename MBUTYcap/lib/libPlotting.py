@@ -67,9 +67,10 @@ class checkReadoutsClass():
         
 class plottingReadouts():
    
-    def __init__(self, readouts, config):
+    def __init__(self, readouts, config, outOfBounds = True):
     
-        self.config   = config
+        self.config      = config
+        self.outOfBounds = outOfBounds
         
         checkke = checkReadoutsClass(readouts)
         self.readouts = checkke.readouts
@@ -107,12 +108,12 @@ class plottingReadouts():
             if self.config.DETparameters.operationMode == 'normal':
                 asic0  = self.readouts.ASIC == 0
                 asic1  = self.readouts.ASIC == 1
-                self.histo0 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel & asic0])
-                self.histo1 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel & asic1])
+                self.histo0 = hh.histog(self.outOfBounds).hist1D(self.xbins, self.readouts.Channel[sel & asic0])
+                self.histo1 = hh.histog(self.outOfBounds).hist1D(self.xbins, self.readouts.Channel[sel & asic1])
                 
             elif self.config.DETparameters.operationMode == 'clustered':
-                self.histo0 = hh.histog().hist1D(self.xbins, self.readouts.Channel[sel])
-                self.histo1 = hh.histog().hist1D(self.xbins, self.readouts.Channel1[sel])
+                self.histo0 = hh.histog(self.outOfBounds).hist1D(self.xbins, self.readouts.Channel[sel])
+                self.histo1 = hh.histog(self.outOfBounds).hist1D(self.xbins, self.readouts.Channel1[sel])
         
     def plotChRaw(self,cassetteIDs): 
         
@@ -220,12 +221,12 @@ class plottingReadouts():
                 if self.config.DETparameters.operationMode == 'normal':
                     asic0  = self.readouts.ASIC == 0
                     asic1  = self.readouts.ASIC == 1
-                    self.histoch0 = hh.histog().hist2D(self.allAxis.axEnergy.axis, self.readouts.ADC[sel & asic0] , self.xbins, self.readouts.Channel[sel & asic0])
-                    self.histoch1 = hh.histog().hist2D(self.allAxis.axEnergy.axis, self.readouts.ADC[sel & asic1] , self.xbins, self.readouts.Channel[sel & asic1])
+                    self.histoch0 = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis, self.readouts.ADC[sel & asic0] , self.xbins, self.readouts.Channel[sel & asic0])
+                    self.histoch1 = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis, self.readouts.ADC[sel & asic1] , self.xbins, self.readouts.Channel[sel & asic1])
                     
                 elif self.config.DETparameters.operationMode == 'clustered':
-                    self.histoch0 = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.readouts.ADC[sel], self.xbins, self.readouts.Channel[sel])
-                    self.histoch1 = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.readouts.ADC1[sel],self.xbins, self.readouts.Channel1[sel])
+                    self.histoch0 = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis,self.readouts.ADC[sel], self.xbins, self.readouts.Channel[sel])
+                    self.histoch1 = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis,self.readouts.ADC1[sel],self.xbins, self.readouts.Channel1[sel])
                     
                    
                 self.plothtch.axHandle[0][k].imshow(self.histoch0,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,self.xbins[0],self.xbins[-1]], origin='lower',cmap='jet')
@@ -242,7 +243,7 @@ class plottingReadouts():
                 
     
             #                 
-            #                 self.plotPHS.axHandle[0][k].set_title('cass ID '+str(cass))
+            #                 self.plotPHS.axHandle[0][k].set_title('ID '+str(cass))
       
                        
             #                    #global PHS
@@ -264,9 +265,11 @@ class plottingReadouts():
         
 class plottingHits():
    
-    def __init__(self, hits, parameters):
+    def __init__(self, hits, parameters,outOfBounds = True):
         
         self.hits = hits
+        
+        self.outOfBounds = outOfBounds 
         
         self.parameters = parameters
         
@@ -280,13 +283,13 @@ class plottingHits():
             wires  = self.hits.WorS == 0
             strips = self.hits.WorS == 1
             wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.config.DETparameters.numOfWires)
-            self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
-            self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
+            self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
+            self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
             
         elif self.parameters.config.DETparameters.operationMode == 'clustered':
             wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.parameters.config.DETparameters.numOfWires)
-            self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
-            self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass])
+            self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
+            self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass])
         
 
     def plotChRaw(self,cassetteIDs): 
@@ -303,7 +306,7 @@ class plottingHits():
             self.ploth.axHandle[1][k].bar(self.xbins,self.histos,0.8,color='b')
             self.ploth.axHandle[0][k].set_xlabel('hit wire ch no.')
             self.ploth.axHandle[1][k].set_xlabel('hit strip ch no.')
-            self.ploth.axHandle[0][k].set_title('cass ID '+str(cc))                       
+            self.ploth.axHandle[0][k].set_title('ID '+str(cc))                       
         
             # self.ploth.axHandle[0][k]
             
@@ -376,7 +379,7 @@ class plottingHits():
             self.plotht.axHandle[0][k].scatter(xx1,self.timeStampS,0.8,color='b',marker='+')
             self.plotht.axHandle[0][k].set_xlabel('trigger no.')   
             self.plotht.axHandle[0][k].set_ylabel('time (ns)')
-            self.plotht.axHandle[0][k].set_title('cass ID '+str(cc)) 
+            self.plotht.axHandle[0][k].set_title('ID '+str(cc)) 
             self.plotht.axHandle[0][k].grid(axis='x', alpha=0.75)
             self.plotht.axHandle[0][k].grid(axis='y', alpha=0.75)
             
@@ -394,7 +397,7 @@ class plottingHits():
             self.plothtvs.axHandle[0][k].scatter(self.StripCh,self.timeStampS,0.8,color='b',marker='+')
             self.plothtvs.axHandle[0][k].set_ylabel('time (ns)')   
             self.plothtvs.axHandle[0][k].set_xlabel('W or S channel (after mapping)')
-            self.plothtvs.axHandle[0][k].set_title('cass ID '+str(cc)) 
+            self.plothtvs.axHandle[0][k].set_title('ID '+str(cc)) 
             self.plothtvs.axHandle[0][k].grid(axis='x', alpha=0.75)
             self.plothtvs.axHandle[0][k].grid(axis='y', alpha=0.75)
         
@@ -438,12 +441,14 @@ class checkEventsClass():
         
 class plottingEvents():
     
-    def __init__(self, events, allAxis, coincidenceWS_ONOFF):
+    def __init__(self, events, allAxis, coincidenceWS_ONOFF, outOfBounds = True):
         
         # self.Ncass = Ncass
         
         # self.events  = events
         self.allAxis = allAxis
+        
+        self.outOfBounds = outOfBounds 
         
         # self.selectCoinc = events.positionS >= -2
         
@@ -475,9 +480,9 @@ class plottingEvents():
                 #    print('\t \033[1;33mWARNING: ToF array is empty ')
                 #    self.events.ToF = np.zeros((len(self.events.positionW)),dtype='int64')
                 
-                h2D, _, hToF = hh.histog().histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
+                h2D, _, hToF = hh.histog(self.outOfBounds).histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
         
-                hProjAll = hh.histog().hist1D(self.allAxis.axWires.axis, self.events.positionW)
+                hProjAll = hh.histog(self.outOfBounds).hist1D(self.allAxis.axWires.axis, self.events.positionW)
                 
                 hProj2D  = np.sum(h2D,axis=0)
                 
@@ -563,9 +568,9 @@ class plottingEvents():
                 #     self.events.ToF = np.zeros(len(self.events.positionWmm),dtype='int64')
                 
                 
-                h2D, hProj, hToF = hh.histog().histXYZ(self.allAxis.axWires_mm.axis, self.events.positionWmm[self.selc], self.allAxis.axStrips_mm.axis, self.events.positionSmm[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)    
+                h2D, hProj, hToF = hh.histog(self.outOfBounds).histXYZ(self.allAxis.axWires_mm.axis, self.events.positionWmm[self.selc], self.allAxis.axStrips_mm.axis, self.events.positionSmm[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)    
         
-                hProjAll = hh.histog().hist1D(self.allAxis.axWires_mm.axis, self.events.positionWmm)
+                hProjAll = hh.histog(self.outOfBounds).hist1D(self.allAxis.axWires_mm.axis, self.events.positionWmm)
                 
                 hProj2D  = np.sum(h2D,axis=0)
                 
@@ -642,7 +647,7 @@ class plottingEvents():
             normColors = logScaleMap(logScale).normColors
             
             if absUnits is False:
-                h = hh.histog().hist2D(self.allAxis.axLambda.axis, self.events.wavelength[self.selc], self.allAxis.axWires.axis , self.events.positionW[self.selc])
+                h = hh.histog(self.outOfBounds).hist2D(self.allAxis.axLambda.axis, self.events.wavelength[self.selc], self.allAxis.axWires.axis , self.events.positionW[self.selc])
                 
                 figl, axl = plt.subplots(num=103,figsize=(6,6), nrows=1, ncols=1) 
                 posl1  = axl.imshow(h,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axLambda.start,self.allAxis.axLambda.stop,self.allAxis.axWires.start,self.allAxis.axWires.stop], origin='lower',cmap='viridis')
@@ -660,7 +665,7 @@ class plottingEvents():
                 
             elif absUnits == True:
                 
-                h = hh.histog().hist2D(self.allAxis.axLambda.axis, self.events.wavelength[self.selc], self.allAxis.axWires_mm.axis , self.events.positionWmm[self.selc])
+                h = hh.histog(self.outOfBounds).hist2D(self.allAxis.axLambda.axis, self.events.wavelength[self.selc], self.allAxis.axWires_mm.axis , self.events.positionWmm[self.selc])
                 
                 figl, axl = plt.subplots(num=103,figsize=(6,6), nrows=1, ncols=1) 
                 posl1  = axl.imshow(h,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axLambda.start,self.allAxis.axLambda.stop,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
@@ -695,11 +700,11 @@ class plottingEvents():
                 selc  = self.events.Cassette  == cass
                 sel2D = self.events.positionS >= 0
 
-                myw  = hh.histog().hist1D(xx,self.events.multW[selc]) # wires all
-                mys  = hh.histog().hist1D(xx,self.events.multS[selc]) # strips all
-                mywc = hh.histog().hist1D(xx,self.events.multW[selc & sel2D]) # wires coinc
+                myw  = hh.histog(self.outOfBounds).hist1D(xx,self.events.multW[selc]) # wires all
+                mys  = hh.histog(self.outOfBounds).hist1D(xx,self.events.multS[selc]) # strips all
+                mywc = hh.histog(self.outOfBounds).hist1D(xx,self.events.multW[selc & sel2D]) # wires coinc
            
-                my2Dwc = hh.histog().hist2D(xx,self.events.multW[selc & sel2D],xx,self.events.multS[selc & sel2D]) # wires coinc with strips 2D
+                my2Dwc = hh.histog(self.outOfBounds).hist2D(xx,self.events.multW[selc & sel2D],xx,self.events.multS[selc & sel2D]) # wires coinc with strips 2D
                 
                 if np.any(selc):
                     mywnorm    = myw/np.sum(myw[1:])
@@ -721,7 +726,7 @@ class plottingEvents():
                 self.plotMult.axHandle[0][k].bar(xx[0]+self.width,mysnormall[0],self.width,color='c',label='no s')
                 self.plotMult.axHandle[0][k].bar(xx[:self.extentplot],mywcnorm[:self.extentplot],self.width,color='r',label='w/s')
                 self.plotMult.axHandle[0][k].set_xlabel('multiplicity')
-                self.plotMult.axHandle[0][k].set_title('cass ID '+str(cass))
+                self.plotMult.axHandle[0][k].set_title('ID '+str(cass))
                 legend = self.plotMult.axHandle[0][k].legend(loc='upper right', shadow=False, fontsize='large')
                 if k == 0:
                     self.plotMult.axHandle[0][k].set_ylabel('probability')
@@ -758,15 +763,15 @@ class plottingEvents():
                     selc  = self.events.Cassette  == cass
                     sel2D = self.events.positionS >= 0
                     
-                    PHSw  = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc],wireAx,wireCh0to31Round[selc]) # wires 
-                    PHSs  = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHS[selc & sel2D],stripAx,stripChRound[selc & sel2D]) # strips
-                    PHSwc = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc & sel2D],wireAx,wireCh0to31Round[selc & sel2D]) # wires coinc with strips 2D
+                    PHSw  = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc],wireAx,wireCh0to31Round[selc]) # wires 
+                    PHSs  = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis,self.events.PHS[selc & sel2D],stripAx,stripChRound[selc & sel2D]) # strips
+                    PHSwc = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc & sel2D],wireAx,wireCh0to31Round[selc & sel2D]) # wires coinc with strips 2D
                     
                     self.plotPHS.axHandle[0][k].imshow(PHSw,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,wireAx[0],wireAx[-1]], origin='lower',cmap='jet')
                     self.plotPHS.axHandle[1][k].imshow(PHSs,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,stripAx[0],stripAx[-1]], origin='lower',cmap='jet')
                     self.plotPHS.axHandle[2][k].imshow(PHSwc,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,wireAx[0],wireAx[-1]], origin='lower',cmap='jet')
                     
-                    self.plotPHS.axHandle[0][k].set_title('cass ID '+str(cass))
+                    self.plotPHS.axHandle[0][k].set_title('ID '+str(cass))
                     if k == 0:
                         self.plotPHS.axHandle[0][k].set_ylabel('wires ch. no.')
                         self.plotPHS.axHandle[1][k].set_ylabel('strips ch. no.')
@@ -801,11 +806,11 @@ class plottingEvents():
                 selc  = self.events.Cassette  == cass
                 sel2D = self.events.positionS >= 0
                 
-                PHScorr  = hh.histog().hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc & sel2D],self.allAxis.axEnergy.axis,self.events.PHS[selc & sel2D]) 
+                PHScorr  = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc & sel2D],self.allAxis.axEnergy.axis,self.events.PHS[selc & sel2D]) 
                
                 self.plotPHScorr.axHandle[0][k].imshow(PHScorr,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop], origin='lower',cmap='jet')
                 
-                self.plotPHScorr.axHandle[0][k].set_title('cass ID '+str(cass))
+                self.plotPHScorr.axHandle[0][k].set_title('ID '+str(cass))
                 self.plotPHScorr.axHandle[0][k].set_xlabel('pulse height wires (a.u.)')
                 if k == 0:
                     self.plotPHScorr.axHandle[0][k].set_ylabel('pulse height strips (a.u.)')
@@ -824,11 +829,11 @@ class plottingEvents():
                sel2D = self.events.positionS >= 0
                diffeTime = np.diff(self.events.timeStamp[selc & sel2D])
                
-               histRate = hh.histog().hist1D(self.allAxis.axInstRate.axis,diffeTime) 
+               histRate = hh.histog(self.outOfBounds).hist1D(self.allAxis.axInstRate.axis,diffeTime) 
                
                self.plotInst.axHandle[0][k].step(self.allAxis.axInstRate.axis*1e6,histRate,'k',where='mid',label='w')
                self.plotInst.axHandle[0][k].set_xlabel('delta time between events (us)')
-               self.plotInst.axHandle[0][k].set_title('cass ID '+str(cass))
+               self.plotInst.axHandle[0][k].set_title('ID '+str(cass))
                if k == 0:
                    self.plotInst.axHandle[0][k].set_ylabel('num of events')
                    
@@ -846,14 +851,14 @@ class plottingEvents():
                selc  = self.events.Cassette  == cass
                sel2D = self.events.positionS >= 0
                
-               histTT  = hh.histog().hist1D(self.allAxis.axToF.axis,self.events.ToF[selc & sel2D]/1e9) 
+               histTT  = hh.histog(self.outOfBounds).hist1D(self.allAxis.axToF.axis,self.events.ToF[selc & sel2D]/1e9) 
                
-               histTT1 = hh.histog().hist1D(self.allAxis.axToF.axis,self.events.ToF[selc]/1e9)
+               histTT1 = hh.histog(self.outOfBounds).hist1D(self.allAxis.axToF.axis,self.events.ToF[selc]/1e9)
                
                self.plotTT.axHandle[0][k].step(self.allAxis.axToF.axis*1e3,histTT1,'r',where='mid',label='all')
                self.plotTT.axHandle[0][k].step(self.allAxis.axToF.axis*1e3,histTT,'b',where='mid',label='2D')
                self.plotTT.axHandle[0][k].set_xlabel('ToF (ms)')
-               self.plotTT.axHandle[0][k].set_title('cass ID '+str(cass))
+               self.plotTT.axHandle[0][k].set_title('ID '+str(cass))
                if k == 0:
                    self.plotTT.axHandle[0][k].set_ylabel('counts')
                    
@@ -873,14 +878,14 @@ class plottingEvents():
                selc  = self.events.Cassette  == cass
                sel2D = self.events.positionS >= 0
                
-               histWA  = hh.histog().hist1D(self.allAxis.axLambda.axis,self.events.wavelength[selc & sel2D]) 
+               histWA  = hh.histog(self.outOfBounds).hist1D(self.allAxis.axLambda.axis,self.events.wavelength[selc & sel2D]) 
                
-               histWA1 = hh.histog().hist1D(self.allAxis.axLambda.axis,self.events.wavelength[selc])
+               histWA1 = hh.histog(self.outOfBounds).hist1D(self.allAxis.axLambda.axis,self.events.wavelength[selc])
                
                self.plotWA.axHandle[0][k].step(self.allAxis.axLambda.axis,histWA1,'r',where='mid',label='all')
                self.plotWA.axHandle[0][k].step(self.allAxis.axLambda.axis,histWA,'b',where='mid',label='2D')
                self.plotWA.axHandle[0][k].set_xlabel('wavelength (A)')
-               self.plotWA.axHandle[0][k].set_title('cass ID '+str(cass))
+               self.plotWA.axHandle[0][k].set_title('ID '+str(cass))
                if k == 0:
                    self.plotWA.axHandle[0][k].set_ylabel('counts')
                    
@@ -894,16 +899,17 @@ class plottingEvents():
   
 class plottingMON():
     
-    def __init__(self, eventsMON, allAxis):
+    def __init__(self, eventsMON, allAxis, outOfBounds = True):
         
         self.eventsMON = eventsMON
         self.allAxis   = allAxis
+        self.outOfBounds = outOfBounds 
         
     def plot_ToF_PHS_MON(self):
         
-        histTM  = hh.histog().hist1D(self.allAxis.axToF.axis,self.eventsMON.ToF/1e9) 
+        histTM  = hh.histog(self.outOfBounds).hist1D(self.allAxis.axToF.axis,self.eventsMON.ToF/1e9) 
         
-        histPM  = hh.histog().hist1D(self.allAxis.axEnergy.axis,self.eventsMON.PHW) 
+        histPM  = hh.histog(self.outOfBounds).hist1D(self.allAxis.axEnergy.axis,self.eventsMON.PHW) 
 
         figMONTOF, (ax1, ax2) = plt.subplots(num=999,figsize=(9,6), nrows=1, ncols=2) 
         figMONTOF.suptitle('MONITOR')
@@ -922,7 +928,7 @@ class plottingMON():
          
     def plotLambda_MON(self):
             
-         histLM  = hh.histog().hist1D(self.allAxis.axLambda.axis,self.eventsMON.wavelength) 
+         histLM  = hh.histog(self.outOfBounds).hist1D(self.allAxis.axLambda.axis,self.eventsMON.wavelength) 
          
          figMONLAM, ax1 = plt.subplots(num=9998,figsize=(6,6), nrows=1, ncols=1) 
          figMONLAM.suptitle('MONITOR')

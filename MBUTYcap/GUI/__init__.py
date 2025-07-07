@@ -13,4 +13,6 @@ from .boolean_select import BooleanSelect
 from .multi_select_dropdown import MultiSelectDropDown
 from .expandable_section import ExpandableSection
 from .base_constants import FIXED_INPUT_WIDTH, label_width
+from .line_numbered_text import LineNumberedText
+from .file_path_search import FilePathSearch
 

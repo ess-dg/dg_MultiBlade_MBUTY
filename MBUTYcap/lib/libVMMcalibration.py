@@ -69,7 +69,7 @@ class read_json_calib():
         
         temp =  os.path.split(calibFile_PathAndFileName)
             
-        self.calibFilePath = temp[0]+'/'
+        self.calibFilePath = temp[0]+os.sep
         self.calibFileName = temp[1]
         
         # self.calibFlag = True

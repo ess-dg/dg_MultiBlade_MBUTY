@@ -20,11 +20,15 @@ Each parameter item (within a section) supports the following fields:
     - 'entry'         : text box entry that can be validated by one of the inputValidation types below.
     - 'dropdown'      : dropdown selection menu
     - 'multiSelect'   : multi-select dropdown
-    - 'radio'         : horizontal/vertical radio button group
+    - 'radio'         : vertical radio button group
     - 'bool'          : horizontal toggle between two options (True/False or custom)
-    - 'range'         : validated numeric range input (e.g., [min, max])
+    - 'filePath'      : an entry with file path autocomplete features
+    - 'range'         : validated numeric range input (e.g., [min, max]). 
+                        Can be combined with inputValidation of 'int' or 'float'. If no inputValidation type specified, defaults to 'float'
+    - 'subheading'    : only other parameter acceptable with 'type'='subheading' is 'label' which is the subheading text to be displayed
+    - 'button'        : basic button needs a 'label' and 'command' to be executed
 
-- `options` (list, optional): Static list of selectable values. Required for 'dropdown', 'multiSelect', 'radio', and 'bool'.
+- `options` (list, optional): Static list of selectable values. Required for 'radio', and 'bool'. Can be used in 'dropdown' or 'multiselect'
     - If dynamic loading is used (see `oplotionsFromPath`), this can be set to an empty list or omitted.
 
 - `default` (any, optional): Default value used to initialize the widget.
@@ -39,8 +43,6 @@ Each parameter item (within a section) supports the following fields:
     - 'float'       : Accepts decimal numbers (e.g., 3.14, -0.01)
     - 'scientific'  : Accepts scientific notation (e.g., 1e-3, -2.5E+4). Matches regex:
                       r'[-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?'
-    - 'localPath'    : Path must exist on the local file system
-                       (checked via `os.path.exists(path)`)
     - 'remotepath'   : Validates remote-style SSH paths (e.g., user@192.168.1.1:/path/to/data)
                        Matches regex:
                        r'^[\\w.-]+@[\\d.]+:.*'
@@ -93,36 +95,86 @@ Each parameter item (within a section) supports the following fields:
     Indicates that this widget's options should be dynamically loaded from the folder path given by another widget.
     The value should be the config key of the controlling path entry (e.g., "parameters.fileManagement.filePath").
 
-- `fileTypeFilter` (str, optional): Used with `optionsFromPath` to filter files by extension (e.g., ".json", ".pcapng").
-    Must be used together with `optionsFromPath`.
+- `dynamicOptions` (callable, optional): For 'dropdown' and 'multiSelect' widgets only.
+    A function that takes the `widgets` dictionary as an argument and returns the correct path to generate the options.
+    This allows for more complex dynamic generation of options based on multiple other widget states.
+
+- `watchKeys` (list[str], optional): Used in conjunction with `dynamicOptions`.
+    A list of other configuration keys. When the value of any of these watched keys changes in the GUI,
+    the `dynamicOptions` function for *this* widget will be re-evaluated to update its options.
+
+- `mustExist` (bool, optional): Only relevant for 'type'= 'filePath'. If set to `True`, it will only accept existing paths.
+    If set to `False`, it will check if the path exists and if not, it will prompt the user if they want to create it.
+    If not set, the default will be `True`.
+
+- `fileTypeFilter` (str, optional): Used with `optionsFromPath` or `dynamicOptions` to filter files by extension (e.g., ".json", ".pcapng").
+    Must be used together with `optionsFromPath` or `dynamicOptions`.
 
 - `set` (callable): A lambda function that takes the selected value and sets it in the underlying `parameters` object.
 
+- 'command' : only aplicable to the 'type'='button' widgets - can be in form of a lamda function or can call another function 
+    
 Notes:
 - Providing extra keys not used by a widget type is harmless and simply ignored.
 - Omitting required fields (like `options` for static dropdowns) will result in incomplete widgets (e.g. empty list).
-- If `optionsFromPath` is provided, the `options` field is ignored after initialization and dynamically populated at runtime.
+- If `optionsFromPath` or 'dynamicOptions' is provided, the `options` field is ignored after initialization and dynamically populated at runtime.
 - By default all of the fields are required to have some input before the back end can run, if there is a field which is optional,
     control this using a radio button and 'dependsOn' logic to turn this field on/off or set a default value
 """
 
 import os
 import sys
+import subprocess
+from tkinter import messagebox
 
 # Fix import path to allow access to lib from GUI folder
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from lib import libParameters as para
-
 # Set current path
 currentPath = os.path.abspath(os.path.dirname(os.path.dirname(__file__))) 
 parameters = para.parameters(currentPath)
+
+def dataFileOptions(widgets):
+    try:
+        acq_mode = widgets.get("parameters.acqMode").get()
+        use_alt = widgets.get("selectDifferentDataPath").get()
+        file_path = widgets.get("parameters.fileManagement.filePath").get()
+        dest_path = widgets.get("parameters.fileManagement.destPath").get()
+        folder = dest_path if acq_mode == "pcap-sync" and not use_alt else file_path
+        return (folder, ".pcapng")
+    except Exception:
+        return []
+
 
 def set_ThW(val):
     parameters.dataReduction.softThArray.ThW[:, :] = val
 
 def set_ThS(val):
     parameters.dataReduction.softThArray.ThS[:, :] = val
+    
+def open_config_creator_standalone():
+    """
+    Launches configGenGUI.py as a completely separate, standalone Python process.
+    This will create a new, independent window for the Config Creator.
+    """
+    python_executable = sys.executable
+    config_gui_path = os.path.join(currentPath, 'MBUTYconfigGen_GUI.py')
 
+    # Verify that the script exists before trying to run it
+    if not os.path.exists(config_gui_path):
+        messagebox.showerror("Error", f"Config Creator script not found at: {config_gui_path}")
+        return
+
+    try:
+        subprocess.Popen([python_executable, config_gui_path])#,
+                         # stdout=subprocess.DEVNULL, # Suppress stdout
+                         # stderr=subprocess.DEVNULL) # Suppress stderr
+
+    except FileNotFoundError:
+        messagebox.showerror("Error", "Python executable not found. Make sure Python is installed and in your system's PATH.")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to launch Config Creator:\n{e}")
+        
 # Define configuration structure
 config = {
     "static": {
@@ -142,7 +194,7 @@ config = {
             "label": "Network Interface",
             "type": "entry",
             "default": "ens2",
-            "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite", "kafka"]),
+            "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite"]),
             "info": "Used for acqMode = pcap-local, pcap-local-overwrite, or kafka",
             "set": lambda val: setattr(parameters.dumpSettings, 'interface', val)
         },
@@ -197,10 +249,10 @@ config = {
             "dependsOn": ("parameters.acqMode", "kafka"),
             "set": lambda val: setattr(parameters.kafkaSettings, 'numOfPackets', val)
         },
-        "parameters.fileManagement.sourcePath": {
+        "parameters.fileManagement.sourcePath": { 
             "label": "Source Path",
             "type": "entry",
-            "inputValidation": "remotepath",
+            "inputValidation": "remotePath",
             "default": "essdaq@172.30.244.50:~/pcaps/",
             "info": "Remote source path to rsync from. Relevant for acqMode = pcap-sync",
             "dependsOn": ("parameters.acqMode", "pcap-sync"),
@@ -208,11 +260,17 @@ config = {
         },
         "parameters.fileManagement.destPath": {
             "label": "Destination Path",
-            "type": "entry",
-            "inputValidation": "localPath",
+            "type": "filePath",
+            "default": os.path.join(currentPath, 'data'),
+            "mustExist": False,
             "info": "Local destination path to rsync to. Relevant for acqMode = pcap-sync",
             "dependsOn": ("parameters.acqMode", "pcap-sync"),
-            "set": lambda val: setattr(parameters.fileManagement, 'destPath', val)
+            "set": lambda val: (
+                setattr(parameters.fileManagement, 'destPath', val),
+                # We also set filePath here, if the user toggles the selectDifferentDataPath button,
+                # the filePath widget will become visible and this path will be overwritten below with the new filePath
+                setattr(parameters.fileManagement, 'filePath', val)
+            )
         },
         "selectDifferentDataPath": {
             "label": "Select Different Data Path",
@@ -222,15 +280,15 @@ config = {
             "info": "By default the data path = the destination path for pcap-sync if you want to get data from a different path select 'True' and enter path",
             "dependsOn": ("parameters.acqMode", "pcap-sync"),
         },
-        "parameters.fileManagement.filePath": {
+        "parameters.fileManagement.filePath": { ######### does not create folder
             "label": "Data Folder Path",
-            "type": "entry",
-            "inputValidation": "localPath",
+            "type": "filePath",
+            "mustExist": True,
             "default": os.path.join(currentPath, 'data'),
             "info": "Path to the folder containing data files. Relevant for acqMode = off, pcap-sync, and pcap-local",
             "dependsOn": {
                 "or": [
-                    ("parameters.acqMode", ["off", "pcap-local"]),
+                    ("parameters.acqMode", "off"),
                     {
                         "and": [
                             ("parameters.acqMode", "pcap-sync"),
@@ -241,23 +299,20 @@ config = {
             },
             "set": lambda val: setattr(parameters.fileManagement, 'filePath', val)
         },
-        "parameters.fileManagement.fileName": {
-            "label": "Data File Name(s)",
-            "type": "multiSelect",
-            "default": ["ESSmask2023.pcapng"], 
-            "optionsFromPath": "parameters.fileManagement.filePath",
-            "fileTypeFilter": ".pcapng",
-            "dependsOn": ("parameters.acqMode", "off"),
-            "info": "List of file(s) to load from the data folder. Relevant for acqMode = off",
-            "set": lambda val: setattr(parameters.fileManagement, 'fileName', val)
+        "parameters.fileManagement.filePath2": { #creates folder if does not exist
+            "label": "Data Folder Path",
+            "type": "filePath",
+            "mustExist": False,
+            "default": os.path.join(currentPath, 'data'),
+            "info": "Path to the folder containing data files. Relevant for acqMode = off, pcap-sync, and pcap-local",
+            "dependsOn": ("parameters.acqMode","pcap-local"),
+            "set": lambda val: setattr(parameters.fileManagement, 'filePath', val)
         },
-        "parameters.fileManagement.fileName2": {
-            "label": "Data File Name(s)",
-            "type": "entry",
-            "default": ["ESSmask2023.pcapng"], ######################################################################################################## deal with later - passing a list of files
+        "syncDataButton": {
+            "label": "Sync Data",
+            "type": "button",
             "dependsOn": ("parameters.acqMode", "pcap-sync"),
-            "info": "List of file(s) to load from the data folder. Relevant for acqMode = pcap-sync",
-            "set": lambda val: setattr(parameters.fileManagement, 'fileName', val)
+            "command": None  # Will be injected after widgets are created
         },
         "parameters.fileManagement.openMode": {
             "label": "File Open Mode",
@@ -267,6 +322,25 @@ config = {
             "dependsOn": ("parameters.acqMode", ["off", "pcap-sync"]),
             "info": "Choose how files should be selected and loaded: 'window' opens file browser, 'fileName' uses preset file, 'latest' and 'secondLast' load most recent files, 'wholeFolder' analyzes all files, 'sequence' uses fileSerials.",
             "set": lambda val: setattr(parameters.fileManagement, 'openMode', val)
+        },
+        "parameters.fileManagement.fileName": {
+            "label": "Data File Name(s)",
+            "type": "multiSelect",
+            "default": ["ESSmask2023.pcapng"], 
+            "dynamicOptions": dataFileOptions,
+            "watchKeys": [
+                "parameters.acqMode",
+                "selectDifferentDataPath",
+                "parameters.fileManagement.filePath",
+                "parameters.fileManagement.destPath"
+            ],
+            "info": "List of file(s) to load from the resolved folder.",
+            "dependsOn":  {
+                "and": [("parameters.acqMode", ["off", "pcap-sync"]),
+                        ("parameters.fileManagement.openMode", ["fileName", "sequence"])
+                        ]
+                },
+            "set": lambda val: setattr(parameters.fileManagement, 'fileName', val)
         },
         "parameters.fileManagement.fileSerials": { 
             "label": "File Serials",
@@ -279,8 +353,7 @@ config = {
         },
         "parameters.fileManagement.pathToTshark": {
             "label": "Path to Tshark",
-            "type": "entry",
-            "inputValidation": "localPath",
+            "type": "filePath",
             "default": "/usr/sbin/",
             "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite"]),
             "info": "Filesystem path to the Tshark binary. Used to convert PCAP to PCAPNG if needed.",
@@ -327,14 +400,18 @@ config = {
             "type": "subheading",
             "label": "Detector config"
         },
+        
+        "makeConfigFileButton": {
+            "label": "Create or modify config file",
+            "type": "button",
+            "command": open_config_creator_standalone
+        },
         "parameters.fileManagement.configFilePath": {
             "label": "Enter path to config file",
-            "type": "entry",
-            "inputValidation": "localPath",
+            "type": "filePath",
             "default": os.path.join(currentPath, 'config'),
             "set": lambda val: setattr(parameters.fileManagement,'configFilePath', val)
         },
-        
         "parameters.fileManagement.configFileName": {
             "label": "Select Config File",
             "type": "dropdown",
@@ -379,8 +456,7 @@ config = {
         },
         "parameters.fileManagement.thresholdFilePath": {
             "label": "Threshold File Path",
-            "type": "entry",
-            "inputValidation": "localPath",
+            "type": "filePath",
             "default": os.path.join(parameters.fileManagement.currentPath, 'config'),
             "dependsOn": ("parameters.dataReduction.softThresholdType","fromFile"),
             "info": "Path to the threshold file folder.",
@@ -424,8 +500,7 @@ config = {
         },
         "parameters.fileManagement.calibFilePath": {
             "label": "Calibration File Path",
-            "type": "entry",
-            "inputValidation": "localPath",
+            "type": "filePath",
             "default": os.path.join(parameters.fileManagement.currentPath,'calib'),
             "dependsOn": ("parameters.dataReduction.calibrateVMM_ADC_ONOFF", True),
             "info": "Path to the calibration file folder.",
@@ -549,7 +624,7 @@ config = {
             "label": "Lambda Range [min, max] (Å)",
             "type": "range",
             "default": [1, 16],
-            "inputValidation": "int",
+            "inputValidation": "float",
             "dependsOn": ("parameters.wavelength.calculateLambda", True),
             "info": "Range of lambda values (in Å) as [min, max]",
             "set": lambda val: setattr(parameters.wavelength, 'lambdaRange', val)
@@ -666,6 +741,7 @@ config = {
             "type": "bool",
             "options": ["True", "False"],
             "default": "False",
+            "dependsOn": ("parameters.plotting.plotADCvsCh", True),
             "set": lambda val: setattr(parameters.plotting, 'plotADCvsChlog', val)
         },
         "parameters.plotting.plotChopperResets": {
@@ -726,7 +802,6 @@ config = {
             "type": "entry",
             "default": 0.15,
             "inputValidation": "float",
-            "dependsOn": ("parameters.plotting.plotToFDistr", True),
             "set": lambda val: setattr(parameters.plotting, 'ToFrange', val)
         },
         "parameters.plotting.ToFbinning": {
@@ -734,7 +809,6 @@ config = {
             "type": "entry",
             "default": "100e-6",
             "inputValidation": "scientific",
-            "dependsOn": ("parameters.plotting.plotToFDistr", True),
             "set": lambda val: setattr(parameters.plotting, 'ToFbinning', val)
         },
         "parameters.plotting.ToFGate": {
@@ -791,13 +865,13 @@ config = {
             "info": "ON/OFF, if  invalid ToFs Tofare included in the plots or removed from events",
             "set": lambda val: setattr(parameters.plotting, 'removeInvalidToFs', val)
         },
-        "parameters.plotting.hitogOutBounds": {
+        "parameters.plotting.histogOutBounds": {
             "label": "Histogram Out-of-Bounds",
             "type": "bool",
             "options": ["True", "False"],
             "default": "True",
             "info": "histogram outBounds param set as True as default (Events out of bounds stored in first and last bin)",
-            "set": lambda val: setattr(parameters.plotting, 'hitogOutBounds', val)
+            "set": lambda val: setattr(parameters.plotting, 'histogOutBounds', val)
         }
     },
     "monitor": {
@@ -848,8 +922,8 @@ config = {
         },
         "parameters.fileManagement.saveReducedPath": {
             "label": "Reduced File Path",
-            "type": "entry",
-            "inputValidation": "localPath",
+            "type": "filePath",
+            "mustExist": False,
             "dependsOn": ("parameters.fileManagement.saveReducedFileONOFF", True),
             "info": "Destination path for saving reduced HDF files.",
             "set": lambda val: setattr(parameters.fileManagement, 'saveReducedPath', val)
@@ -883,10 +957,7 @@ config = {
     }
 }
 
-def set_soft_threshold(val):
-    parameters.dataReduction.softThresholdType = val
-    if val == "userDefined":
-        parameters.dataReduction.createThArrays(parameters)
+
 
 # Export
 __all__ = ["config", "parameters"]

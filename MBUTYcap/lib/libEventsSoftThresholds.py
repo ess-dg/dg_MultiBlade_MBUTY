@@ -207,8 +207,11 @@ class applyThresholdsToEvents():
                       self.thresholdize1Cass(cc)
                       self.events.append(self.events1Cass)
                       # del self.events1Cass 
-
-            del self.events1Cass   
+            
+            try:         
+                del self.events1Cass  
+            except:   
+                pass
              
             if self.showStat == 'globalStat':
                   self.someGlobStat(self.events)

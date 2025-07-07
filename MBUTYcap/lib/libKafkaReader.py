@@ -174,7 +174,7 @@ class kafka_reader_preAlloc():
                                     timeElapsed = time.time() - tStart
                                     
                                     if timeElapsed > 3:
-                                        print('\nwaiting for next comsumer poll on topic {}\033[1;37m'.format(self.topic))
+                                        print('\nwaiting for next consumer poll on topic {}\033[1;37m'.format(self.topic))
                                         # flagTopicFound = False
                                         # break       
                                 

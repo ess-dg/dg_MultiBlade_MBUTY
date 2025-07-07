@@ -12,6 +12,7 @@ import sys
 import time
 from datetime import datetime
 import subprocess
+import signal
 # import numpy as np
 
 ###############################################################################
@@ -62,34 +63,136 @@ class checkPathCreate():
             
 
 ############################################################################### 
+class transferDataUtil:
+    def __init__(self):
+        self.IS_WINDOWS = sys.platform.startswith("win")
+        self.IS_MAC = sys.platform == "darwin"
+        self.IS_LINUX = sys.platform.startswith("linux")
+        self.current_subprocess = None
 
-class transferDataUtil():
-             
-    def syncData(self,sourcePath,destPath,verbose=True):
-        
-        command = 'rsync -av --progress'
+    def convert_path(self, win_path):
+        """Convert Windows path to WSL format if needed."""
+        if not self.IS_WINDOWS:
+            return win_path
+        # e.g., 'C:/Users/.../' -> '/mnt/c/Users/.../'
+        return win_path.replace("C:\\", "/mnt/c/").replace("C:/", "/mnt/c/").replace("\\", "/")
 
-        comm = command + ' ' + sourcePath + ' ' + destPath
-   
-        if verbose is False:
-            status = os.system(comm+ ' >/dev/null')
+    def syncData(self, sourcePath, destPath): # Removed 'verbose' parameter
+        """
+        Synchronizes data using rsync via subprocess.Popen.
+        Always prints all rsync output.
+        Supports:
+        - Running independently of GUI (prints to console/redirector)
+        - KeyboardInterrupt (Ctrl+C) handling for graceful termination
+        - Integration with a global `current_subprocess_handle` for GUI stop button.
+
+        Returns:
+            int: 0 for success, non-zero for failure/interruption.
+        """
+        global current_subprocess_handle # Declare intent to modify the global handle
+
+        # Construct the rsync command as a list for subprocess
+        # Always include --progress for detailed output
+        # Using --info=progress2 is generally better for rsync 3.1+
+        # If your rsync is older, you might need to revert to just '--progress'
+        base_cmd = ["rsync", "-av", "--progress"] # Always print progress
+
+        # Handle Windows/WSL specific command prefix
+        if self.IS_WINDOWS:
+            destPath = self.convert_path(destPath)
+            cmd = ["wsl"] + base_cmd + [sourcePath, destPath]
         else:
-            print('\n ... syncing data ...')
-            status = os.system(comm)
-        
-        # NOTE: it will ask for password 
-        
-        if status == 0: 
-            if verbose is True: 
-              print('\n data sync completed')
-        else:
-              print('\n \033[1;31mERROR ... connection refused! \n\033[1;37m')
-        
-        # print(status)      
-        if verbose is True:     
-            print('\n-----')
-        
-        return status 
+            cmd = base_cmd + [sourcePath, destPath]
+
+        # --- Print command before execution ---
+        print("\n... syncing data ... ")
+        #print(f"\n (Executing: {' '.join(cmd)})\n")
+        process = None # Initialize process handle
+        status = 1 # Default to non-zero (failure)
+
+        try:
+            # Use subprocess.Popen for control
+            # stdout=subprocess.PIPE and stderr=subprocess.STDOUT to capture/stream all output
+            # text=True for universal newlines and string output
+            # bufsize=1 for line-buffered output
+            if not self.IS_WINDOWS:
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                    preexec_fn=os.setsid # Isolate child process from parent's Ctrl+C
+                )
+            else:
+                 process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1
+                )
+
+            # --- Critical: Set the global subprocess handle ---
+            current_subprocess_handle = process
+            self._current_subprocess = process # Also set internal reference
+
+            # Stream all output line by line
+            for line in iter(process.stdout.readline, ''):
+                # Check if the process was terminated externally while reading
+                if process.poll() is not None:
+                    print("Process terminated externally while reading output.\n")
+                    break # Exit the loop if process is no longer running
+                print(line, end='') # This relies on sys.stdout redirection
+
+            # Wait for the process to complete and get its return code
+            return_code = process.wait()
+            status = return_code # Assign the actual return code to status
+
+            if status == 0:
+                print('\nData sync completed')
+            else:
+                # Check for termination signals (negative return codes on Unix-like)
+                # or if the process was directly stopped by the GUI (current_subprocess_handle becomes None)
+                if not self.IS_WINDOWS and status in (-signal.SIGTERM.value, -signal.SIGKILL.value):
+                     print(f'\n\033[1;31mERROR ... data sync interrupted (code: {status})\n\033[1;37m')
+                elif current_subprocess_handle is None: # This indicates an external stop (e.g., from stop_back_end)
+                     print(f'\n\033[1;31mERROR ... data sync stopped by user (code: {status})\n\033[1;37m')
+                else:
+                    print('\n \033[1;31mERROR ... connection refused or other sync error! \n\033[1;37m')
+
+        except KeyboardInterrupt:
+            # This handles Ctrl+C when `syncData` is called directly (not in a GUI thread),
+            # or if `raise_keyboard_interrupt` successfully injects one.
+            print('\n\033[1;31mKeyboardInterrupt detected! Terminating rsync process...\033[1;37m\n')
+            if process and process.poll() is None: # If the subprocess is still running
+                try:
+                    process.terminate() # Send SIGTERM (polite)
+                    process.wait(timeout=5) # Give it time to exit
+                except subprocess.TimeoutExpired:
+                    process.kill() # Send SIGKILL (forceful)
+                    process.wait()
+            status = 1 # Indicate failure due to interruption (or specific exit code from subprocess)
+            print('\n\033[1;31mData sync interrupted.\033[1;37m')
+
+        except Exception as e:
+            # Catch any other unexpected errors during subprocess execution
+            print(f'\n\033[1;31mERROR ... An unexpected error occurred: {e}\n\033[1;37m')
+            status = 1 # Indicate failure
+
+        finally:
+            # --- Critical: Clear the global subprocess handle ---
+            if current_subprocess_handle == process:
+                current_subprocess_handle = None
+            # Also clear internal reference if this instance was responsible for it
+            if self._current_subprocess == process:
+                self._current_subprocess = None
+
+            print('\n-----') # Always print separator
+
+        return status
+
+
     
 ###############################################################################   
 
@@ -238,7 +341,7 @@ class dumpToPcapngUtil():
         self.pathToTshark = pathToTshark
         self.interface    = interface
         self.destPath     = destPath
-        self.fileName     = fileName
+        self.fileName     = fileName 
         
         pathToTshark, flag = verifyTsharkInstallation().verify(self.pathToTshark)
         
@@ -256,16 +359,17 @@ class dumpToPcapngUtil():
         # command1 = self.pathToTshark+'tshark'+' -i '+str(self.interface)
         
         # capture only UDP packets 
-        command1 = self.pathToTshark+'tshark'+' -i '+str(self.interface) + ' -f "udp"'
+        command1 = os.path.join(self.pathToTshark,'tshark')+' -i '+str(self.interface) + ' -f "udp"'
 
         nowTime = datetime.now()
         current_date = nowTime.strftime("%Y%m%d")
         current_time = nowTime.strftime("%H%M%S")
 
-        if delay > 0:
-            file1    = self.destPath+current_date+'_'+current_time+'_delay'+str(delay)+'s_'
+        if delay > 0: 
+            fileNameDetails1 = current_date+'_'+current_time+'_delay'+str(delay)+'s_'
         else:
-            file1    = self.destPath+current_date+'_'+current_time+'_'
+            fileNameDetails1 = current_date+'_'+current_time+'_'
+            
         fileExt  = '.pcapng'
         
         print('\nrecording '+str(numOfFiles)+' pcapng files ...')
@@ -289,7 +393,7 @@ class dumpToPcapngUtil():
                 numOfPackets   = extraArgs
                 commandDetails = ' -c '+str(numOfPackets)
                 
-                file2    = 'pkts'+str(numOfPackets)
+                fileNameDetails2    = 'pkts'+str(numOfPackets)
   
             elif typeOfCapture == 'filesize':
                 
@@ -298,7 +402,7 @@ class dumpToPcapngUtil():
                 sizekbytes     = extraArgs
                 commandDetails = ' -a filesize:'+str(sizekbytes)
                 
-                file2    = 'size_kb_'+str(sizekbytes)
+                fileNameDetails2    = 'size_kb_'+str(sizekbytes)
                 
                 
             elif typeOfCapture == 'duration':
@@ -308,7 +412,7 @@ class dumpToPcapngUtil():
                 duration_s     = extraArgs
                 commandDetails = ' -a duration:'+str(duration_s)
                 
-                file2    = 'duration_s_'+str(duration_s)
+                fileNameDetails2    = 'duration_s_'+str(duration_s)
                 
             else:
                 print(' \033[1;31mERROR ... \033[1;37m type of capture '+typeOfCapture+' not supported or typo! -> exiting!')
@@ -320,15 +424,17 @@ class dumpToPcapngUtil():
 
             if fileNameOnly is False:
                 if len(temp) > 1:
-                    self.fileName = temp[0]
-                fileFull =  file1+file2+'_'+self.fileName+'_'+currentAcqStr+fileExt
+                    self.fileName = temp[0] 
+                fileFull =  fileNameDetails1+fileNameDetails2+'_'+self.fileName+'_'+currentAcqStr+fileExt
             else:
                 if len(temp) == 1:
-                    fileFull = self.destPath+self.fileName+fileExt
+                    fileFull = self.fileName+fileExt
                 else:
-                    fileFull = self.destPath+self.fileName
+                    fileFull = self.fileName
+                    
+            fileFullAndPath = os.path.join(self.destPath,fileFull) 
             
-            temp = os.system(command1+commandDetails+' -w '+fileFull)
+            temp = os.system(command1+commandDetails+' -w '+fileFullAndPath)
             
             if delay > 0:
                 print('\n...waiting '+str(delay)+'s for the next acquisition ...')
@@ -348,7 +454,7 @@ class dumpToPcapngUtil():
         else:
                print(' \033[1;31mERROR ... \n\033[1;37m')
                   
-        return allStatus ,  fileFull
+        return allStatus ,  fileFullAndPath
               
  
                  
@@ -453,6 +559,10 @@ class acquisitionStatus():
 ###############################################################################
 
 if __name__ == '__main__':
+    
+    
+   transferData = transferDataUtil()
+   transferData.syncData('essdaq@172.30.244.50:~/pcapt/', '/Users/francescopiscitelli/Desktop/dataVMM/')   
 
    ########
     # path, flag = findPathApp().check('wireshark')
@@ -479,7 +589,7 @@ if __name__ == '__main__':
    
    
    ########
-    pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
+    # pathToTshark = '/Applications/Wireshark.app/Contents/MacOS/'
     
     # ret_pathToTshark, flag= verifyTsharkInstallation().verify(pathToTshark)
     
@@ -487,8 +597,8 @@ if __name__ == '__main__':
     # print(ret_pathToTshark)
     # print(flag)
 
-    rec = dumpToPcapngUtil(pathToTshark, interface='en0', destPath='/Users/francescopiscitelli/Desktop/reducedFile/', fileName='temp')
-    status=rec.dump('duration',2,3)
+    # rec = dumpToPcapngUtil(pathToTshark, interface='en0', destPath='/Users/francescopiscitelli/Desktop/reducedFile/', fileName='temp')
+    # status=rec.dump('duration',2,3)
    
     # rec.dump('filesize',3,2)
    

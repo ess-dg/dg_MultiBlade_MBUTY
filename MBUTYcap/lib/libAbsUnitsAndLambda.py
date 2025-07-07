@@ -102,9 +102,9 @@ class calculateAbsUnits():
      def __init__(self, events, parameters, text=''): 
          
          if text == '':
-             print('\033[1;36m\nCalculating absolute units ... \033[1;37m',end='')
+             print('\033[1;36m\nPreparing to calculate absolute units ... \033[1;37m',end='')
          else: 
-             print('\033[1;36m\nCalculating absolute units '+text+'  ... \033[1;37m',end='')
+             print('\033[1;36m\nPreparing to calculate absolute units '+text+'  ... \033[1;37m',end='')
          
          self.events = events
          self.events.createAbsUnitsArrays()
@@ -112,6 +112,8 @@ class calculateAbsUnits():
          self.parameters = parameters
                  
      def calculatePositionAbsUnit(self):
+         
+         print('\033[1;36m\nCalculating positions ... \033[1;37m',end='')
          
          sine = np.sin(np.deg2rad(self.parameters.config.DETparameters.bladesInclination)) 
          cosi = np.cos(np.deg2rad(self.parameters.config.DETparameters.bladesInclination)) 
@@ -134,6 +136,7 @@ class calculateAbsUnits():
              
      def calculateToF(self, removeInvalidToFs = False):
          
+          print('\033[1;36m\nCalculating neutron ToF/ToA ... \033[1;37m')
           allToFsCounter = np.shape(self.events.ToF)[0]
 
           self.events.ToF = self.events.timeStamp - self.events.PulseT
@@ -177,6 +180,8 @@ class calculateAbsUnits():
 
      def calculateWavelength(self):
          
+         print('\033[1;36m\nCalculating neutron wavelength ... \033[1;37m')
+         
          # self.calculateToF(T0)
          
          # Distance is from chopper to first wire in mm
@@ -210,6 +215,8 @@ class calculateAbsUnits():
          self.events.wavelength = np.round(wavel, decimals=2)
          
      def calculateWavelengthMON(self):
+         
+         print('\033[1;36m\nCalculating neutron wavelength MON ... \033[1;37m')
         
          #  from ns to s, from int ot float ! 
          ToF_s = self.events.ToF/1e9

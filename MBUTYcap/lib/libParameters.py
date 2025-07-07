@@ -55,7 +55,7 @@ class checkPackageInstallation():
         
          flag = True   
          
-         required = {'flatbuffers','configargparse','confluent_kafka'}
+         required = {'flatbuffers','configargparse','confluent-kafka'}
          
          missing = required - self.installed
         
@@ -290,7 +290,7 @@ class plotting():
           
           self.removeInvalidToFs = False
           
-          self.hitogOutBounds = True
+          self.histogOutBounds = True
           
           self.bareReadoutsCalculation = False
           
@@ -398,11 +398,31 @@ class parameters():
              
 #################
     
-    def HistNotification(self):
+    def HistNotification(self,plottingInBlocks=False):
         
-        if self.plotting.hitogOutBounds is True:
-            print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin)')
+        # if plottingInBlocks is False:
+        #     if self.plotting.histogOutBounds is True:
+        #         print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin)')
+        #     else:
+        #         print('\n\t histogram outBounds param set as False (Events out of bounds not stored in any bin)')
+        # else:
+        #     if self.plotting.histogOutBounds is True:
+        #         print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin) -> overridden with False since plottingInSections is True')
+        #         self.plotting.histogOutBounds = False
+        #     else: 
+        #         print('\n\t histogram outBounds param set as False (Events out of bounds not stored in any bin)')
+            
+        
+        if self.plotting.histogOutBounds is True:
+            
+            if plottingInBlocks is False:
+                print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin)')
+            else:
+                print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin) -> overridden with False since plottingInSections is True')
+                self.plotting.histogOutBounds = False
+                
         else:
+
             print('\n\t histogram outBounds param set as False (Events out of bounds not stored in any bin)')
             
     def check_acqMode(self):

@@ -271,7 +271,6 @@ class readouts():
         self.mult0   = self.mult0[~toBeRemoved]
         self.mult1   = self.mult1[~toBeRemoved]
         
-        
     ###############
     
     def checkChopperFreq(self):  
@@ -775,6 +774,8 @@ class pcapng_reader_PreAlloc():
         self.MONTTLtype          = MONTTLtype
         self.MONring             = MONring
         self.timeResolutionType  = timeResolutionType
+
+        # print('----->>>'+(self.timeResolutionType))
         
         # operation mode is either normal hit or clustered mode
         # in normal hit G0 is 0 and 1 for calib mode, or G0 is 2 for clustered mode 
@@ -848,29 +849,34 @@ class pcapng_reader_PreAlloc():
     def checkIfUniformFWversion(self,packetsFWversion):
         
         packetsFWversion = np.atleast_1d(packetsFWversion)
-        
         print('\nchecking RMM firmware version ',end='')
-        if np.any(packetsFWversion) != packetsFWversion[0]:
-            print('\n \033[1;31mWARNING ---> found different Firmware Versions in packets, use version 0 as default, data might be corrupted for other versions\033[1;37m')
-            time.sleep(1)
+        try:
+            if np.any(packetsFWversion) != packetsFWversion[0]:
+                print('\n \033[1;31mWARNING ---> found different Firmware Versions in packets, use version 0 as default, data might be corrupted for other versions\033[1;37m')
+                time.sleep(1)
+            else:
+                print('--> version: {}'.format(packetsFWversion[0]),end='')   
+        except: 
+             print('--> unable to verify version.',end='')   
+             pass
         
         self.ESSheaderSize = 30  # 30 bytes if version is 0  or 32 bytes if version is 1   
         self.calculateHeaderSize()
-        
-        print('--> version: {}'.format(packetsFWversion[0]),end='')
+
     
     def checkFWversionSetHeaders(self,packetsFWversion):
         
         packetsFWversion = np.atleast_1d(packetsFWversion)
-
-        if packetsFWversion[0] == 0:
-                self.ESSheaderSize = 30  # 30 bytes if version is 0  or 32 bytes if version is 1   
-                self.calculateHeaderSize()  
-                
-        elif packetsFWversion[0] >= 1:
-                self.ESSheaderSize = 32  # 30 bytes if version is 0  or 32 bytes if version is >= 1    
-                self.calculateHeaderSize()
-
+        try:
+            if packetsFWversion[0] == 0:
+                    self.ESSheaderSize = 30  # 30 bytes if version is 0  or 32 bytes if version is 1   
+                    self.calculateHeaderSize()  
+                    
+            elif packetsFWversion[0] >= 1:
+                    self.ESSheaderSize = 32  # 30 bytes if version is 0  or 32 bytes if version is >= 1    
+                    self.calculateHeaderSize()
+        except:
+            pass
 
     def dprint(self, msg):
         if self.debug:

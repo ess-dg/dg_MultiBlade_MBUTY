@@ -247,6 +247,7 @@ class events():
     
     def removeData(self, toBeRemoved):
         
+    
         self.Cassette     = self.Cassette[~toBeRemoved]
         self.CassettedIDs = np.unique(self.Cassette)
         
@@ -275,7 +276,9 @@ class events():
         if np.shape(self.ToF)[0] > 0:
             self.ToF          = self.ToF[~toBeRemoved]
         
-        self.Nevents          = np.shape(self.timeStamp)[0]
+        NN = np.shape(self.timeStamp)[0]
+
+        self.Nevents          =  NN*np.ones((1), dtype = 'int64') 
         self.NeventsNotRejAll = self.Nevents
         self.NeventsNotRej2D  = self.Nevents
         
@@ -800,7 +803,6 @@ class hitsMON2events():
          self.events.PulseT = self.hits.PulseT
          self.events.timeStamp = self.hits.timeStamp
          
-         self.events.WorS      = 99*np.ones((lengg),dtype=int)
          self.events.Cassette  = 99*np.ones((lengg),dtype=int)
          self.events.positionW = 99*np.ones((lengg),dtype=int)
          self.events.positionS = 99*np.ones((lengg),dtype=int)
