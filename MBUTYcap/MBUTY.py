@@ -859,19 +859,23 @@ if __name__ == '__main__':
     readouts      = mbuty.readouts
     readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
     
-    hits       = mbuty.hits
-    hitsArray  = hits.concatenateHitsInArrayForDebug()
-    
-    # eventsMONarray = eventsMON.concatenateEventsInArrayForDebug()
-    
-    events      = mbuty.events
-    eventsArray = events.concatenateEventsInArrayForDebug() 
-    
-    deltaTimeWS = mbuty.deltaTimeWS
-    
-    if parameters.MONitor.MONOnOff is True:
-        hitsMON   = mbuty.hitsMON
-        eventsMON = mbuty.eventsMON
+    if parameters.plotting.bareReadoutsCalculation == False:
+        
+        hits       = mbuty.hits
+        hitsArray  = hits.concatenateHitsInArrayForDebug()
+        
+        # eventsMONarray = eventsMON.concatenateEventsInArrayForDebug()
+        
+        events      = mbuty.events
+        eventsArray = events.concatenateEventsInArrayForDebug() 
+        
+        deltaTimeWS = mbuty.deltaTimeWS
+        
+        
+        
+        if parameters.MONitor.MONOnOff is True and mbuty.MON.flagMONfound is True:
+            hitsMON   = mbuty.hitsMON
+            eventsMON = mbuty.eventsMON
 
     
     ###############################################################################
