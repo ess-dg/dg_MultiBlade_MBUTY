@@ -552,7 +552,7 @@ if __name__ == '__main__':
 
     configFileName  = "AMOR.json"
     
-    # configFileName  = "test2.json"
+    # configFileName  = "test1h.json"
 
     # configFileName  = "ESTIA.json"
 
@@ -661,7 +661,7 @@ if __name__ == '__main__':
     ###############
     ### type of pcap file loading, prealloc of memeory with allocate or quick, allocate is more rigorous, quick estimates the memory and it is faster 
     parameters.fileManagement.pcapLoadingMethod = 'allocate'
-    # parameters.fileManagement.pcapLoadingMethod = 'quick'
+    parameters.fileManagement.pcapLoadingMethod = 'quick'
 
     ###############
     ### path to calibration file

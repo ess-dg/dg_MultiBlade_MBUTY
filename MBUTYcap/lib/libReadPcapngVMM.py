@@ -884,14 +884,16 @@ class pcapng_reader_PreAlloc():
 
     def allocateMemory(self, pcapLoadingMethod='allocate'):  
         
-        if (pcapLoadingMethod != 'allocate') and (pcapLoadingMethod != 'quick') :
+        self.pcapLoadingMethod = pcapLoadingMethod
+        
+        if (self.pcapLoadingMethod != 'allocate') and (self.pcapLoadingMethod != 'quick') :
             print('\033[1;33mWARNING: Wrong data loading option: select either quick or allocate --> setting it to allocate method!\033[1;37m')
-            pcapLoadingMethod = 'allocate'
+            self.pcapLoadingMethod = 'allocate'
             
-        if pcapLoadingMethod == 'allocate':
+        if self.pcapLoadingMethod == 'allocate':
             endCounter = np.inf
             print('pcap loading method: allocate')
-        elif pcapLoadingMethod == 'quick':
+        elif self.pcapLoadingMethod == 'quick':
             endCounter = 2
             print('pcap loading method: quick')    
         
@@ -955,30 +957,22 @@ class pcapng_reader_PreAlloc():
         numOfReadoutsInPackets = (packetsSizes - self.headerSize)/self.singleReadoutSize  #in principle this is 447 for every packet
         
         
-        if pcapLoadingMethod == 'allocate':
+        if self.pcapLoadingMethod == 'allocate':
             # #  if negative there was a non ESS packetso length < 72bytes 
             # #  and if much bigger wee anyhowallocate morethan needed and remove zeros aftyerwards at the end 
             numOfReadoutsTotal = np.sum(numOfReadoutsInPackets[ numOfReadoutsInPackets >= 0])
         
-        elif pcapLoadingMethod == 'quick':
+        elif self.pcapLoadingMethod == 'quick':
             numOfReadoutsTotal  = self.fileSize/self.singleReadoutSize
+            # need to initialize the counters even if the are quite off, but it gives an upper limit then will be overwritten after read  
             self.counterCandidatePackets = int(round(numOfReadoutsTotal))
+            self.counterPackets          = self.counterCandidatePackets
      
         self.preallocLength = int(round(numOfReadoutsTotal))
         self.dprint('preallocLength {}'.format(self.preallocLength))
         
         ff.close()
-        
-
-        # # quick and drity just file size divided by the single readout is an approx for excess of the readouts, they will be removed afterwards 
-        # numOfReadoutsTotal = self.fileSize/self.singleReadoutSize
-        # self.preallocLength = int(round(numOfReadoutsTotal))
-        # self.dprint('preallocLength {}'.format(self.preallocLength))
-        
-        # self.counterCandidatePackets = numOfReadoutsTotal
-        
-        # print(numOfReadoutsTotal)
-        
+                
         
     def read(self):   
         
@@ -1064,8 +1058,17 @@ class pcapng_reader_PreAlloc():
         self.timeAdjustedWithResolution()
         
         ############
+
         
-        print('\ndata loaded - found {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {})'.format(self.totalReadoutCount, self.counterPackets,self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))    
+        # we overwrite the excess estimate of packets by the right amount 
+        if self.pcapLoadingMethod == 'quick':
+           self.counterCandidatePackets = self.counterValidESSpackets  +  self.counterNonESSpackets  
+           self.counterPackets          = self.counterCandidatePackets 
+                
+        
+        # print('\ndata loaded - found {} readouts - Packets: all {} (candidates {}) --> valid ESS {} (of which empty {}), nonESS {}'.format(self.totalReadoutCount, self.counterPackets,self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))    
+
+        print('\ndata loaded - found {} readouts - Packets: all {} --> valid ESS {} (of which empty {}), nonESS {}'.format(self.totalReadoutCount, self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))    
 
         ############
         
