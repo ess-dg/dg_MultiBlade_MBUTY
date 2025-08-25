@@ -9,7 +9,8 @@ Created on Fri Sep  3 11:34:33 2021
 import numpy as np
 import os
 import sys
-import pkg_resources
+# import pkg_resources
+import importlib.metadata
 import time
 from lib import libEventsSoftThresholds as thre
 from lib import libMapping as maps
@@ -36,7 +37,9 @@ class checkPackageInstallation():
     
     def __init__(self):
     
-        self.installed = {pkg.key for pkg in pkg_resources.working_set}
+        # self.installed = {pkg.key for pkg in pkg_resources.working_set}
+        
+        self.installed = {dist.name for dist in importlib.metadata.distributions()}
         
     def checkPackagePcap(self):
  
