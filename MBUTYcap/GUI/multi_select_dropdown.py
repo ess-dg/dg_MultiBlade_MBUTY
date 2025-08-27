@@ -54,7 +54,13 @@ class MultiSelectDropDown:
             default (list[str], optional): List of initially selected items. Defaults to None.
             info_text (str, optional): Tooltip text for the label. Defaults to None.
         """
-        self.options = sorted(options, key=str.lower)
+        ###################
+        # make this true to sort filenames Z to A, instead false A -> Z 
+        self.rev = False
+        #################### 
+        
+        
+        self.options = sorted(options, key=str.lower, reverse=self.rev)
         self.selected = set(default) if default else set()
         self.filtered_options = self.options[:]
         self.parent = parent
@@ -149,7 +155,7 @@ class MultiSelectDropDown:
 
                 if path and os.path.isdir(path):
                     updated_files = [f for f in os.listdir(path) if f.endswith(file_filter)]
-                    self.options = sorted(updated_files, key=str.lower)
+                    self.options = sorted(updated_files, key=str.lower, reverse=self.rev)
                     self.filtered_options = self.options
                 else:
                     self.options = []
@@ -381,7 +387,7 @@ class MultiSelectDropDown:
             except tk.TclError:
                 pass
 
-            for item in sorted(list(self.selected),key=str.lower):
+            for item in sorted(list(self.selected),key=str.lower, reverse=self.rev):
                 tag = tk.Frame(self.tags_frame, bd=1, relief="ridge", padx=2, pady=1)
                 tk.Label(tag, text=item, font=self.tag_label_font,
                          wraplength=FIXED_INPUT_WIDTH - 40, justify="left").pack(side=tk.LEFT)
@@ -447,7 +453,7 @@ class MultiSelectDropDown:
         Args:
             new_options (list[str]): The new list of options to set.
         """
-        self.options = sorted(new_options, key=str.lower)
+        self.options = sorted(new_options, key=str.lower, reverse=self.rev)
         self.selected = {item for item in self.selected if item in new_options}
 
         typed_text = self.entry_var.get().strip().lower()
