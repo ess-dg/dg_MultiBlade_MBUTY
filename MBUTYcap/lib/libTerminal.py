@@ -359,6 +359,7 @@ class dumpToPcapngUtil():
         # command1 = self.pathToTshark+'tshark'+' -i '+str(self.interface)
         
         # capture only UDP packets 
+        # command1 = 'sudo ' + os.path.join(self.pathToTshark,'tshark')+' -i '+str(self.interface) + ' -f "udp"'
         command1 = os.path.join(self.pathToTshark,'tshark')+' -i '+str(self.interface) + ' -f "udp"'
 
         nowTime = datetime.now()

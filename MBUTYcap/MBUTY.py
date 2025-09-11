@@ -584,7 +584,7 @@ if __name__ == '__main__':
     # parameters.acqMode = 'pcap-local'
     # parameters.acqMode = 'pcap-local-overwrite'
     # parameters.acqMode = 'kafka'
-    parameters.acqMode = 'off'
+    # parameters.acqMode = 'off'
 
     ###  then check parameters.fileManagement.openMode = 'window' for the open mode ...
     ###############################################################################
@@ -619,7 +619,7 @@ if __name__ == '__main__':
 
     parameters.fileManagement.sourcePath = 'essdaq@172.30.244.50:/home/essdaq/pcaps/'
     # parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
-    parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/dataVMM"
+    parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/dataVMM/"
 
     ###############
 
