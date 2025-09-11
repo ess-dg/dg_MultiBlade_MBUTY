@@ -742,7 +742,8 @@ class MBUTY_GUI_App:
         header.grid_columnconfigure(2, weight=1) # Right logo column
 
         # === Left Logo ===
-        left_logo_path = os.path.join("GUI", "logos", "DetGlogo.png")
+        currentPath = os.path.abspath(os.path.dirname(__file__))
+        left_logo_path = os.path.join(currentPath,"GUI", "logos", "DetGlogo.png")
         if os.path.isfile(left_logo_path):
             try:
                 img = Image.open(left_logo_path)
@@ -773,7 +774,7 @@ class MBUTY_GUI_App:
             "style": ("bold",) # Font style
         })
         # === Right Logo ===
-        right_logo_path = os.path.join("GUI", "logos", "MBlogo.png")
+        right_logo_path = os.path.join(currentPath,"GUI", "logos", "MBlogo.png")
         if os.path.isfile(right_logo_path):
             try:
                 img = Image.open(right_logo_path)
