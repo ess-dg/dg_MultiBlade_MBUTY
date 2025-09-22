@@ -283,9 +283,8 @@ class readouts():
             meanDelta         = np.mean(deltaTimeNoTZero)/1e9
             varianceDelta     = np.var(deltaTimeNoTZero)/1e9
             meanFreq          = 1/meanDelta
-            
-            
-            # this extract timing from all packets, also empty -> heartbeats 
+                
+            # this extracts timing from all packets, also empty -> heartbeats 
             indexesIsNotZero2  = np.argwhere(self.heartbeats>0)
             heartbeats2        = self.heartbeats[indexesIsNotZero2]
             heartbeatsUnique   = np.unique(heartbeats2)
@@ -296,15 +295,15 @@ class readouts():
             meanDelta2         = np.mean(deltaTimeNoTZero3)/1e9
             varianceDelta2     = np.var(deltaTimeNoTZero3)/1e9
             meanFreq2          = 1/meanDelta2
-
+            
             if np.isnan(meanDelta):
                 print('\nNo Chopper found or all data is in one single Pulse Time')
             else:
-                print('\nHeartbeats Period     (all packets)       is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta2,varianceDelta2,meanFreq2)))
-                print('Timing/Chopper Period (not empty packets) is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((meanDelta,varianceDelta,meanFreq)))
+                print('\nHeartbeats Period     (all unique packets: %d)       is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((len(deltaTimeNoTZero3)+1,meanDelta2,varianceDelta2,meanFreq2)))
+                print('Timing/Chopper Period (not empty unique packets: %d) is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((len(deltaTimeNoTZero)+1,meanDelta,varianceDelta,meanFreq)))
                        
         except:
-
+    
             print('\t \033[1;33mWARNING: Unable to calculate timing/chopper frequency! \033[1;37m')
             time.sleep(2)
     
