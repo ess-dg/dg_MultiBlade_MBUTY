@@ -61,6 +61,11 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--interface", help = "interface from which capture packets", type = str, default = "ens2")
     parser.add_argument("-t", "--tshark", help = "path where tshark is located", type = str, default = "/usr/sbin/")
     parser.add_argument("-e", "--destination", help = "path where to save recorded pcapng files", type = str, default = "/home/essdaq/pcaps/")
+    
+    # # # # ARGS for ESTIA 
+    # parser.add_argument("-i", "--interface", help = "interface from which capture packets", type = str, default = "ens2np0")
+    # parser.add_argument("-t", "--tshark", help = "path where tshark is located", type = str, default = "/usr/sbin/")
+    # parser.add_argument("-e", "--destination", help = "path where to save recorded pcapng files", type = str, default = "/opt/mb_tools/pcaps/")
 
     # #  ARGS for EFU  JADAQ
     # parser.add_argument("-i", "--interface", help = "interface from which capture packets", type = str, default = "em2")
