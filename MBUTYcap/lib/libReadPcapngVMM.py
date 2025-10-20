@@ -350,10 +350,10 @@ class readouts():
 class checkInstrumentID():
     def __init__(self, ID):
         
-        self.FREIAID   = 72
-        self.ESTIAID   = 76
-        self.AMORID    = 78
-        self.TBLVMMID  = 73
+        self.FREIAID   = 72     #0x48
+        self.ESTIAID   = 76     #0x4c
+        self.AMORID    = 78     #0x4e
+        self.TBLVMMID  = 73     #0x49
         
         self.LOKIID      = 48
         self.BMID        = 16

@@ -5,7 +5,7 @@ import re
 import sys
 
 try:
-        args = ['./MBUTY_DUMP.py', '-i', 'en0', '-f', 'test.pcapng', '-n', '1', '-e', '/Users/dpfeiffe/programming/dg_MultiBlade_MBUTY/MBUTYcap/', '-t', '/usr/local/bin/tshark', '-s','10']
+        args = ['./MBUTYdump.py', '-i', 'en0', '-f', 'test.pcapng', '-n', '1', '-e', '/Users/francescopiscitelli/programming/dg_MultiBlade_MBUTY/MBUTYcap/', '-t', '/usr/local/bin/tshark', '-s','10']
         subprocess.call(args)
 
 #(base) pingunix:MBUTYcap dpfeiffe$ ./MBUTY_DUMP.py -h
