@@ -19,8 +19,9 @@ PyQt5
 h5py
 
 
-NOTE: 
+NOTES: 
 
+-----
 In /lib/libTerminal.py -> class dumpToPcapngutil -> function dump 
 Comment/uncomment 
 
@@ -29,8 +30,20 @@ command1 = os.path.join(self.pathToTshark,'tshark')+' -i '+str(self.interface) +
 
 If sudo is ended. 
 
+-----
 
 In /GUI/multi_select_dropdown.py -> class MultiSelectDropDown -> init 
 
 # make this true to sort filenames Z to A, instead false A -> Z 
 self.rev = False
+
+-----
+For same OS you need to change the method:
+In /lib/libParameters.py -> class checkPackageInstallation -> function init
+
+# self.installed = {pkg.key for pkg in pkg_resources.working_set}
+self.installed = {dist.name for dist in importlib.metadata.distributions()}
+
+And import
+# import pkg_resources
+import importlib.metadata
