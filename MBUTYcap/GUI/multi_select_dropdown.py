@@ -57,6 +57,7 @@ class MultiSelectDropDown:
         ###################
         # make this true to sort filenames Z to A, instead false A -> Z 
         self.rev = False
+        # self.rev =  reverse
         #################### 
         
         

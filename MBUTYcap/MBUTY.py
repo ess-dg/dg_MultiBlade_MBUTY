@@ -584,7 +584,7 @@ if __name__ == '__main__':
     # parameters.acqMode = 'pcap-local'
     # parameters.acqMode = 'pcap-local-overwrite'
     # parameters.acqMode = 'kafka'
-    # parameters.acqMode = 'off'
+    parameters.acqMode = 'off'
 
     ###  then check parameters.fileManagement.openMode = 'window' for the open mode ...
     ###############################################################################

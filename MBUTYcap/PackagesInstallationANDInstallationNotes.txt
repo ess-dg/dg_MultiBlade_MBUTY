@@ -4,6 +4,8 @@ Install pacing package in anaconda
 Python >=3.9 
 pip install python-pcapng
 
+NOTE: must be the python installation you use to run the scripts, e.g. /opt/anaconda3/bin/python -m pip install python-pcapng 
+
 For Kafka streamer is needed:
 
 pip install flatbuffers
