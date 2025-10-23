@@ -55,9 +55,9 @@ class MultiSelectDropDown:
             info_text (str, optional): Tooltip text for the label. Defaults to None.
         """
         ###################
-        # make this true to sort filenames Z to A, instead false A -> Z 
-        self.rev = False
-        # self.rev =  reverse
+        # make this True to sort filenames Z to A, instead False A -> Z 
+        self.rev = True    # Z -> A 
+        # self.rev = False # A -> Z 
         #################### 
         
         

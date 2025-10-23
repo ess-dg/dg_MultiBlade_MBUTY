@@ -49,3 +49,6 @@ self.installed = {dist.name for dist in importlib.metadata.distributions()}
 And import
 # import pkg_resources
 import importlib.metadata
+
+-----
+For changing default values in the GUI change values in GUI/gui_config.py

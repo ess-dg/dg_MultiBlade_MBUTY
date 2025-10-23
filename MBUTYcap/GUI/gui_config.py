@@ -193,7 +193,7 @@ config = {
         "parameters.dumpSettings.interface": {
             "label": "Network Interface",
             "type": "entry",
-            "default": "ens2",
+            "default": "ens2np0",
             "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite"]),
             "info": "Used for acqMode = pcap-local, pcap-local-overwrite, or kafka",
             "set": lambda val: setattr(parameters.dumpSettings, 'interface', val)
@@ -261,7 +261,8 @@ config = {
         "parameters.fileManagement.destPath": {
             "label": "Destination Path",
             "type": "filePath",
-            "default": os.path.join(currentPath, 'data'),
+            # "default": os.path.join(currentPath, 'data'),
+            "default": '',
             "mustExist": False,
             "info": "Local destination path to rsync to. Relevant for acqMode = pcap-sync",
             "dependsOn": ("parameters.acqMode", "pcap-sync"),
@@ -285,6 +286,7 @@ config = {
             "type": "filePath",
             "mustExist": True,
             "default": os.path.join(currentPath, 'data'),
+            # "default": '/opt/mb_tools/pcaps/',
             "info": "Path to the folder containing data files. Relevant for acqMode = off, pcap-sync, and pcap-local",
             "dependsOn": {
                 "or": [
@@ -303,7 +305,8 @@ config = {
             "label": "Data Folder Path",
             "type": "filePath",
             "mustExist": False,
-            "default": os.path.join(currentPath, 'data'),
+            # "default": os.path.join(currentPath, 'data'),
+            "default": '/opt/mb_tools/pcaps/',
             "info": "Path to the folder containing data files. Relevant for acqMode = off, pcap-sync, and pcap-local",
             "dependsOn": ("parameters.acqMode","pcap-local"),
             "set": lambda val: setattr(parameters.fileManagement, 'filePath', val)
@@ -345,7 +348,7 @@ config = {
         "parameters.fileManagement.fileSerials": { 
             "label": "File Serials",
             "type": "entry",
-            "default": "18,27",
+            "default": "0,1,2,65,68-73",
             "inputValidation": "fileNumbers",
             "info": "Used when openMode is 'sequence' to indicate file serial numbers of files to be opened. Accepts comma separated lists and ranges e.g 5-10,15,17 ",  
             "dependsOn": ("parameters.fileManagement.openMode", "sequence"),
