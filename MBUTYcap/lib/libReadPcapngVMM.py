@@ -1193,14 +1193,14 @@ class pcapng_reader_PreAlloc():
 
            #   give a warning if not 72 or 74,  check that ESS cookie is always in the same place
            if indexDataStart != self.headerSize:
-               print('\n \033[1;33mWARNING ---> ESS cookie is not in position! Data does not start at byte 72 or 74 or 42 or 44! \033[1;37m')
+               print('\n \033[1;33mWARNING ---> ESS cookie is not in position! Data does not start at byte 72 or 74 or 42 or 44! ... \033[1;37m')
                
                if (indexDataStart == self.headerSize + ICMPbyteExtraLength):
                    # this is the case where the packet is sent instead of UDP but as a ping from RMM ICMP message -> need to skip this package 
-                   print(' \033[1;33mWARNING ---> ICMP packet found in data -> skipping packet. \033[1;37m')
+                   print(' \033[1;33m    ... ---> ICMP packet found in data -> skipping packet. \033[1;37m')
                    ICMPflag = True
                else:
-                   print(' \033[1;31mWARNING ---> this packet is not a ICMP packet that can be skipped, DATA MIGHT BE CORRUPTED. \033[1;37m')
+                   print(' \033[1;31m    ... ---> this packet is not a ICMP packet that can be skipped, DATA MIGHT BE CORRUPTED. \033[1;37m')
                    time.sleep(2)
                
            # ##########################################

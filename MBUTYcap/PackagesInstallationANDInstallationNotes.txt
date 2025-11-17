@@ -40,7 +40,7 @@ In /GUI/multi_select_dropdown.py -> class MultiSelectDropDown -> init
 self.rev = False
 
 -----
-For same OS you need to change the method:
+For some OS you need to change the method:
 In /lib/libParameters.py -> class checkPackageInstallation -> function init
 
 # self.installed = {pkg.key for pkg in pkg_resources.working_set}
