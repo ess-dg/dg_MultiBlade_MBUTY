@@ -385,9 +385,11 @@ class checkInstrumentID():
 class checkTimeSrc():
     def __init__(self, timeSourceBytes):
         
-      # print('timeSRC: {0:b}',bin(timeSourceBytes)  )
+        # NOTE for now upper 4 bits unused 
+        
+        # print('timeSrc: {} {} {}'.format(timeSourceBytes,hex(timeSourceBytes),bin(timeSourceBytes)  ))
       
-      # timeSourceBytes = int.from_bytes(timeSourceBytes, byteorder='little') # bytes 
+        # timeSourceBytes = int.from_bytes(timeSourceBytes, byteorder='little') # bytes 
       
       bit0 = (timeSourceBytes & 0x1) 
       bit1 = (timeSourceBytes & 0x2) >> 1
