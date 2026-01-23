@@ -41,11 +41,15 @@ class checkPackageInstallation():
         
         self.installed = {dist.name for dist in importlib.metadata.distributions()}
         
+        self.normalizedInstalled = {name.lower().replace('_', '-') for name in self.installed}
+        
     def checkPackagePcap(self):
  
            required = {'python-pcapng'}
            
-           missing = required - self.installed
+           normalizedRequired = {name.lower().replace('_', '-') for name in required}
+           
+           missing = normalizedRequired - self.normalizedInstalled
            
            if missing: 
                
@@ -60,7 +64,9 @@ class checkPackageInstallation():
          
          required = {'flatbuffers','configargparse','confluent-kafka'}
          
-         missing = required - self.installed
+         normalizedRequired = {name.lower().replace('_', '-') for name in required}
+         
+         missing = normalizedRequired - self.normalizedInstalled
         
          if missing:
              
@@ -75,6 +81,7 @@ class checkPackageInstallation():
              print('------------------------------------------------------------- \n')
              
              sys.exit()
+             
              
          return flag     
            

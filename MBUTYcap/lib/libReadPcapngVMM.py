@@ -16,6 +16,8 @@ import time
 import sys
 # from lib import libPlotting as plo
 
+import ipaddress
+
 
 ###############################################################################
 ###############################################################################
@@ -419,11 +421,36 @@ class checkTimeSrc():
       print("checking time source --> source: {}, internal sync source: {}, sync method: {}, status: {}".format(src,iss,sm,status))
       # return tsrc
   
+    
+class checkIP():
+    def __init__(self, IPBytes):
+        
+ 
+            IPlen   = 20
+            # portLen = 8
+            
+            indexIPstart = IPlen-8
+
+            IPSourcebytes  = int.from_bytes(IPBytes[indexIPstart:indexIPstart+4], byteorder='big') 
+            IPDestbytes    = int.from_bytes(IPBytes[indexIPstart+4:indexIPstart+8], byteorder='big') 
+            
+            
+            IPSource = ipaddress.IPv4Address(IPSourcebytes)
+            IPDest   = ipaddress.IPv4Address(IPDestbytes)
+            
+            indexUDPstart = IPlen
+               
+            portSource  = int.from_bytes(IPBytes[indexUDPstart:indexUDPstart+2], byteorder='big') 
+            portDest    = int.from_bytes(IPBytes[indexUDPstart+2:indexUDPstart+4], byteorder='big') 
+            
+       
+            print("checking IP (ports)  --> source: {} ({}), dest: {} ({})".format(IPSource,portSource,IPDest,portDest))
+
         
 #################################################  
 
 class  checkWhich_RingFenHybrid_InFile():
-    def __init__(self, filePathAndFileName,NSperClockTick):
+    def __init__(self, filePathAndFileName, NSperClockTick):
                 
         pcap = pcapng_reader(filePathAndFileName, NSperClockTick, timeResolutionType = 'coarse', sortByTimeStampsONOFF = False)
         self.readouts = pcap.readouts
@@ -777,6 +804,7 @@ class pcapng_reader_PreAlloc():
         self.MONTTLtype          = MONTTLtype
         self.MONring             = MONring
         self.timeResolutionType  = timeResolutionType
+        self.kafkaStream         = kafkaStream
 
         # print('----->>>'+(self.timeResolutionType))
         
@@ -794,7 +822,7 @@ class pcapng_reader_PreAlloc():
         
         ##########################################################
         
-        if kafkaStream is False:
+        if self.kafkaStream is False:
             self.filePathAndFileName = filePathAndFileName
             
             checkIfFileExistInFolder(self.filePathAndFileName)
@@ -1183,6 +1211,10 @@ class pcapng_reader_PreAlloc():
            self.counterValidESSpackets += 1
            
            if self.counterValidESSpackets == 1:
+               
+               if self.kafkaStream is False:
+                   checkIP(packetData[indexESS-2-8-20:indexESS-2])
+                   
                checkTimeSrc(packetData[indexESS+7])
                checkInstrumentID(packetData[indexESS+3])
                
