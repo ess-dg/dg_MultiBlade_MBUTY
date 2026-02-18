@@ -370,22 +370,21 @@ class checkInstrumentID():
         
         # BM always 20 bytes 
    
-        match ID:
-            case (self.FREIAID | self.ESTIAID | self.AMORID | self.TBLVMMID | self.NMXID | self.TREXID):
-                self.bytesPerReadout = 20
-                self.InstrType       = 'VMM' 
-            case self.LOKIID:
-                self.bytesPerReadout = 24
-                self.InstrType       = 'R5560bis' 
-            case (self.BIFROSTID | self.CSPECID | self.MIRACLESID):
-                    self.bytesPerReadout = 24
-                    self.InstrType       = 'R5560' 
-            case self.BMID: 
-                self.bytesPerReadout = 20
-                self.InstrType       = 'BM' 
-            case _:
-                self.bytesPerReadout = 20
-                self.InstrType       = None
+        if ID in (self.FREIAID, self.ESTIAID, self.AMORID, self.TBLVMMID, self.NMXID, self.TREXID):
+            self.bytesPerReadout = 20
+            self.InstrType = 'VMM'
+        elif ID == self.LOKIID:
+            self.bytesPerReadout = 24
+            self.InstrType = 'R5560bis'
+        elif ID in (self.BIFROSTID, self.CSPECID, self.MIRACLESID):
+            self.bytesPerReadout = 24
+            self.InstrType = 'R5560'
+        elif ID == self.BMID:
+            self.bytesPerReadout = 20
+            self.InstrType = 'BM'
+        else:
+            self.bytesPerReadout = 20
+            self.InstrType = None
         
         return self.bytesPerReadout, self.InstrType
       
