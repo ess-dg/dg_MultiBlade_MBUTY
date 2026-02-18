@@ -67,9 +67,10 @@ class checkReadoutsClass():
         
 class plottingReadouts():
    
-    def __init__(self, readouts, config, outOfBounds = True):
+    def __init__(self, readouts, parameters, outOfBounds = True):
     
-        self.config      = config
+        self.parameters  = parameters
+        self.config      = parameters.config
         self.outOfBounds = outOfBounds
         
         checkke = checkReadoutsClass(readouts)
@@ -103,7 +104,7 @@ class plottingReadouts():
         if self.flag is True:
             sel = self.selectHybridFromCassetteID(cassette1ID)
             
-            # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],parameters.config.DETparameters.numOfWires)
+            # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.config.DETparameters.numOfWires)
             
             if self.config.DETparameters.operationMode == 'normal':
                 asic0  = self.readouts.ASIC == 0
@@ -265,13 +266,12 @@ class plottingReadouts():
         
 class plottingHits():
    
-    def __init__(self, hits, parameters,outOfBounds = True):
+    def __init__(self, hits, parameters, outOfBounds = True):
         
         self.hits = hits
-        
+        self.parameters  = parameters
+        self.config      = parameters.config
         self.outOfBounds = outOfBounds 
-        
-        self.parameters = parameters
         
         self.xbins = np.linspace(0,63,64)
         
@@ -279,15 +279,15 @@ class plottingHits():
         
         cass = self.hits.Cassette == cassette1ID
         
-        if self.parameters.config.DETparameters.operationMode == 'normal':
+        if self.config.DETparameters.operationMode == 'normal':
             wires  = self.hits.WorS == 0
             strips = self.hits.WorS == 1
-            wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.parameters.config.DETparameters.numOfWires)
+            wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.config.DETparameters.numOfWires)
             self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
             self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
             
-        elif self.parameters.config.DETparameters.operationMode == 'clustered':
-            wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.parameters.config.DETparameters.numOfWires)
+        elif self.config.DETparameters.operationMode == 'clustered':
+            wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.config.DETparameters.numOfWires)
             self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
             self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass])
         
@@ -314,11 +314,11 @@ class plottingHits():
              
         sel = self.hits.Cassette == cassette1ID
         
-        if self.parameters.config.DETparameters.operationMode == 'normal':
+        if self.config.DETparameters.operationMode == 'normal':
             isWire   = self.hits.WorS == 0
             isStrip  = self.hits.WorS == 1
             
-            # wireCh0to31 = np.mod(self.hits.WiresStrips[sel & isWire],self.parameters.config.DETparameters.numOfWires)
+            # wireCh0to31 = np.mod(self.hits.WiresStrips[sel & isWire],self.config.DETparameters.numOfWires)
             
             self.timeStampW = self.hits.timeStamp[sel] * isWire[sel]
             self.timeStampS = self.hits.timeStamp[sel] * isStrip[sel]
@@ -326,7 +326,7 @@ class plottingHits():
             # self.timeStampW[self.timeStampW == 0] = np.ma.masked # same as np.nan for int64 instead of floats   
             # self.timeStampS[self.timeStampS == 0] = np.ma.masked # same as np.nan for int64 instead of floats
  
-        elif self.parameters.config.DETparameters.operationMode == 'clustered':
+        elif self.config.DETparameters.operationMode == 'clustered':
             
             self.timeStampW = self.hits.timeStamp[sel] 
             self.timeStampS = self.hits.timeStamp[sel] 
@@ -341,17 +341,17 @@ class plottingHits():
         
         sel = self.hits.Cassette == cassette1ID
         
-        if self.parameters.config.DETparameters.operationMode == 'normal':
+        if self.config.DETparameters.operationMode == 'normal':
             isWire   = self.hits.WorS == 0
             isStrip  = self.hits.WorS == 1
             
-            wireCh0to31 = np.mod(self.hits.WiresStrips,self.parameters.config.DETparameters.numOfWires) 
+            wireCh0to31 = np.mod(self.hits.WiresStrips,self.config.DETparameters.numOfWires) 
             
             self.WireCh  = np.round((wireCh0to31[sel]+10) * isWire[sel])
             self.StripCh = np.round((self.hits.WiresStrips[sel]+20) * isStrip[sel])
    
-        elif self.parameters.config.DETparameters.operationMode == 'clustered':
-            wireCh0to31 = np.mod(self.hits.WiresStrips1,self.parameters.config.DETparameters.numOfWires) 
+        elif self.config.DETparameters.operationMode == 'clustered':
+            wireCh0to31 = np.mod(self.hits.WiresStrips1,self.config.DETparameters.numOfWires) 
             
             self.WireCh  = np.round((wireCh0to31[sel]+10))
             self.StripCh = np.round((self.hits.WiresStrips[sel]+20))
@@ -360,7 +360,7 @@ class plottingHits():
         self.StripCh[self.StripCh == 0] = np.ma.masked # same as np.nan for int64 instead of floats
         
         self.WireCh  = self.WireCh   - 10
-        self.StripCh = self.StripCh  - 20 + self.parameters.config.DETparameters.numOfWires
+        self.StripCh = self.StripCh  - 20 + self.config.DETparameters.numOfWires
         
     def plotTimeStamps(self,cassetteIDs):
         
@@ -441,18 +441,13 @@ class checkEventsClass():
         
 class plottingEvents():
     
-    def __init__(self, events, allAxis, coincidenceWS_ONOFF, outOfBounds = True):
+    def __init__(self, events, parameters, allAxis, coincidenceWS_ONOFF, outOfBounds = True):
         
-        # self.Ncass = Ncass
-        
-        # self.events  = events
-        self.allAxis = allAxis
-        
-        self.outOfBounds = outOfBounds 
-        
-        # self.selectCoinc = events.positionS >= -2
-        
+        self.parameters  = parameters
+        self.config      = parameters.config
+        self.allAxis     = allAxis
         self.coincidenceWS_ONOFF = coincidenceWS_ONOFF
+        self.outOfBounds = outOfBounds 
         
         checkke = checkEventsClass(events)
         self.events = checkke.events
@@ -740,7 +735,7 @@ class plottingEvents():
                 plt.colorbar(pos1,ax=self.plotMult.axHandle[1][k])
        
 
-    def plotPHS(self, cassetteIDs, parameters, logScale = False):
+    def plotPHS(self, cassetteIDs, logScale = False):
         
         if self.flag is True:
         
@@ -750,13 +745,13 @@ class plottingEvents():
             
             self.plotPHS.figHandle.suptitle('Pulse Heigth Spectra')
             
-            wireCh0to31Round = np.round(np.mod(self.events.positionW,parameters.config.DETparameters.numOfWires))
+            wireCh0to31Round = np.round(np.mod(self.events.positionW,self.config.DETparameters.numOfWires))
                     
             stripChRound     = np.round(self.events.positionS)
             
-            wireAx  = np.linspace(0,parameters.config.DETparameters.numOfWires-1, parameters.config.DETparameters.numOfWires)
+            wireAx  = np.linspace(0,self.config.DETparameters.numOfWires-1, self.config.DETparameters.numOfWires)
             
-            stripAx = np.linspace(0,parameters.config.DETparameters.numOfStrips-1, parameters.config.DETparameters.numOfStrips)
+            stripAx = np.linspace(0,self.config.DETparameters.numOfStrips-1, self.config.DETparameters.numOfStrips)
             
             for k, cass in enumerate(cassetteIDs):
        

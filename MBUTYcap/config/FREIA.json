@@ -1,5 +1,7 @@
 {
-	"Detector": "MB.FREIA",
+	"DetectorName": "MB.FREIA",
+	
+	"DetectorType": "MB",	
 	
     "operationMode" : "normal",
 

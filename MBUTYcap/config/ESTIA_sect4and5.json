@@ -1,5 +1,7 @@
 {
-	"Detector": "MB.ESTIA.sect4and5",
+	"DetectorName": "MB.ESTIA.sect4and5",
+	
+	"DetectorType": "MB",	
 	
 	"operationMode" : "normal",
 

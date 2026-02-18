@@ -17,6 +17,8 @@ import re
 # matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 
+import importlib
+
 # import matplotlib
 # matplotlib.use(‘Qt5Agg’)
 # from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QGridLayout, QLabel, QLineEdit
@@ -25,17 +27,25 @@ import matplotlib.pyplot as plt
 ### import the library with all specific functions that this code uses 
 from lib import libReadPcapng as pcapr
 from lib import libSampleData as sdat
-from lib import libMapping as maps
 from lib import libCluster as clu
-from lib import libAbsUnitsAndLambda as absu
-from lib import libHistograms as hh
+# from lib import libHistograms as hh
 from lib import libFileManagmentUtil as fd
 from lib import libParameters as para
 from lib import libTerminal as ta
-from lib import libPlotting as plo
 from lib import libEventsSoftThresholds as thre
 from lib import libReducedFileH5 as saveH5
 from lib import libVMMcalibration as cal 
+
+# from lib import libAbsUnitsAndLambda as absu
+from lib import libMapping as maps
+# from lib import libMappingMON as mapsMON
+# from lib import libPlotting as plo
+
+
+DETECTOR_LIB_MAP = {
+    'MB': {'units': 'libAbsUnitsAndLambda', 'map': 'libMapping', 'plot': 'libPlotting', 'hh': 'libHistograms'},
+    'MG': {'units': 'libAbsUnitsAndLambdaMG', 'map': 'libMappingMG', 'plot': 'libPlottingMG', 'hh': 'libHistogramsMG'}
+}
 
 ###############################################################################
 ###############################################################################
@@ -109,7 +119,7 @@ class MBUTYmain():
         #         self.parameters.wavelength.calculateLambda = True
         #         print('\nLambda calculation turned ON to plot Lambda')
                 
-        if self.parameters.wavelength.calculateLambda == False:
+        if self.parameters.wavelength.calculateLambda  == False:
              self.parameters.wavelength.plotXLambda     = False
              self.parameters.wavelength.plotLambdaDistr = False
              
@@ -117,14 +127,29 @@ class MBUTYmain():
         ###############################################################################
         self.parameters.set_acqMode(self.parameters.acqMode)
         ### read json and create parameters for plotting and analisys ###
-        config = maps.read_json_config(os.path.join(self.parameters.fileManagement.configFilePath , self.parameters.fileManagement.configFileName))
+        config = maps.read_json_config(os.path.join(self.parameters.fileManagement.configFilePath , self.parameters.fileManagement.configFileName),printFlag = False)
+
+        det_type = config.DETparameters.type
+        if det_type in DETECTOR_LIB_MAP:
+            libs = DETECTOR_LIB_MAP[det_type]
+            # Dynamic imports
+            self.absu = importlib.import_module(f"lib.{libs['units']}")
+            self.maps = importlib.import_module(f"lib.{libs['map']}")
+            self.plo  = importlib.import_module(f"lib.{libs['plot']}")
+            self.hh   = importlib.import_module(f"lib.{libs['hh']}")
+        else:
+            print('\n \033[1;31m---> Error in config File: detector type {} not supported (MB or MG only) \033[1;37m'.format(det_type),end='')
+            sys.exit()
+
+        config = self.maps.read_json_config(os.path.join(self.parameters.fileManagement.configFilePath , self.parameters.fileManagement.configFileName))
         self.parameters.loadConfigAndUpdate(config)
+        
         # self.parameters.update()
         ###############################################################################
         ###############################################################################
         ### create axes for plotting and histograms 
         
-        self.allAxis = hh.allAxis()
+        self.allAxis = self.hh.allAxis()
         self.allAxis.createAllAxis(self.parameters)
         
         ### here eventually edit axes 
@@ -180,7 +205,7 @@ class MBUTYmain():
                 self.readouts.append(pcap.readouts)
                 
         elif self.parameters.acqMode == 'kafka':
-            testing = True
+            testing = False
             pcap = self.kaf.kafka_reader(self.parameters.clockTicks.NSperClockTick, nOfPackets = self.parameters.kafkaSettings.numOfPackets, \
             broker = self.parameters.kafkaSettings.broker, topic = self.parameters.kafkaSettings.topic, MONtype = self.parameters.config.MONmap.type , MONring = self.parameters.config.MONmap.RingID, \
             timeResolutionType =self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF=self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
@@ -220,7 +245,7 @@ class MBUTYmain():
                
             ########################################################################### 
             
-            md  = maps.mapDetector(self.readouts, self.parameters.config)
+            md  = self.maps.mapDetector(self.readouts, self.parameters.config)
             md.mappAllCassAndChannelsGlob()
             self.hits = md.hits
             # hitsArray  = hits.concatenateHitsInArrayForDebug()
@@ -229,7 +254,7 @@ class MBUTYmain():
             ####################
             ### getting the hits for the MONitor
             if self.parameters.MONitor.MONOnOff is True:
-                self.MON = maps.mapMonitor(self.readouts, self.parameters.config)
+                self.MON = self.maps.mapMonitor(self.readouts, self.parameters.config)
                 if self.MON.flagMONfound is True:
                     self.hitsMON = self.MON.hits
                     
@@ -241,7 +266,7 @@ class MBUTYmain():
                     ### MON thresholds
                     # 
                     
-                    abMON = absu.calculateAbsUnits(self.eventsMON, self.parameters, 'MON')
+                    abMON = self.absu.calculateAbsUnits(self.eventsMON, self.parameters, 'MON')
                     abMON.calculateToF(self.parameters.plotting.removeInvalidToFs)
                     
                     print('\033[1;32m\t MON events: {}\033[1;37m'.format(self.eventsMON.Nevents[0]))
@@ -263,7 +288,7 @@ class MBUTYmain():
             
             ###############################################################################
             ### map data
-            # md  = maps.mapDetector(readouts, self.parameters.config)
+            # md  = self.maps.mapDetector(readouts, self.parameters.config)
             # md.mappAllCassAndChannelsGlob()
             # hits = md.hits
             
@@ -318,7 +343,7 @@ class MBUTYmain():
             ###############################################################################
             ### calculate abs units, ToF and lambda
             
-            ab = absu.calculateAbsUnits(self.events, self.parameters)
+            ab = self.absu.calculateAbsUnits(self.events, self.parameters)
             ab.calculatePositionAbsUnit()
             
             ab.calculateToF(self.parameters.plotting.removeInvalidToFs)
@@ -380,7 +405,7 @@ class MBUTYmain():
                     
         #  like this all ToFs get into reduced file, the gate is only in plotting 
             if self.parameters.plotting.ToFGate is True:
-                abb = absu.gateToF(self.events,self.parameters.plotting.ToFGateRange)
+                abb = self.absu.gateToF(self.events,self.parameters.plotting.ToFGateRange)
                 self.events = abb.events 
                 
         if self.runFromGui:       
@@ -416,7 +441,7 @@ class MBUTYmain():
             stop  = (loop+1)*self.parameters.plottingInSectionsBlocks
             
             if self.parameters.plottingInSections is True:
-                self.parameters.config  = maps.extractPartialConfig.extract(fullConfig,start,stop)
+                self.parameters.config  = self.maps.extractPartialConfig.extract(fullConfig,start,stop)
                 print('\033[1;36m \t Plotting Cassettes from {} to {} \033[1;37m'.format(start,stop-1))
                 
             self.parameters.loadConfig(self.parameters.config)
@@ -426,7 +451,7 @@ class MBUTYmain():
             ### readouts
             
             if (self.parameters.plotting.plotRawReadouts  or  self.parameters.plotting.plotReadoutsTimeStamps or self.parameters.plotting.plotChopperResets or self.parameters.plotting.plotADCvsCh) is True:
-                plread = plo.plottingReadouts(self.readouts, self.parameters.config, self.parameters.plotting.histogOutBounds)
+                plread = self.plo.plottingReadouts(self.readouts, self.parameters, self.parameters.plotting.histogOutBounds)
                 if self.parameters.plotting.plotRawReadouts is True:
                     plread.plotChRaw(self.parameters.config.DETparameters.cassInConfig)
                 if self.parameters.plotting.plotReadoutsTimeStamps is True:
@@ -442,7 +467,7 @@ class MBUTYmain():
             if self.parameters.plotting.bareReadoutsCalculation is False:
                 ### hits
                 if (self.parameters.plotting.plotRawHits or self.parameters.plotting.plotHitsTimeStamps or self.parameters.plotting.plotHitsTimeStampsVSChannels) is True:
-                    plhits = plo.plottingHits(self.hits, self.parameters, self.parameters.plotting.histogOutBounds)
+                    plhits = self.plo.plottingHits(self.hits, self.parameters, self.parameters.plotting.histogOutBounds)
                     if self.parameters.plotting.plotRawHits is True:
                         plhits.plotChRaw(self.parameters.config.DETparameters.cassInConfig)
                     if self.parameters.plotting.plotHitsTimeStamps is True:
@@ -456,7 +481,7 @@ class MBUTYmain():
             
             if self.parameters.plotting.bareReadoutsCalculation is False:
                 ### XY and XToF
-                plev = plo.plottingEvents(self.events,self.allAxis,self.parameters.plotting.coincidenceWS_ONOFF, self.parameters.plotting.histogOutBounds)
+                plev = self.plo.plottingEvents(self.events,self.parameters,self.allAxis,self.parameters.plotting.coincidenceWS_ONOFF, self.parameters.plotting.histogOutBounds)
                 plev.plotXYToF(logScale = self.parameters.plotting.plotIMGlog, absUnits = self.parameters.plotting.plotABSunits, orientation = self.parameters.config.DETparameters.orientation)
                 
                 # ### ToF per cassette 
@@ -476,7 +501,7 @@ class MBUTYmain():
             
                 # ### PHS
                 if self.parameters.pulseHeigthSpect.plotPHS is True:
-                    plev.plotPHS(self.parameters.config.DETparameters.cassInConfig, self.parameters, logScale = self.parameters.pulseHeigthSpect.plotPHSlog)
+                    plev.plotPHS(self.parameters.config.DETparameters.cassInConfig, logScale = self.parameters.pulseHeigthSpect.plotPHSlog)
                 if self.parameters.pulseHeigthSpect.plotPHScorrelation is True:
                     plev.plotPHScorrelation(self.parameters.config.DETparameters.cassInConfig, self.parameters.pulseHeigthSpect.plotPHSlog)
                 
@@ -488,7 +513,7 @@ class MBUTYmain():
                 # MON plots
                 if self.parameters.MONitor.MONOnOff is True and self.parameters.MONitor.plotMONtofPHS is True and self.MON.flagMONfound is True:
                     
-                    plMON = plo.plottingMON(self.eventsMON,self.allAxis, self.parameters.plotting.histogOutBounds)
+                    plMON = self.plo.plottingMON(self.eventsMON, self.allAxis, self.parameters.plotting.histogOutBounds)
                     plMON.plot_ToF_PHS_MON()
                     
                     if self.parameters.wavelength.calculateLambda is True: 
@@ -551,7 +576,11 @@ if __name__ == '__main__':
 
     configFileName  = "AMOR.json"
     
+    # configFileName  = "MGEMMA_2det.json"
+    
     # configFileName  = "test1h.json"
+    
+    # configFileName  = "test.json"
 
     # configFileName  = "ESTIA.json"
 
@@ -636,17 +665,12 @@ if __name__ == '__main__':
 
     ### folder and file to open (file can be a list of files)
 
-    # parameters.fileManagement.fileName = ['freia_1k_pkts_ng.pcapng']
-    # parameters.fileManagement.fileName = ['freiatest.pcapng']
-    #parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
     parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
-    # parameters.fileManagement.fileName = ['ESSmask2023_1000pkts.pcapng']
-    
-    # parameters.fileManagement.fileName = ['BM_loki_bm.pcapng']
-    
+    # parameters.fileManagement.fileName = ['miracles_trig2.pcapng']
+    # parameters.fileManagement.fileName = ['MG_2EMMAprototypes.pcapng']
     
 
-    # parameters.fileManagement.fileName = ['20250307_101420_duration_s_1800_testCAB3_00006.pcapng']
+    # parameters.fileManagement.fileName = ['20251014_133244_pkts1000_testALLON_00000.pcapng']
 
     parameters.fileManagement.fileSerials = [6,2,4,9]
 
@@ -700,7 +724,7 @@ if __name__ == '__main__':
     parameters.dataReduction.calibrateVMM_ADC_ONOFF = False
 
     ### sorting readouts by time stamp, if OFF they are as in RMM stream
-    parameters.VMMsettings.sortReadoutsByTimeStampsONOFF = True
+    parameters.VMMsettings.sortReadoutsByTimeStampsONOFF = False
 
     ### time stamp is time HI + time LO or if fine corrected with TDC 
     parameters.VMMsettings.timeResolutionType = 'fine'
@@ -856,6 +880,8 @@ if __name__ == '__main__':
     mbuty = MBUTYmain(parameters)
     mbuty.runFromBackEnd()
     
+    allAxis = mbuty.allAxis
+    
     heartbeats1 = mbuty.heartbeats1
     heartbeats2 = mbuty.heartbeats2
     
@@ -898,7 +924,7 @@ if __name__ == '__main__':
     
     # TD = np.arange(-2000,2000,1)
     
-    # hist  = hh.histog().hist1D(TD,diffe) 
+    # hist  = self.hh.histog().hist1D(TD,diffe) 
     # figl, ax = plt.subplots(num=567,figsize=(6,6), nrows=1, ncols=1) 
     # ax.step(TD,hist,'b',where='mid')   
     # ax.set_yscale('log')

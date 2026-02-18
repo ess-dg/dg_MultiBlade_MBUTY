@@ -76,6 +76,9 @@ class MBUTY_GUI_App:
         self._build_window_structure() # Construct the GUI
         self.win.protocol("WM_DELETE_WINDOW", self._on_closing) # Set custom close handler
         self.check_queue() # Start periodic check for main thread tasks
+        
+        self.info_button = tk.Button(self.win, text="info", command=self.show_about_dialog)
+        self.info_button.place(relx=1.0, rely=1.0, x=-20, y=-20, anchor="se")
 
     # === Scrollable Canvas Behavior ===
     def _resize_canvas(self, event=None):
@@ -656,7 +659,7 @@ class MBUTY_GUI_App:
             try:
                 print("\nRunning analysis with selected parameters...\n")
                 MBUTY_backEnd.analysis() # Execute the main analysis function
-                print("\n Analysis complete.\n")
+                print("\nAnalysis complete")
                 # Display the "Close Plots" button after analysis completion
                 if self.close_plots_button:
                     self.close_plots_button.grid()
@@ -774,7 +777,7 @@ class MBUTY_GUI_App:
             "style": ("bold",) # Font style
         })
         # === Right Logo ===
-        right_logo_path = os.path.join(currentPath,"GUI", "logos", "MBlogo.png")
+        right_logo_path = os.path.join(currentPath,"GUI", "logos", "MGMBlogos.png")
         if os.path.isfile(right_logo_path):
             try:
                 img = Image.open(right_logo_path)
@@ -877,6 +880,24 @@ class MBUTY_GUI_App:
     def run(self):
         """Starts the Tkinter event loop, making the GUI interactive."""
         self.win.mainloop()
+        
+        
+    def show_about_dialog(self):
+        """Displays software version and author information."""
+        # Assuming these are defined in your library/constants
+        version = "7.0 (Feb 18, 2026)" 
+        author = "Francesco Piscitelli"
+        
+        about_text = (
+            f"MBUTY GUI Analysis Suite\n"
+            f"--------------------------\n"
+            f"Version: {version}\n"
+            f"Author: {author}\n"
+            f"mail: francesco.piscitelli@ess.eu\n\n"
+            f"Created: June 13, 2021\n"
+            f"Description: Utility Tool for Analysis. Supports readers for all data formats from R5560, VMM and BM. Supports MB an MG detectors for analysis. "
+        )
+        messagebox.showinfo("About MBUTY", about_text)    
 
 # === Entry Point ===
 if __name__ == "__main__":

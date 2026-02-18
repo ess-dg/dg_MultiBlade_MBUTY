@@ -1,5 +1,6 @@
 {
-    "Detector": "test1h",
+    "DetectorName": "test1h",
+    	"DetectorType": "MB",
     "operationMode": "normal",
     "cassettes": 1,
     "orientation": "vertical",

@@ -13,6 +13,7 @@ import sys
 ###############################################################################
 ###############################################################################
 
+# FOR MB
 # The helper function (renamed from a method)
 def _generateCassette2ElectronicsConfig(num_cassettes):
     cassette_config = []
@@ -31,11 +32,36 @@ def _generateCassette2ElectronicsConfig(num_cassettes):
             ring += 1
     return cassette_config
 
+
+# FOR MG
+# The helper function (renamed from a method)
+def _generateCassette2ElectronicsConfigMG(num_cassettes):
+    cassette_config = []
+    ring    = 0
+    hybridW = 0
+    hybridS = 1
+    for i in range(num_cassettes):
+        cassette_config.append({
+            "ID": i,
+            "Ring": ring,
+            "Fen": 0,
+            "HybridW": hybridW,
+            "HybridS": hybridS
+        })
+        hybridW += 2
+        hybridS += 2
+        if hybridS >= 4:
+            ring += 1
+            hybridW = 0
+            hybridS = 1
+            
+    return cassette_config
+
 ###############################################################################
 ###############################################################################
 
 # The main function to generate the config file
-def generateDefaultDetConfig(path, Detector, cassettes, orientation='horizontal', operationMode="normal", overwrite=False):
+def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orientation='horizontal', operationMode="normal", overwrite=False):
     """
     Generates a default detector configuration JSON file based on provided parameters.
 
@@ -49,47 +75,93 @@ def generateDefaultDetConfig(path, Detector, cassettes, orientation='horizontal'
     Returns:
         str: The full path to the generated JSON file, or None if an error occurred.
     """
+    
 
-    file_name = f"{Detector}.json"
+    file_name = f"{DetectorName}.json"
     filePathName = os.path.join(path, file_name)
     # Check for existing file
     if os.path.exists(filePathName) and not overwrite:
         print(f"File already exists: {filePathName} — skipping write.")
         return None
-    # Call the helper function
-    cassette2electronics_config = _generateCassette2ElectronicsConfig(cassettes)
-
-    data = {
-        "Detector": Detector,
-        "operationMode": operationMode,
-        "cassettes": cassettes,
-        "orientation": orientation,
-        "Cassette2ElectronicsConfig": cassette2electronics_config,
-        "ChannelMapping": [
-            {"WireASIC": 1, "StripASIC": 0}
-        ],
-        "wires": 32,
-        "strips": 64,
-        "wirePitch_mm": 4,
-        "stripPitch_mm": 4,
-        "bladesInclination_deg": 5.1,
-        "offset1stWires_mm": 10.5,
-        "Monitor": [
-            # {"ID": 99, "type": "RING", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
-            {"ID": 99, "type": "RING", "Ring": 11, "Channel": 0}
-        ]
-    }
-
-    try:
-        os.makedirs(path, exist_ok=True) # Ensure directory exists
-        with open(filePathName, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4)
-        print(f"Successfully config file generated '{filePathName}'")
-        return filePathName # Return the path as required by the GUI
-    except IOError as e:
-        print(f"Error writing config file {filePathName}: {e}")
-        return None # Return None on error
-
+    
+    
+    if DetectorType == 'MB':
+            # Call the helper function
+            cassette2electronics_config = _generateCassette2ElectronicsConfig(cassettes)
+        
+            data = {
+                "DetectorName": DetectorName,
+                "DetectorType": DetectorType,
+                "operationMode": operationMode,
+                "cassettes": cassettes,
+                "orientation": orientation,
+                "Cassette2ElectronicsConfig": cassette2electronics_config,
+                "ChannelMapping": [
+                    {"WireASIC": 1, "StripASIC": 0}
+                ],
+                "wires": 32,
+                "strips": 64,
+                "wirePitch_mm": 4,
+                "stripPitch_mm": 4,
+                "bladesInclination_deg": 5.1,
+                "offset1stWires_mm": 10.5,
+                "Monitor": [
+                    # {"ID": 99, "type": "RING", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
+                    {"ID": 99, "type": "RING", "Ring": 11, "Channel": 0}
+                ]
+            }
+        
+            try:
+                os.makedirs(path, exist_ok=True) # Ensure directory exists
+                with open(filePathName, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
+                print(f"Successfully config file generated '{filePathName}'")
+                return filePathName # Return the path as required by the GUI
+            except IOError as e:
+                print(f"Error writing config file {filePathName}: {e}")
+                return None # Return None on error
+            
+    elif  DetectorType == 'MG':  
+        
+        # Call the helper function
+        cassette2electronics_config = _generateCassette2ElectronicsConfigMG(cassettes)
+    
+        data = {
+            "DetectorName": DetectorName,
+            "DetectorType": DetectorType,
+            "operationMode": operationMode,
+            "cassettes": cassettes,
+            "orientation": orientation,
+            "Cassette2ElectronicsConfig": cassette2electronics_config,
+            "wires": 120,
+            "strips": 12,
+            	"wirePitchX_mm" : 22,
+            	"wirePitchZ_mm" : 10,
+            	"stripPitchY_mm" : 25,
+            	"wiresPerRow" : 20,
+            	"angularOffset_deg" : 10,
+            	"linearOffset1stWires_mm" : 80,
+            "Monitor": [
+                # {"ID": 99, "type": "RING", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
+                {"ID": 99, "type": "RING", "Ring": 11, "Channel": 0}
+            ]
+        }
+    
+        try:
+            os.makedirs(path, exist_ok=True) # Ensure directory exists
+            with open(filePathName, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=4)
+            print(f"Successfully config file generated '{filePathName}'")
+            return filePathName # Return the path as required by the GUI
+        except IOError as e:
+            print(f"Error writing config file {filePathName}: {e}")
+            return None # Return None on error
+    
+    
+    else:
+        
+        print('\n \t \033[1;33mWARNING: Detector type {} not supported (only MB or MG accepted) --> exiting!\033[1;37m\n'.format(DetectorType))
+        sys.exit()
 ###############################################################################
 ###############################################################################
 
@@ -122,15 +194,16 @@ def checkIfExists(pathFile):
 ###############################################################################
 
 if __name__ == '__main__':
-    path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTY_develJSON/'
+    path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcapDEV/config/'
 
-    Detector = "B.AM"
+    DetectorName = "test"
+    DetectorType = 'MG'
     operationMode = 'normal'
-    cassettes = 14
+    cassettes = 6
     orientation = 'vertical'
 
     # Call the function directly
-    generated_file = generateDefaultDetConfig(path, Detector, cassettes, orientation, operationMode) # add overwrite=True to overwrite a file
+    generated_file = generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orientation, operationMode, overwrite=True) # add overwrite=True to overwrite a file
     print(f"Generated file path: {generated_file}")
 
     if generated_file and os.path.exists(generated_file):

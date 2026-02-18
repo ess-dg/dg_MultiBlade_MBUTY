@@ -1,5 +1,7 @@
 {
-	"Detector": "MB.CAB",
+	"DetectorName": "MB.CAB",
+
+    "DetectorType": "MB",
 	
 	"operationMode" : "normal",
 

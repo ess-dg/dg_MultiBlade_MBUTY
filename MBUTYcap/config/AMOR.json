@@ -1,5 +1,7 @@
 {
-	"Detector": "MB.AMOR",
+	"DetectorName": "MB.AMOR",
+	
+	"DetectorType": "MB",
 	
 	"operationMode" : "normal",
 

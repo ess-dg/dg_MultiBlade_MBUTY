@@ -21,6 +21,8 @@ import copy
 
 # import libSampleData as sdat
 
+# from lib import libMappingMON as MOMm
+
 
 # NOTE: THIS SUPPORTS ONLY 1 MONITOR
 
@@ -108,8 +110,7 @@ class hits():
         return hitsArray
    
     def removeUnmappedData(self):
-         
-        print('--> removing unmapped data from hits ...')
+  
 
         toBeRemoved  = self.Cassette == -1
 
@@ -125,7 +126,11 @@ class hits():
         self.mult0        = self.mult0[~toBeRemoved]
         self.mult1        = self.mult1[~toBeRemoved]
         
-        
+        if np.sum(toBeRemoved) >= 1:
+            print('\t --> removing unmapped data from hits ...')
+        else:
+            print('\t --> no unmapped data in these hits ...')
+            
 class extractHitsPortion():
     
     def extract(self,hits,start,stop):
@@ -155,10 +160,7 @@ class MONmap():
   
         self.ID       = None
         self.RingID   = None
-        self.FenID    = None
-        self.hybridID = None
-        self.hybridSerial = None
-        self.ASICID   = None
+        self.type     = None
         self.channel  = None
         
 class DETmap():
@@ -186,6 +188,8 @@ class DETparameters():
         
         self.name     = None
         
+        self.type     = None
+        
         self.operationMode = 'empty'
         
         self.orientation = 'vertical'
@@ -209,10 +213,11 @@ class DETparameters():
       
 ################################################        
 
-class read_json_config:
+class read_json_config():
     
-    def __init__(self, configFile_PathAndFileName):
+    def __init__(self, configFile_PathAndFileName, printFlag = True):
         
+        self.configFile_PathAndFileName = configFile_PathAndFileName
         temp = os.path.split(configFile_PathAndFileName)
         self.configFilePath = temp[0] + os.sep
         self.configFileName = temp[1]
@@ -242,24 +247,30 @@ class read_json_config:
             print(' ---> common mistake: last line of Cassette2ElectronicsConfig: {"ID" : X, "Ring" : X, "Fen" : X, "Hybrid" : X} must not have comma! \n -> exiting.')
             sys.exit()
             
-            
-        # Process parameters
-        self.get_allParameters()
-        
-        self.checkRing11()
+        try:
+                # Process parameters
+                self.get_allParameters()
                 
-        self.print_DETname()
-        self.print_check_operationMode()
+                self.checkRing11()
+                        
+                if printFlag is True:
+                    self.print_DETname()
+                    
+                self.print_check_operationMode()
+                        
+                self.check_cassetteLabelling()
                 
-        self.check_cassetteLabelling()
-        
+        except:
+                self.get_DETtype()
+              
         
     def __del__(self):
         try:
             self.ff.close()
         except AttributeError:
             pass
-        
+
+    
     def __deepcopy__(self, memo):
         # Create a shallow copy of the object
         copied_obj = copy.copy(self)
@@ -280,14 +291,17 @@ class read_json_config:
             
     def get_allParameters(self):
         self.get_DETname()
+        self.get_DETtype()
         self.get_DETparameters()
         self.get_DETmap()
         self.get_DETcassettesInConfig()
         self.get_channelMap()
         self.get_MONmap()
+        # get_Mmap    = MOMm.get_MONmap(self.conf)
+        # self.MONmap = get_Mmap.MONmap 
             
     def print_DETname(self):
-        print('\033[1;36mConfiguration for Detector: {}\033[1;37m'.format(self.DETparameters.name))
+        print('\033[1;36mConfiguration for {} Detector: {}\033[1;37m'.format(self.DETparameters.type,self.DETparameters.name))
         
     def print_check_operationMode(self):
     
@@ -299,8 +313,12 @@ class read_json_config:
 
         
     def get_DETname(self):
-        self.DETparameters.name = self.conf.get('Detector')
+        self.DETparameters.name = self.conf.get('DetectorName')
         return self.DETparameters.name
+    
+    def get_DETtype(self):
+        self.DETparameters.type = self.conf.get('DetectorType')
+        return self.DETparameters.type
     
     def get_DETparameters(self):
         self.DETparameters.numOfWires  = self.conf.get('wires')
@@ -809,10 +827,10 @@ if __name__ == '__main__':
 
    # print(config2.DETparameters.cassInConfig)
    
-   filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
+   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcapDEV/data/'
    file = 'miracles_trig2.pcapng'
    # file = 'ESSmask2023_1000pkts.pcapng'
-   file = 'ESSmask2023.pcapng'
+   file = 'testALLON20.pcapng'
    
    filePathAndFileName1 = filePath+file
 
@@ -836,9 +854,9 @@ if __name__ == '__main__':
    
    
    
-   MON = mapMonitor(readouts, config1)
-   hitsMON = MON.hits
-   hitsMONArray  = hitsMON.concatenateHitsInArrayForDebug()
+   # MON = mapMonitor(readouts, config1)
+   # hitsMON = MON.hits
+   # hitsMONArray  = hitsMON.concatenateHitsInArrayForDebug()
    
    # print(config1.DETparameters.cassInConfig)
    

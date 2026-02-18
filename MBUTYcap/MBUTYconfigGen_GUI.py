@@ -67,10 +67,17 @@ ui_config = {
             "inputValidation": "localPath",
             "info": "The directory where the new configuration file will be saved. Must be an existing local path."
         },
-        "Detector": {
+        "DetectorName": {
             "label": "Detector Name",
             "type": "entry",
             "info": "Select the name of the detector, the configuration file will be this name + .json"
+        },
+        "DetectorType": {
+            "label": "Detector Type",
+            "type": "bool",
+            "options": ["MB", "MG"],
+            "default": "MB",
+            "info": "Select the type of the detector: MB or MG."
         },
         "cassettes": {
             "label": "Number of Cassettes",
@@ -416,7 +423,7 @@ class ConfigCreatorFrame(tk.Frame):
             widget_instance = widget_info["widget"]
             value = widget_instance.get()
             param_label = item['label']
-    
+
             if value in ("", None, []):
                 missing_fields_labels.append(f"'{param_label}'")
             else:
@@ -519,7 +526,7 @@ class ConfigCreatorFrame(tk.Frame):
         
         # Extract necessary data for opening file and updating the button and popups with correct paths and file names
         output_directory = new_file_data["path"]
-        detector_name = new_file_data["Detector"]
+        detector_name = new_file_data["DetectorName"]
         file_name = f"{detector_name}.json"
         file_path = os.path.join(output_directory, file_name)
 
@@ -542,6 +549,7 @@ class ConfigCreatorFrame(tk.Frame):
             # Add the 'overwrite' flag which is determined by the user's choice.
             config_args_for_backend["overwrite"] = overwrite
             # Call the backend function to generate the configuration file.
+            
             generated_file_path = generateDefaultDetConfig(**config_args_for_backend)
             
             if generated_file_path is None:

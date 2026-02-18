@@ -364,7 +364,7 @@ class checkInstrumentID():
         self.TREXID      = 64
         self.CSPECID     = 60
         self.MIRACLESID  = 56
-        self.DREAMID     = 96 
+        self.DREAMID     = 96  #0x48
         
     def setBytesPerReadout(self,ID):
         
@@ -403,19 +403,23 @@ class checkInstrumentID():
              print('found TREX data stream - VMM',end='')
              
         elif ID == self.MIRACLESID:
-             print('found MIRACLES data stream - R5560',end='')
+             print('found MIRACLES data stream - R5560')
+             print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
         elif ID == self.CSPECID:
-             print('found CSPEC data stream - R5560',end='')
+             print('found CSPEC data stream - R5560')
+             print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
         elif ID == self.BIFROSTID:
-             print('found BIFROST data stream - R5560',end='')
+             print('found BIFROST data stream - R5560')
+             print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
         elif ID == self.LOKIID:
-             print('found LOKI data stream - R5560',end='')    
+             print('found LOKI data stream - R5560')   
+             print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis, NOT SUPPORTED FOR NOW \033[1;37m',end='')
              
         elif ID == self.BMID:
                   print('found BM data stream',end='') 
             
         elif (ID == self.DREAMID) or (ID == self.MAGICID): 
-             print('found DREAM or MAGIC or HEIMDAL data stream - CPIX -> not supported',end='')
+             print('\033[1;33mWARNING: found DREAM or MAGIC or HEIMDAL data stream - CPIX -> not supported\033[1;37m',end='')
              time.sleep(2)
         else:
              print('found some other data stream',end='')
@@ -926,6 +930,8 @@ class pcapng_reader_PreAlloc():
         
         packetsInstrIDs = np.atleast_1d(packetsInstrIDs)
         print('checking intrument ID ... ',end='')
+        
+        # print(packetsInstrIDs)
         try:
             if np.any(packetsInstrIDs != packetsInstrIDs[0]):
                 
@@ -1599,6 +1605,9 @@ if __name__ == '__main__':
    file = 'ESSmask2023_1000pkts.pcapng'
    file = 'ESSmask2023.pcapng'
    
+   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcapDEV/data/'
+   file = 'fr.pcapng'
+   
    # file = '20251010_145429_pkts2000_testRANDOM1_00000.pcapng'
    
    # file  = 'BM_loki_bm.pcapng'
@@ -1674,7 +1683,7 @@ if __name__ == '__main__':
    
    typeOfLoading = 'allocate'
    
-   typeOfLoading = 'quick'
+   # typeOfLoading = 'quick'
    
    # pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype=True, MONring=11,filePathAndFileName=filePathAndFileName1,timeResolutionType='fine',operationMode='normal', kafkaStream = False)
    # pcapng.allocateMemory(typeOfLoading)
