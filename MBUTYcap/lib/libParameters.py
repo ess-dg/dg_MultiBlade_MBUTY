@@ -23,8 +23,8 @@ from lib import libMapping as maps
 
 class checkPythonVersion():
         # check version
-        if sys.version_info < (3,5):
-           print('\n \033[1;31mPython version too old, use at least Python 3.5! \033[1;37m\n')
+        if sys.version_info < (3,8):
+           print('\n \033[1;31mPython version too old, use at least Python 3.8! \033[1;37m\n')
            print(' ---> Exiting ... \n')
            print('------------------------------------------------------------- \n')
            sys.exit()
@@ -38,8 +38,12 @@ class checkPackageInstallation():
     def __init__(self):
     
         # self.installed = {pkg.key for pkg in pkg_resources.working_set}
-        
-        self.installed = {dist.name for dist in importlib.metadata.distributions()}
+  
+        # for pyhton <3.10
+        if sys.version_info < (3,10):
+            self.installed = {dist.metadata['Name'] for dist in importlib.metadata.distributions()}
+        elif sys.version_info >= (3,10):\
+            self.installed = {dist.name for dist in importlib.metadata.distributions()}
         
         self.normalizedInstalled = {name.lower().replace('_', '-') for name in self.installed}
         
