@@ -75,7 +75,8 @@ def generateDefaultDetConfig(path, Detector, cassettes, orientation='horizontal'
         "bladesInclination_deg": 5.1,
         "offset1stWires_mm": 10.5,
         "Monitor": [
-            {"ID": 99, "TTLtype": "True", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
+            # {"ID": 99, "type": "RING", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
+            {"ID": 99, "type": "RING", "Ring": 11, "Channel": 0}
         ]
     }
 

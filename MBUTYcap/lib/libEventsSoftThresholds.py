@@ -18,7 +18,7 @@ from lib import libSampleData as sdat
 from lib import libMapping as maps
 from lib import libCluster as clu
 from lib import libParameters as para
-# from lib import libReadPcapngVMM as pcapr
+# from lib import libReadPcapng as pcapr
 # from lib import libHistograms as hh
 # from lib import libFileManagmentUtil as fd
 # from lib import libParameters as para
@@ -31,7 +31,7 @@ from lib import libAbsUnitsAndLambda as absu
 # import libMapping as maps
 # import libCluster as clu
 # import libParameters as para
-# import libReadPcapngVMM as pcapr
+# import libReadPcapng as pcapr
 # import libHistograms as hh
 # import libFileManagmentUtil as fd
 # import libParameters as para

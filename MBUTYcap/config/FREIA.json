@@ -56,7 +56,7 @@
 	"offset1stWires_mm" : 11,
 
 	"Monitor" : [
-		{"ID" : 99,  "Ring" : 0, "Fen" : 1, "Hybrid" : 0, "ASIC" : 0, "Channel" : 3, "HybridSerial" : "E5re67"}
+		{"ID" : 99,  "type" : "RING", "Ring" : 11, "Channel" : 1}
 	] 
 
 }

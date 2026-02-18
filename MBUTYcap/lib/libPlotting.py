@@ -17,7 +17,7 @@ from lib import libMapping as maps
 # from lib import libAbsUnitsAndLambda as absu
 from lib import libHistograms as hh
 from lib import libParameters as para
-from lib import libReadPcapngVMM as pcapr
+from lib import libReadPcapng as pcapr
 
 
 # import libSampleData as sdat
@@ -26,7 +26,7 @@ from lib import libReadPcapngVMM as pcapr
 # import libAbsUnitsAndLambda as absu
 # import libHistograms as hh
 # import libParameters as para
-# import libReadPcapngVMM as pcapr
+# import libReadPcapng as pcapr
 
 ###############################################################################
 ###############################################################################

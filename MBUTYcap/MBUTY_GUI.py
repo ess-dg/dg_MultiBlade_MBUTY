@@ -761,7 +761,7 @@ class MBUTY_GUI_App:
         user_name = os.environ.get('USER', os.environ.get('USERNAME', 'User'))
         self.main_app_title_label = tk.Label(
             header,
-            text=f"Ciao {user_name}! Welcome to MBUTY 6.0",
+            text=f"Ciao {user_name}! Welcome to MBUTY 7.0",
             font=(const.gui_font, const.param_font_size+8, "bold"), # Initial font
             fg="#228B22", # Foreground color (Forest Green)
         )

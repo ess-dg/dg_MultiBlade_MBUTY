@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V6.0 2025/06/09      francescopiscitelli     ######################
+########    V7.0 2026/02/17     francescopiscitelli     ######################
 ###############################################################################
 ###############################################################################
 #  includes streaming from kafka 
@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 # app = QApplication(sys.argv)
 
 ### import the library with all specific functions that this code uses 
-from lib import libReadPcapngVMM as pcapr
+from lib import libReadPcapng as pcapr
 from lib import libSampleData as sdat
 from lib import libMapping as maps
 from lib import libCluster as clu
@@ -43,7 +43,6 @@ from lib import libVMMcalibration as cal
 # STILL TO IMPLEMENT:
 #     - monitor lambda
 #     - TDC calibration 
-#     - now the mon events stay in the events array,they need  to be taken out 
 
 # NOTES:
     # in some sytems the command plt.show(block=False) at the end does not work for showing plots 
@@ -76,7 +75,7 @@ class MBUTYmain():
         
         user_name = os.environ.get('USER', os.environ.get('USERNAME', 'User'))
         print('----------------------------------------------------------------------')
-        print('\033[1;32mCiao '+user_name+'! Welcome to MBUTY 6.0\033[1;37m')
+        print('\033[1;32mCiao '+user_name+'! Welcome to MBUTY 7.0\033[1;37m')
         print('----------------------------------------------------------------------')
         plt.close("all")
         ### check version ###
@@ -175,15 +174,15 @@ class MBUTYmain():
                 ### check which Ring, Fen and Hybrid is present in the selected File
                 # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,self.parameters.clockTicks.NSperClockTick).check()
                 ### load data
-                pcap = pcapr.pcapng_reader(os.path.join(fileDialogue.filePath,fileName), self.parameters.clockTicks.NSperClockTick, MONTTLtype = self.parameters.config.MONmap.TTLtype, MONring = self.parameters.config.MONmap.RingID, \
+                pcap = pcapr.pcapng_reader(os.path.join(fileDialogue.filePath,fileName), self.parameters.clockTicks.NSperClockTick, MONtype = self.parameters.config.MONmap.type, MONring = self.parameters.config.MONmap.RingID, \
                 timeResolutionType = self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF = self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
                 operationMode = self.parameters.config.DETparameters.operationMode, pcapLoadingMethod=self.parameters.fileManagement.pcapLoadingMethod)
                 self.readouts.append(pcap.readouts)
                 
         elif self.parameters.acqMode == 'kafka':
-            testing = False
+            testing = True
             pcap = self.kaf.kafka_reader(self.parameters.clockTicks.NSperClockTick, nOfPackets = self.parameters.kafkaSettings.numOfPackets, \
-            broker = self.parameters.kafkaSettings.broker, topic = self.parameters.kafkaSettings.topic, MONTTLtype = self.parameters.config.MONmap.TTLtype , MONring = self.parameters.config.MONmap.RingID, \
+            broker = self.parameters.kafkaSettings.broker, topic = self.parameters.kafkaSettings.topic, MONtype = self.parameters.config.MONmap.type , MONring = self.parameters.config.MONmap.RingID, \
             timeResolutionType =self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF=self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
             operationMode=self.parameters.config.DETparameters.operationMode, testing=testing)
             self.readouts.append(pcap.readouts)
@@ -304,7 +303,7 @@ class MBUTYmain():
                 ### do not clusterize
                 self.events = clu.events()
                 self.events.importClusteredHits(self.hits,self.parameters.config)
-            
+                self.deltaTimeWS = None
                
             ####################    
             ### for debug, generate sample events 2
@@ -642,6 +641,10 @@ if __name__ == '__main__':
     #parameters.fileManagement.fileName = ['20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng']
     parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
     # parameters.fileManagement.fileName = ['ESSmask2023_1000pkts.pcapng']
+    
+    # parameters.fileManagement.fileName = ['BM_loki_bm.pcapng']
+    
+    
 
     # parameters.fileManagement.fileName = ['20250307_101420_duration_s_1800_testCAB3_00006.pcapng']
 
@@ -661,7 +664,7 @@ if __name__ == '__main__':
     ###############
     ### type of pcap file loading, prealloc of memeory with allocate or quick, allocate is more rigorous, quick estimates the memory and it is faster 
     parameters.fileManagement.pcapLoadingMethod = 'allocate'
-    parameters.fileManagement.pcapLoadingMethod = 'quick'
+    # parameters.fileManagement.pcapLoadingMethod = 'quick'
 
     ###############
     ### path to calibration file
@@ -697,7 +700,7 @@ if __name__ == '__main__':
     parameters.dataReduction.calibrateVMM_ADC_ONOFF = False
 
     ### sorting readouts by time stamp, if OFF they are as in RMM stream
-    parameters.VMMsettings.sortReadoutsByTimeStampsONOFF = False
+    parameters.VMMsettings.sortReadoutsByTimeStampsONOFF = True
 
     ### time stamp is time HI + time LO or if fine corrected with TDC 
     parameters.VMMsettings.timeResolutionType = 'fine'

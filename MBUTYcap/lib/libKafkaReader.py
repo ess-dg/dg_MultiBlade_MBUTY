@@ -24,11 +24,11 @@ from confluent_kafka import Consumer, TopicPartition
 # import os
 import sys
 
-from lib import libReadPcapngVMM as pcapr
+from lib import libReadPcapng as pcapr
 from lib import libKafkaRX as krx 
 from lib import libKafkaRawReadoutMessage as rawmsg
 
-# import libReadPcapngVMM as pcapr
+# import libReadPcapng as pcapr
 # import libKafkaRX as krx 
 # import libKafkaRawReadoutMessage as rawmsg
 
@@ -36,9 +36,9 @@ from lib import libKafkaRawReadoutMessage as rawmsg
 ###############################################################################
 
 class  kafka_reader():
-    def __init__(self, NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = False):
+    def __init__(self, NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONtype = 'RING' , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = False):
         
-        kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets, broker, topic, MONTTLtype, MONring, timeResolutionType,operationMode,testing)
+        kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets, broker, topic, MONtype, MONring, timeResolutionType,operationMode,testing)
         kaf.allocateMemory()
         kaf.read()
         self.readouts = kaf.readouts  
@@ -99,19 +99,14 @@ class kafka_reader_preAlloc():
             print('streaming {} packets ({:.1f} kbytes) from kafka'.format(self.nOfPackets,self.fileSize/1000))
         
         #############################        
-        
-    # def checkFWversion(self):
-        
-        
-    
-    
+
     def dprint(self, msg):
             if self.debug:
                 print("{}".format(msg))
                 
     def allocateMemory(self): 
         
-        print('allocating memory',end='')
+        print('allocating memory...',end='')
         
         numOfReadoutsTotal = self.nOfPackets*self.rea.readoutsPerPacket
         self.rea.counterCandidatePackets = self.nOfPackets
@@ -121,7 +116,7 @@ class kafka_reader_preAlloc():
       
     def read(self):   
             
-        print('\n',end='')
+        # print('\n',end='')
         
         if self.testing is False:
 
@@ -161,6 +156,7 @@ class kafka_reader_preAlloc():
         flagTopicFound = True
         
         packetsFWversion = np.zeros((0),dtype='int64')
+        packetsInstrID   = np.zeros((0),dtype='int64')
         
         for npack in range(self.nOfPackets):
                      
@@ -185,6 +181,7 @@ class kafka_reader_preAlloc():
                             else:
                               
                             #  if you want generated data to test
+                        
                                 bytesGens = bytesGen()
                                 packetLength = bytesGens.packetLength
                                 packetData   = bytesGens.packetData
@@ -203,24 +200,35 @@ class kafka_reader_preAlloc():
                         
                         if indexESS != -1:
                            FWversionTemp    = self.rea.extractFWversion(packetData, indexESS)
+                           instrIDtemp      = self.rea.extractInstrID(packetData, indexESS)
+
                            packetsFWversion = np.append(packetsFWversion,FWversionTemp)
-                                         
-                           self.rea.checkFWversionSetHeaders(FWversionTemp)   
+                           packetsInstrID   = np.append(packetsInstrID,instrIDtemp)    
+                
+                         #  do this the first time but the packet bytes are allocated dinamically in extractfrom bytes anyhow 
+                           if npack == 0: 
+                               self.rea.checkFWversionSetHeaders(packetsFWversion) 
+                               self.rea.checkTimeSrc(packetData[indexESS+7])
+                               self.rea.checkInstrIDsetReadoutSize(packetsInstrID)
+                               print('\n',end='')
                         
                         if self.debug == True:
                             print('\npacket no. {} of {} received'.format(npack+1,self.nOfPackets),end='')
+                            
                         if flagTopicFound == True:    
                             self.rea.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
                             indexPackets += 1
         
-                        
+  
  
         if flagTopicFound == True: 
             
             print('[100%]',end=' ') 
             
-            self.rea.checkIfUniformFWversion(packetsFWversion)
-    
+            # self.rea.checkInstrIDsetReadoutSize(packetsInstrID)
+            
+            # self.rea.checkFWversionSetHeaders(packetsFWversion)
+
             self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.rea.counterPackets , self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))
               
             #######################################################       
@@ -328,7 +336,7 @@ if __name__ == "__main__":
     
     # topic = 'CAEN_debug'
     
-    kaf =  kafka_reader(NSperClockTick, nOfPackets = 5, broker = '127.0.0.1:9092', topic = topic, MONTTLtype = True , \
+    kaf =  kafka_reader(NSperClockTick, nOfPackets = 5, broker = '127.0.0.1:9092', topic = topic, MONtype = 'RING' , \
     MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = True)
             # d
     

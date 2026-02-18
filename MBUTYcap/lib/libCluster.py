@@ -17,14 +17,14 @@ from lib import libHistograms as hh
 # from lib import libParameters as para
 # from lib import libProgressBar as pb
 
-from lib import libReadPcapngVMM as pcapr
+from lib import libReadPcapng as pcapr
 # from lib import libPlotting as plo
 
 # import libSampleData as sdat
 # import libMapping as maps
 # import libHistograms as hh
 # import libParameters as para
-# import libReadPcapngVMM as pcapr
+# import libReadPcapng as pcapr
 # import libPlotting as plo
 
 
@@ -65,6 +65,8 @@ class events():
         
         self.Durations   = np.zeros((0), dtype = 'int64')
         self.Duration    = np.zeros((1), dtype = 'int64')
+        
+        # self.deltaTimeWS = np.zeros((0), dtype = 'int64')
         
     def importDurations(self,hits):
         

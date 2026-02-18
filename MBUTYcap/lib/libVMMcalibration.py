@@ -12,10 +12,10 @@ import os
 import sys
 
 from lib import libMapping as maps
-from lib import libReadPcapngVMM as pcapr
+from lib import libReadPcapng as pcapr
 
 # import libMapping as maps
-# import libReadPcapngVMM as pcapr
+# import libReadPcapng as pcapr
 
 ###############################################################################
 ###############################################################################

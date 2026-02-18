@@ -17,7 +17,7 @@ from lib import libParameters as para
 # from lib import libHistograms as hh
 # from lib import libAbsUnitsAndLambda as absu
 
-# from lib import libReadPcapngVMM as pcapr
+# from lib import libReadPcapng as pcapr
 # from lib import libFileManagmentUtil as fd
 # from lib import libTerminal as ta
 # from lib import libPlotting as plo
@@ -30,7 +30,7 @@ from lib import libParameters as para
 # import libParameters as para
 # import libHistograms as hh
 # import libAbsUnitsAndLambda as absu
-# import libReadPcapngVMM as pcapr
+# import libReadPcapng as pcapr
 # import libFileManagmentUtil as fd
 # import libTerminal as ta
 # import libPlotting as plo

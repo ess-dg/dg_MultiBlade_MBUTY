@@ -13,7 +13,7 @@ import h5py
 import sys
 
 
-from lib import libReadPcapngVMM as pcapr
+from lib import libReadPcapng as pcapr
 from lib import libSampleData as sdat
 from lib import libMapping as maps
 from lib import libCluster as clu
