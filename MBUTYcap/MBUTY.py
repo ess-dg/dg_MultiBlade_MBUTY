@@ -648,6 +648,8 @@ if __name__ == '__main__':
     parameters.fileManagement.sourcePath = 'essdaq@172.30.244.50:/home/essdaq/pcaps/'
     # parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
     parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/dataVMM/"
+    
+    # parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/"
 
     ###############
 
@@ -669,8 +671,6 @@ if __name__ == '__main__':
     # parameters.fileManagement.fileName = ['miracles_trig2.pcapng']
     # parameters.fileManagement.fileName = ['MG_2EMMAprototypes.pcapng']
     
-
-    # parameters.fileManagement.fileName = ['20251014_133244_pkts1000_testALLON_00000.pcapng']
 
     parameters.fileManagement.fileSerials = [6,2,4,9]
 

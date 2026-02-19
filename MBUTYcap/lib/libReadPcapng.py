@@ -932,22 +932,36 @@ class pcapng_reader_PreAlloc():
         
         # print(packetsInstrIDs)
         try:
-            if np.any(packetsInstrIDs != packetsInstrIDs[0]):
                 
-                packetsInstrIDsunique = np.unique(packetsInstrIDs)
-
-                if len(packetsInstrIDsunique == 2):
-                    for ids in packetsInstrIDsunique:
-                        print('\n---> ',end='')
-                        checkInstrumentID().printInfoDataStream(ids)
-                        self.singleReadoutSize, _ = checkInstrumentID().setBytesPerReadout(packetsInstrIDs[0])  #  this is the bytes as the sencond one !!! it will be dinamically updated in extractfrombytes 
-                else:
-                    print('\n\033[1;31mWARNING ---> found different instrument ID versions in packets, use version 20 bytes as default, data might be corrupted for other versions\033[1;37m')
-
+            packetsInstrIDsunique = np.unique(packetsInstrIDs)
+            
+            is_single_stream     = (len(packetsInstrIDsunique) == 1)
+            is_valid_dual_stream = (len(packetsInstrIDsunique) == 2 and (checkInstrumentID().BMID in packetsInstrIDsunique))
+            
+            #  there must be only 2 data streams, intrum and BM, if there is more then Warning! 
+            
+            if len(packetsInstrIDsunique) == 0:
+                print('\n---> no instr ID', end='')
+            
+            elif is_single_stream or is_valid_dual_stream:
+ 
+                for ids in packetsInstrIDsunique:
+                    print('\n---> ', end='')
+                    checkInstrumentID().printInfoDataStream(ids)
+                
+                # Dynamically update readout size (using first packet as reference)
+                self.singleReadoutSize, _ = checkInstrumentID().setBytesPerReadout(packetsInstrIDs[0])
+            
             else:
-               checkInstrumentID().printInfoDataStream(packetsInstrIDs[0])
-               self.singleReadoutSize, _ = checkInstrumentID().setBytesPerReadout(packetsInstrIDs[0])
-         
+                # Handle all Warning cases (3+ IDs, or 2 IDs without BM)
+                print('\n\033[1;31mWARNING ---> unexpected instrument ID versions found. Data might be corrupted - check RMM output queue config!\033[1;37m',end='')
+                
+                for ids in packetsInstrIDsunique:
+                    print('\n---> ', end='')
+                    checkInstrumentID().printInfoDataStream(ids)
+                    
+                self.singleReadoutSize, _ = checkInstrumentID().setBytesPerReadout(packetsInstrIDs[0])
+ 
         except: 
              print('--> unable to verify data format version.')   
              pass
@@ -1602,10 +1616,13 @@ if __name__ == '__main__':
    filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
    file = 'miracles_trig2.pcapng'
    file = 'ESSmask2023_1000pkts.pcapng'
-   file = 'ESSmask2023.pcapng'
+   # file = 'ESSmask2023.pcapng'
    
-   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcapDEV/data/'
-   file = 'fr.pcapng'
+   # filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
+   # file =   '20260203_090333_duration_s_600_FREIAsector0_00004.pcapng'
+   
+   
+   
    
    # file = '20251010_145429_pkts2000_testRANDOM1_00000.pcapng'
    
