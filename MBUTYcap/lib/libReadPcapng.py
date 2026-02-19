@@ -356,8 +356,8 @@ class checkInstrumentID():
         self.AMORID    = 78     #0x4e
         self.TBLVMMID  = 73     #0x49
         
-        self.LOKIID      = 48
-        self.BMID        = 16
+        self.LOKIID      = 48   #0x30
+        self.BMID        = 16   #0x10
         self.BIFROSTID   = 52
         self.NMXID       = 68
         self.MAGICID     = 100
@@ -484,27 +484,12 @@ class R5560():
         timeHI       = int.from_bytes(buffer[4:8], byteorder='little')
         timeLO       = int.from_bytes(buffer[8:12], byteorder='little')
         
-        tube         = int.from_bytes(buffer[13:14], byteorder='little')
-        counter1     = int.from_bytes(buffer[14:16], byteorder='little')
-        ampA         = int.from_bytes(buffer[16:18], byteorder='little')
-        ampB         = int.from_bytes(buffer[18:20], byteorder='little')
-        counter2     = int.from_bytes(buffer[20:24], byteorder='little')
+        self.tube         = int.from_bytes(buffer[13:14], byteorder='little')
+        self.counter1     = int.from_bytes(buffer[14:16], byteorder='little')
+        self.ampA         = int.from_bytes(buffer[16:18], byteorder='little')
+        self.ampB         = int.from_bytes(buffer[18:20], byteorder='little')
+        self.counter2     = int.from_bytes(buffer[20:24], byteorder='little')
         
-        
-        self.BC      = 0
-        self.TDC     = 0
-        self.VMM     = 0
-        self.Channel = 0
-        
-        
-        self.ADC      = ampA
-        
-        self.Channel1 = 0
-        self.ADC1     = ampB
-        
-        
-        self.mult0    = -1
-        self.mult1    = -1
         
         #######################
         #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
@@ -512,18 +497,6 @@ class R5560():
         # self.Ring = PhysicalRing
         #######################
 
-        self.OTh      = 1
-
-        # self.G0       = G0GEO >> 7
-        modes         = VMM3A_modes(buffer)
-        self.G0       = 0
-        
-        self.GEO      = 0
-        
-        self.ASIC     = 1        #extract only LSB
-        self.hybrid   = tube     #extract only 1110 and shift right by one 
-
-        
         timeHIns = int(round(timeHI * 1000000000))
         timeLOns = int(round(timeLO * NSperClockTick))
         
@@ -1448,23 +1421,23 @@ class pcapng_reader_PreAlloc():
                                       
                                     self.data[index, 0] = R5560data.Ring
                                     self.data[index, 1] = R5560data.Fen
-                                    self.data[index, 2] = R5560data.VMM
-                                    self.data[index, 3] = R5560data.hybrid
-                                    self.data[index, 4] = R5560data.ASIC
-                                    self.data[index, 5] = R5560data.Channel
-                                    self.data[index, 6] = R5560data.ADC
-                                    self.data[index, 7] = R5560data.BC
-                                    self.data[index, 8] = R5560data.OTh
-                                    self.data[index, 9] = R5560data.TDC
-                                    self.data[index, 10] = R5560data.GEO
+                                    self.data[index, 2] = 0 #VMM for R5560 always 0
+                                    self.data[index, 3] = 0 #hybrid for R5560 always 0
+                                    self.data[index, 4] = 0 #ASIC for R5560 always 0
+                                    self.data[index, 5] = R5560data.tube   # tube = channel 
+                                    self.data[index, 6] = R5560data.ampA   # ADC = AMP A
+                                    self.data[index, 7] = R5560data.counter1 #BC == counter1 
+                                    self.data[index, 8] = 1 #OTh for R5560 always 1
+                                    self.data[index, 9] = 0 #TDC for R5560 always 0
+                                    self.data[index, 10] = R5560data.counter2  #GEO == counter2 
                                     self.data[index, 11] = R5560data.timeCoarse
                                     self.data[index, 12] = PulseT
                                     self.data[index, 13] = PrevPT
-                                    self.data[index, 14] = R5560data.G0  # if 1 is calibration
-                                    self.data[index, 15] = R5560data.Channel1
-                                    self.data[index, 16] = R5560data.ADC1
-                                    self.data[index, 17] = R5560data.mult0
-                                    self.data[index, 18] = R5560data.mult1
+                                    self.data[index, 14] = 0  # G0 if 1 is calibration so always 0 in R5560
+                                    self.data[index, 15] = 0  # ch1 for R5560 always 0
+                                    self.data[index, 16] = R5560data.ampB     # ADC1 = AMP B
+                                    self.data[index, 17] = 1  #mult0 for R5560 always 1
+                                    self.data[index, 18] = 1  #mult1 for R5560 always 1
                                     
                                     
                                elif  self.InstrType == 'BM':
@@ -1618,8 +1591,8 @@ if __name__ == '__main__':
    file = 'ESSmask2023_1000pkts.pcapng'
    # file = 'ESSmask2023.pcapng'
    
-   # filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
-   # file =   '20260203_090333_duration_s_600_FREIAsector0_00004.pcapng'
+   filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
+   file =   '20251008_133204_duration_s_60_testMuons_00000.pcapng'
    
    
    
@@ -1704,7 +1677,7 @@ if __name__ == '__main__':
    # pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype=True, MONring=11,filePathAndFileName=filePathAndFileName1,timeResolutionType='fine',operationMode='normal', kafkaStream = False)
    # pcapng.allocateMemory(typeOfLoading)
 
-   pcap = pcapng_reader(filePathAndFileName1,NSperClockTick, MONtype='LEMO', MONring=11, timeResolutionType='fine', sortByTimeStampsONOFF=True, operationMode='normal',pcapLoadingMethod=typeOfLoading)
+   pcap = pcapng_reader(filePathAndFileName1,NSperClockTick, MONtype='LEMO', MONring=11, timeResolutionType='coarse', sortByTimeStampsONOFF=False, operationMode='normal',pcapLoadingMethod=typeOfLoading)
 
    readouts = pcap.readouts
    
