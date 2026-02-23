@@ -105,28 +105,33 @@ class readouts():
         
         leng = len(self.timeStamp)
         
-        readoutsArray = np.zeros((leng,19),dtype = 'int64')
+        if leng >= 1:
+            readoutsArray = np.zeros((leng,19),dtype = 'int64')
+            
+            readoutsArray[:,0] = self.Ring
+            readoutsArray[:,1] = self.Fen
+            readoutsArray[:,2] = self.hybrid
+            readoutsArray[:,3] = self.ASIC
+            readoutsArray[:,4] = self.Channel
+            readoutsArray[:,5] = self.ADC
+            readoutsArray[:,6] = self.PulseT
+            readoutsArray[:,7] = self.PrevPT
+            readoutsArray[:,8] = self.timeStamp
+            readoutsArray[:,9] = self.timeCoarse
+            readoutsArray[:,10] = self.TDC
+            readoutsArray[:,11] = self.G0      # G0 also for MON
+            readoutsArray[:,12] = self.BC      # POS X for MON
+            readoutsArray[:,13] = self.OTh     # POS Y for MON
+            readoutsArray[:,14] = self.GEO     # type for MON
+            readoutsArray[:,15] = self.Channel1 # for clustered mode 
+            readoutsArray[:,16] = self.ADC1     # for clustered mode 
+            readoutsArray[:,17] = self.mult0    # for clustered mode 
+            readoutsArray[:,18] = self.mult1    # for clustered mode 
         
-        readoutsArray[:,0] = self.Ring
-        readoutsArray[:,1] = self.Fen
-        readoutsArray[:,2] = self.hybrid
-        readoutsArray[:,3] = self.ASIC
-        readoutsArray[:,4] = self.Channel
-        readoutsArray[:,5] = self.ADC
-        readoutsArray[:,6] = self.PulseT
-        readoutsArray[:,7] = self.PrevPT
-        readoutsArray[:,8] = self.timeStamp
-        readoutsArray[:,9] = self.timeCoarse
-        readoutsArray[:,10] = self.TDC
-        readoutsArray[:,11] = self.G0      # G0 also for MON
-        readoutsArray[:,12] = self.BC      # POS X for MON
-        readoutsArray[:,13] = self.OTh     # POS Y for MON
-        readoutsArray[:,14] = self.GEO     # type for MON
-        readoutsArray[:,15] = self.Channel1 # for clustered mode 
-        readoutsArray[:,16] = self.ADC1     # for clustered mode 
-        readoutsArray[:,17] = self.mult0    # for clustered mode 
-        readoutsArray[:,18] = self.mult1    # for clustered mode 
-        
+        else:
+            
+            readoutsArray = None
+            
         return readoutsArray
     
     def sortByTimeStamps(self):

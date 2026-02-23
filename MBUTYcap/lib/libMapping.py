@@ -93,7 +93,7 @@ class hits():
         
         leng = len(self.WiresStrips)
         
-        if leng > 1:
+        if leng >= 1:
         
             hitsArray = np.zeros((leng,11),dtype = 'int64')
             
@@ -108,6 +108,11 @@ class hits():
             hitsArray[:,8] = self.ADC1
             hitsArray[:,9] = self.mult0
             hitsArray[:,10] = self.mult1
+            
+        else:
+            
+            hitsArray = None
+            
 
         return hitsArray
    
@@ -788,7 +793,7 @@ class mapMonitor():
         # CASE 1: The specific selection exists in the data
         if np.any(selection):
             if num_found_pairs > 1:
-                print(f'\t \033[1;33mWARNING: Found {num_found_pairs} monitor sources in data. '
+                print(f'\t \033[1;33mWARNING: Found {num_found_pairs} monitor sources in data. MBUTY supports only one Monitor.'
                       f'Mapping according to config file, but data contains (Ring, Channel): {found_mon_pairs}\033[1;37m')
             
             self._map_data(selection)
@@ -797,13 +802,13 @@ class mapMonitor():
         # CASE 2: Selection is empty, but exactly ONE other monitor-valid pair exists
         elif num_found_pairs == 1:
             wrong_ring, wrong_ch = found_mon_pairs[0]
-            print(f'\t \033[1;33mWARNING: mismatch -> Only one monitor candidate found, but it is NOT the selected one in config file.'
+            print(f'\t \033[1;33mWARNING: mismatch -> One monitor candidate found, but it is NOT the selected one in config file.'
                   f' Data contains Ring {wrong_ring} and Channel {wrong_ch}.\033[1;37m')
             self.flagMONfound = False
 
         # CASE 3: No monitor data (Ring >= 11) found at all
         else:
-            print('\t \033[1;33mNo MONITOR data found in DATA file\033[1;37m')
+            print('\t \033[1;33mNo MONITOR data found in data file\033[1;37m')
             self.flagMONfound = False
 
     def _map_data(self, selection):

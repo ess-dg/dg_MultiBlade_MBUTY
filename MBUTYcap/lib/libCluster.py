@@ -170,24 +170,29 @@ class events():
         
         leng = len(self.Cassette)
         
-        eventsArray = np.zeros((leng,12), dtype = 'float64')
+        if leng >= 1:
         
-        eventsArray[:,0] = self.timeStamp
-        eventsArray[:,1] = self.Cassette
-        eventsArray[:,2] = self.positionW
-        eventsArray[:,3] = self.positionS
-        eventsArray[:,4] = self.PHW
-        eventsArray[:,5] = self.PHS
-        eventsArray[:,6] = self.multW
-        eventsArray[:,7] = self.multS
-        eventsArray[:,8] = self.PulseT
-        eventsArray[:,9] = self.PrevPT
+            eventsArray = np.zeros((leng,12), dtype = 'float64')
+            
+            eventsArray[:,0] = self.timeStamp
+            eventsArray[:,1] = self.Cassette
+            eventsArray[:,2] = self.positionW
+            eventsArray[:,3] = self.positionS
+            eventsArray[:,4] = self.PHW
+            eventsArray[:,5] = self.PHS
+            eventsArray[:,6] = self.multW
+            eventsArray[:,7] = self.multS
+            eventsArray[:,8] = self.PulseT
+            eventsArray[:,9] = self.PrevPT
+            
+            if np.shape(self.ToF)[0]>0:
+               eventsArray[:,10] = self.ToF
+            if np.shape(self.wavelength)[0]>0:
+               eventsArray[:,11] = self.wavelength
+        else:
+             
+             eventsArray = None 
         
-        if np.shape(self.ToF)[0]>0:
-           eventsArray[:,10] = self.ToF
-        if np.shape(self.wavelength)[0]>0:
-           eventsArray[:,11] = self.wavelength
-    
         return eventsArray
 
 
