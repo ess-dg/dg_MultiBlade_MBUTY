@@ -667,9 +667,10 @@ if __name__ == '__main__':
 
     ### folder and file to open (file can be a list of files)
 
-    parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
+    parameters.fileManagement.fileName = ['ESSmask2023_1000pkts.pcapng']
     # parameters.fileManagement.fileName = ['miracles_trig2.pcapng']
     # parameters.fileManagement.fileName = ['MG_2EMMAprototypes.pcapng']
+    # parameters.fileManagement.fileName = ['testData.pcapng']
     
 
     parameters.fileManagement.fileSerials = [6,2,4,9]
@@ -786,9 +787,14 @@ if __name__ == '__main__':
 
     ### ON/OFF plotting (MON ToF and Pulse Height) 
     parameters.MONitor.plotMONtofPHS = True  
+    
+    ### Pulse Height Spectr. settings for MON
+    parameters.MONitor.energyBins = 256
+    parameters.MONitor.maxEnerg   = 5000
 
     ### in mm, distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
     parameters.MONitor.MONDistance  = 6000   
+    
 
     ###############################################################################
     ### PLOTTING PARAMETERS:

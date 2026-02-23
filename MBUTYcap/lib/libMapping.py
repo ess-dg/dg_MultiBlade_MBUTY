@@ -93,19 +93,21 @@ class hits():
         
         leng = len(self.WiresStrips)
         
-        hitsArray = np.zeros((leng,11),dtype = 'int64')
+        if leng > 1:
         
-        hitsArray[:,0] = self.timeStamp
-        hitsArray[:,1] = self.Cassette
-        hitsArray[:,2] = self.WorS
-        hitsArray[:,3] = self.WiresStrips
-        hitsArray[:,4] = self.ADC
-        hitsArray[:,5] = self.PulseT
-        hitsArray[:,6] = self.PrevPT
-        hitsArray[:,7] = self.WiresStrips1
-        hitsArray[:,8] = self.ADC1
-        hitsArray[:,9] = self.mult0
-        hitsArray[:,10] = self.mult1
+            hitsArray = np.zeros((leng,11),dtype = 'int64')
+            
+            hitsArray[:,0] = self.timeStamp
+            hitsArray[:,1] = self.Cassette
+            hitsArray[:,2] = self.WorS
+            hitsArray[:,3] = self.WiresStrips
+            hitsArray[:,4] = self.ADC
+            hitsArray[:,5] = self.PulseT
+            hitsArray[:,6] = self.PrevPT
+            hitsArray[:,7] = self.WiresStrips1
+            hitsArray[:,8] = self.ADC1
+            hitsArray[:,9] = self.mult0
+            hitsArray[:,10] = self.mult1
 
         return hitsArray
    
@@ -756,55 +758,75 @@ class mapDetector():
         
         self.hits.removeUnmappedData()
 
+###############################################################################
+###############################################################################
 
 class mapMonitor():
     def __init__(self, readouts, config):
         
         self.readouts = readouts 
-        
-        self.hits = hits
-
-        self.config = config
+        self.hits     = hits
+        self.config   = config
         self.config.get_MONmap()
-
         self.flagMONfound = False
-        
 
-        RingLoc = self.readouts.Ring    == self.config.MONmap.RingID
-        # FenLoc  = self.readouts.Fen     == self.config.MONmap.FenID
-        # HyLoc   = self.readouts.hybrid  == self.config.MONmap.hybridID
-        # ASICLoc = self.readouts.ASIC    == self.config.MONmap.ASICID
-        ChLoc   = self.readouts.Channel == self.config.MONmap.channel
-    
-        # selection = RingLoc & FenLoc & HyLoc & ASICLoc & ChLoc
-        
+        # 1. Define masks
+        # Target specific selection from config
+        RingLoc   = self.readouts.Ring    == self.config.MONmap.RingID
+        ChLoc     = self.readouts.Channel == self.config.MONmap.channel
         selection = RingLoc & ChLoc
- 
-        if np.any(selection):
-            print('\033[1;36mMapping Monitor ... \033[1;37m')
-            self.hits.timeStamp = self.readouts.timeStamp[selection]
-            self.hits.ADC       = self.readouts.ADC[selection]
-            self.hits.PrevPT    = self.readouts.PrevPT[selection]
-            self.hits.PulseT    = self.readouts.PulseT[selection]
-            self.hits.Durations = self.readouts.Durations
-            self.hits.Duration  = np.ones((1), dtype = 'int64')*(np.sum(self.readouts.Durations))
-            self.flagMONfound = True
-            
-            # reshape other fields 
-            leng = len(self.hits.timeStamp)
-            self.hits.Cassette     = self.config.MONmap.ID*np.ones((leng), dtype = 'int64') 
-            self.hits.ADC1         = -1*np.ones((leng), dtype = 'int64') 
-            self.hits.WiresStrips  = -1*np.ones((leng), dtype = 'int64') 
-            self.hits.WiresStrips1 = -1*np.ones((leng), dtype = 'int64') 
-            self.hits.WorS         = -1*np.ones((leng), dtype = 'int64') 
-            self.hits.mult0        = -1*np.ones((leng), dtype = 'int64') 
-            self.hits.mult1        = -1*np.ones((leng), dtype = 'int64') 
+
+        # Identify all potential Monitor data (Ring >= 11)
+        mon_mask = self.readouts.Ring >= 11
+        # Get unique [Ring, Channel] pairs found in the data for Rings >= 11
+        found_mon_pairs = np.unique(np.c_[self.readouts.Ring[mon_mask],self.readouts.Channel[mon_mask]], axis=0)
         
+        num_found_pairs = len(found_mon_pairs)
+
+        # --- Logic Branches ---
+
+        # CASE 1: The specific selection exists in the data
+        if np.any(selection):
+            if num_found_pairs > 1:
+                print(f'\t \033[1;33mWARNING: Found {num_found_pairs} monitor sources in data. '
+                      f'Mapping according to config file, but data contains (Ring, Channel): {found_mon_pairs}\033[1;37m')
+            
+            self._map_data(selection)
+            self.flagMONfound = True
+
+        # CASE 2: Selection is empty, but exactly ONE other monitor-valid pair exists
+        elif num_found_pairs == 1:
+            wrong_ring, wrong_ch = found_mon_pairs[0]
+            print(f'\t \033[1;33mWARNING: mismatch -> Only one monitor candidate found, but it is NOT the selected one in config file.'
+                  f' Data contains Ring {wrong_ring} and Channel {wrong_ch}.\033[1;37m')
+            self.flagMONfound = False
+
+        # CASE 3: No monitor data (Ring >= 11) found at all
         else:
             print('\t \033[1;33mNo MONITOR data found in DATA file\033[1;37m')
             self.flagMONfound = False
-            
-        # self.hits.removeUnmappedData
+
+    def _map_data(self, selection):
+        print('\033[1;36mMapping Monitor ... \033[1;37m')
+        self.hits.timeStamp = self.readouts.timeStamp[selection]
+        self.hits.ADC       = self.readouts.ADC[selection]
+        self.hits.PrevPT    = self.readouts.PrevPT[selection]
+        self.hits.PulseT    = self.readouts.PulseT[selection]
+        self.hits.Durations = self.readouts.Durations
+        self.hits.Duration  = np.ones((1), dtype='int64') * (np.sum(self.readouts.Durations))
+        
+        leng = len(self.hits.timeStamp)
+        # Populate metadata fields with -1 or config ID
+        self.hits.Cassette     = self.config.MONmap.ID * np.ones((leng), dtype='int64') 
+        self.hits.ADC1         = -1 * np.ones((leng), dtype='int64') 
+        self.hits.WiresStrips  = -1 * np.ones((leng), dtype='int64') 
+        self.hits.WiresStrips1 = -1 * np.ones((leng), dtype='int64') 
+        self.hits.WorS         = -1 * np.ones((leng), dtype='int64') 
+        self.hits.mult0        = -1 * np.ones((leng), dtype='int64') 
+        self.hits.mult1        = -1 * np.ones((leng), dtype='int64')
+        
+
+      
 
 
 ###############################################################################
@@ -812,7 +834,7 @@ class mapMonitor():
 
 if __name__ == '__main__':
 
-   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcapDEV/config/'+"AMOR.json"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"AMOR.json"
    # filePathD = './'+"VMM3a_Freia.pcapng"
 
    config1 = read_json_config(filePath)
@@ -827,10 +849,10 @@ if __name__ == '__main__':
 
    # print(config2.DETparameters.cassInConfig)
    
-   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcapDEV/data/'
-   file = 'miracles_trig2.pcapng'
-   # file = 'ESSmask2023_1000pkts.pcapng'
-   file = 'testALLON20.pcapng'
+   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
+   # file = 'miracles_trig2.pcapng'
+   file = 'ESSmask2023_1000pkts.pcapng'
+   file = 'testALLON.pcapng'
    
    filePathAndFileName1 = filePath+file
 
@@ -846,11 +868,25 @@ if __name__ == '__main__':
 
    readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
    
+   # change = readouts.Ring == 0
+   # readouts.Ring[change]    = 12
+   # readouts.Channel[change] = 5
+   
    
    md  = mapDetector(readouts, config1)
    md.mappAllCassAndChannelsGlob()
    hits = md.hits
    hitsArray  = hits.concatenateHitsInArrayForDebug()
+   
+   # readouts.
+   
+   MON = mapMonitor(readouts, config1)
+   
+   # print(MON.flagMONfound)
+   
+   if MON.flagMONfound:
+       hitsMON = MON.hits
+       hitsArrayMON  = hitsMON.concatenateHitsInArrayForDebug()
    
    
    

@@ -904,6 +904,32 @@ config = {
             "info": "ON/OFF plotting for Monitor Time-of-Flight and Pulse Height spectra.",
             "set": lambda val: setattr(parameters.MONitor, 'plotMONtofPHS', val)
         },
+        "parameters.MONitor.energyBins": {
+            "label": "Energy Bins",
+            "type": "entry",
+            "default": 256,
+            "inputValidation": "int",
+            "dependsOn":  {
+                    "and": [
+                    ("parameters.MONitor.MONOnOff", True),
+                    ("parameters.MONitor.plotMONtofPHS", True)
+                    ]},
+            "info": "Number of bins to use in the MON pulse height histogram.",
+            "set": lambda val: setattr(parameters.MONitor, 'energyBins', val)
+        },
+        "parameters.MONitor.maxEnerg": {
+            "label": "Max Energy",
+            "type": "entry",
+            "default": 5000,
+            "inputValidation": "int",
+            "dependsOn":  {
+                    "and": [
+                    ("parameters.MONitor.MONOnOff", True),
+                    ("parameters.MONitor.plotMONtofPHS", True)
+                    ]},
+            "info": "Maximum energy value considered in MON pulse height analysis.",
+            "set": lambda val: setattr(parameters.MONitor, 'maxEnerg', val)
+         },
         "parameters.MONitor.MONDistance": {
             "label": "Monitor Distance (mm)",
             "type": "entry",

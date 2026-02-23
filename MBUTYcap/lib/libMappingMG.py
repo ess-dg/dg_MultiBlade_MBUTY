@@ -253,29 +253,8 @@ class read_json_config():
 ###############################################################################
 ###############################################################################
  
-
-class extractPartialConfig():
-
-    @staticmethod
-    
-    def extract(config, start, stop):
+extractPartialConfig = libMapping.extractPartialConfig
         
-        print('\033[1;36m \t Extracting Partial Configuration for Cassettes from {} to {} \033[1;37m'.format(start,stop-1))
-        # Create a deep copy of the input config
-        configOUT = copy.deepcopy(config)
-        # Modify the copied object’s cassInConfig
-        configOUT.DETparameters.cassInConfig = config.DETparameters.cassInConfig[start:stop]
-    
-        if not(configOUT.DETparameters.cassInConfig):
-            configOUT.DETparameters.cassInConfig = [config.DETparameters.cassInConfig[-1]]
-            print('\t \033[1;33mWARNING: range for config out of range, setting to last item in list!')
-        
-        if not isinstance(configOUT.DETparameters.cassInConfig,list):
-            configOUT.DETparameters.cassInConfig = [configOUT.DETparameters.cassInConfig]
-    
-        return configOUT
-        
-
 ###############################################################################
 ###############################################################################
 
@@ -498,6 +477,9 @@ class mapDetector():
         self.hits.removeUnmappedData()
 
 
+    
+###############################################################################
+###############################################################################
 #########
 """
 Acts as a pointer/wrapper for the central library libMapping 

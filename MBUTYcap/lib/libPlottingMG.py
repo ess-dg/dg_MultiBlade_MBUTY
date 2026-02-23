@@ -36,6 +36,7 @@ from lib import libPlotting
 
 preparePlotMatrix  = libPlotting.preparePlotMatrix
 checkReadoutsClass = libPlotting.checkReadoutsClass
+checkHitsClass     = libPlotting.checkHitsClass
 checkEventsClass   = libPlotting.checkEventsClass
 logScaleMap        = libPlotting.logScaleMap
 plottingMON        = libPlotting.plottingMON
@@ -266,30 +267,33 @@ class plottingHits():
         self.parameters  = parameters
         self.config      = parameters.config
         self.outOfBounds = outOfBounds 
-
+        
+        checkke = checkHitsClass(hits)
+        self.flag     = checkke.flag 
         
         self.xbins = np.linspace(0,127,128)
         
     def histChRaw1Cass(self,cassette1ID):
         
-        cass = self.hits.Cassette == cassette1ID
         
-        if self.config.DETparameters.operationMode == 'normal':
-            wires  = self.hits.WorS == 0
-            strips = self.hits.WorS == 1
-            wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.config.DETparameters.numOfWires)
-            self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
-            self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
+            cass = self.hits.Cassette == cassette1ID
             
-        else:
+            if self.config.DETparameters.operationMode == 'normal':
+                wires  = self.hits.WorS == 0
+                strips = self.hits.WorS == 1
+                wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.config.DETparameters.numOfWires)
+                self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
+                self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
+                
+            else:
+                
+                print('other modes than normal is not supported for MG')
+                
+            # elif self.config.DETparameters.operationMode == 'clustered':
+            #     wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.config.DETparameters.numOfWires)
+            #     self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
+            #     self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass])
             
-            print('other modes than normal is not supported for MG')
-            
-        # elif self.config.DETparameters.operationMode == 'clustered':
-        #     wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.config.DETparameters.numOfWires)
-        #     self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
-        #     self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass])
-        
 
     def plotChRaw(self,cassetteIDs): 
      """

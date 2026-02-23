@@ -215,6 +215,10 @@ class MONitor():
           self.plotMONtofPHS = False   #ON/OFF plotting (MON ToF and Pulse Height) 
             
           self.MONDistance  = 0   #mm distance of MON from chopper if plotMONtofPH == 1 (needed for lambda calculation if ToF)
+          
+          # for PHS hists 
+          self.energyBins = 128
+          self.maxEnerg   = 1700
 
 class dataReduction():
     def __init__(self):

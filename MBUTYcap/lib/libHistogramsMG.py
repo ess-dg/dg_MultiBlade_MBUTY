@@ -56,6 +56,7 @@ class allAxis():
         stop  = 1
         steps = 1
 
+        self.axEnergyMON    = createAx(start, stop, steps)
         self.axEnergy    = createAx(start, stop, steps)
         self.axLambda    = createAx(start, stop, steps)
         self.axWires     = createAx(start, stop, steps)
@@ -73,6 +74,8 @@ class allAxis():
         # sine = np.sin(np.deg2rad(parameters.config.DETparameters.bladesInclination))
         
         sinne = 1 
+        
+        self.axEnergyMON = createAx(0, parameters.MONitor.maxEnerg, parameters.MONitor.energyBins) 
         
         self.axEnergy = createAx(0, parameters.pulseHeigthSpect.maxEnerg, parameters.pulseHeigthSpect.energyBins)
         self.axToF    = createAx(0, parameters.plotting.ToFrange, parameters.plotting.ToFbins)
@@ -117,6 +120,7 @@ class allAxis():
         
     def updateAllAxis(self):
         
+        self.axEnergyMON.update()
         self.axEnergy.update()
         self.axLambda.update()
         self.axWires.update()

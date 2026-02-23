@@ -57,9 +57,13 @@ class checkReadoutsClass():
          
          self.flag   =  True
          
-         if len(self.readouts.Channel) == 0 :
+         print(len(self.readouts.Channel[self.readouts.Ring<=10]))
+         
+         if len(self.readouts.Channel[self.readouts.Ring<=10]) == 0 :
              
              self.flag  = False
+             
+             print(self.flag)
              
              print('\t \033[1;33mWARNING: Readouts array is empty -> skipping plots')
                    
@@ -76,6 +80,8 @@ class plottingReadouts():
         checkke = checkReadoutsClass(readouts)
         self.readouts = checkke.readouts
         self.flag     = checkke.flag 
+        
+        # print(self.flag)
 
         if self.flag is True:
             self.xbins = np.linspace(0,63,64)
@@ -119,6 +125,7 @@ class plottingReadouts():
     def plotChRaw(self,cassetteIDs): 
         
         if self.flag is True:
+
         
             self.ploth = preparePlotMatrix(1001, 2, len(cassetteIDs))
             
@@ -264,6 +271,23 @@ class plottingReadouts():
 ################################################################################################
 ################################################################################################
         
+########################################
+
+class checkHitsClass():
+     def __init__(self, hits):
+         
+         self.hits = hits
+         
+         self.flag   =  True
+         
+         if len(self.hits.timeStamp) == 0 :
+             
+             self.flag  = False
+             
+             print('\t \033[1;33mWARNING: Hits array is empty -> skipping plots')
+                   
+######################################## 
+
 class plottingHits():
    
     def __init__(self, hits, parameters, outOfBounds = True):
@@ -273,133 +297,147 @@ class plottingHits():
         self.config      = parameters.config
         self.outOfBounds = outOfBounds 
         
+        checkke = checkHitsClass(hits)
+        self.flag     = checkke.flag 
+        
         self.xbins = np.linspace(0,63,64)
         
     def histChRaw1Cass(self,cassette1ID):
         
-        cass = self.hits.Cassette == cassette1ID
+
         
-        if self.config.DETparameters.operationMode == 'normal':
-            wires  = self.hits.WorS == 0
-            strips = self.hits.WorS == 1
-            wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.config.DETparameters.numOfWires)
-            self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
-            self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
+            cass = self.hits.Cassette == cassette1ID
             
-        elif self.config.DETparameters.operationMode == 'clustered':
-            wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.config.DETparameters.numOfWires)
-            self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
-            self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass])
-        
+            if self.config.DETparameters.operationMode == 'normal':
+                wires  = self.hits.WorS == 0
+                strips = self.hits.WorS == 1
+                wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.config.DETparameters.numOfWires)
+                self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
+                self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
+                
+            elif self.config.DETparameters.operationMode == 'clustered':
+                wireCh0to31 = np.mod(self.hits.WiresStrips1[cass],self.config.DETparameters.numOfWires)
+                self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
+                self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass])
+            
 
     def plotChRaw(self,cassetteIDs): 
         
-        self.ploth = preparePlotMatrix(1003, 2, len(cassetteIDs))
+        if self.flag is True:
         
-        self.ploth.figHandle.suptitle('Hits - raw channels')
-
-        for k, cc in enumerate(cassetteIDs):
+            self.ploth = preparePlotMatrix(1003, 2, len(cassetteIDs))
             
-            self.histChRaw1Cass(cc)  
-
-            self.ploth.axHandle[0][k].bar(self.xbins,self.histow,0.8,color='r') 
-            self.ploth.axHandle[1][k].bar(self.xbins,self.histos,0.8,color='b')
-            self.ploth.axHandle[0][k].set_xlabel('hit wire ch no.')
-            self.ploth.axHandle[1][k].set_xlabel('hit strip ch no.')
-            self.ploth.axHandle[0][k].set_title('ID '+str(cc))                       
-        
+            self.ploth.figHandle.suptitle('Hits - raw channels')
+    
+            for k, cc in enumerate(cassetteIDs):
+                
+                self.histChRaw1Cass(cc)  
+    
+                self.ploth.axHandle[0][k].bar(self.xbins,self.histow,0.8,color='r') 
+                self.ploth.axHandle[1][k].bar(self.xbins,self.histos,0.8,color='b')
+                self.ploth.axHandle[0][k].set_xlabel('hit wire ch no.')
+                self.ploth.axHandle[1][k].set_xlabel('hit strip ch no.')
+                self.ploth.axHandle[0][k].set_title('ID '+str(cc))                       
+            
             # self.ploth.axHandle[0][k]
             
     def extractTimeStamp1Cass(self,cassette1ID):
              
-        sel = self.hits.Cassette == cassette1ID
-        
-        if self.config.DETparameters.operationMode == 'normal':
-            isWire   = self.hits.WorS == 0
-            isStrip  = self.hits.WorS == 1
+
             
-            # wireCh0to31 = np.mod(self.hits.WiresStrips[sel & isWire],self.config.DETparameters.numOfWires)
+            sel = self.hits.Cassette == cassette1ID
             
-            self.timeStampW = self.hits.timeStamp[sel] * isWire[sel]
-            self.timeStampS = self.hits.timeStamp[sel] * isStrip[sel]
-            
-            # self.timeStampW[self.timeStampW == 0] = np.ma.masked # same as np.nan for int64 instead of floats   
-            # self.timeStampS[self.timeStampS == 0] = np.ma.masked # same as np.nan for int64 instead of floats
- 
-        elif self.config.DETparameters.operationMode == 'clustered':
-            
-            self.timeStampW = self.hits.timeStamp[sel] 
-            self.timeStampS = self.hits.timeStamp[sel] 
-            
-        self.timeStampW = np.ma.masked_where(self.timeStampW == 0,    self.timeStampW) 
-        self.timeStampS = np.ma.masked_where(self.timeStampS == 0,    self.timeStampS) 
-            
+            if self.config.DETparameters.operationMode == 'normal':
+                isWire   = self.hits.WorS == 0
+                isStrip  = self.hits.WorS == 1
+                
+                # wireCh0to31 = np.mod(self.hits.WiresStrips[sel & isWire],self.config.DETparameters.numOfWires)
+                
+                self.timeStampW = self.hits.timeStamp[sel] * isWire[sel]
+                self.timeStampS = self.hits.timeStamp[sel] * isStrip[sel]
+                
+                # self.timeStampW[self.timeStampW == 0] = np.ma.masked # same as np.nan for int64 instead of floats   
+                # self.timeStampS[self.timeStampS == 0] = np.ma.masked # same as np.nan for int64 instead of floats
+     
+            elif self.config.DETparameters.operationMode == 'clustered':
+                
+                self.timeStampW = self.hits.timeStamp[sel] 
+                self.timeStampS = self.hits.timeStamp[sel] 
+                
+            self.timeStampW = np.ma.masked_where(self.timeStampW == 0,    self.timeStampW) 
+            self.timeStampS = np.ma.masked_where(self.timeStampS == 0,    self.timeStampS) 
+                
         
     def extractTimeStampAndCh1Cass(self,cassette1ID):
            
-        self.extractTimeStamp1Cass(cassette1ID) 
-        
-        sel = self.hits.Cassette == cassette1ID
-        
-        if self.config.DETparameters.operationMode == 'normal':
-            isWire   = self.hits.WorS == 0
-            isStrip  = self.hits.WorS == 1
+
+           
+            self.extractTimeStamp1Cass(cassette1ID) 
             
-            wireCh0to31 = np.mod(self.hits.WiresStrips,self.config.DETparameters.numOfWires) 
+            sel = self.hits.Cassette == cassette1ID
             
-            self.WireCh  = np.round((wireCh0to31[sel]+10) * isWire[sel])
-            self.StripCh = np.round((self.hits.WiresStrips[sel]+20) * isStrip[sel])
-   
-        elif self.config.DETparameters.operationMode == 'clustered':
-            wireCh0to31 = np.mod(self.hits.WiresStrips1,self.config.DETparameters.numOfWires) 
+            if self.config.DETparameters.operationMode == 'normal':
+                isWire   = self.hits.WorS == 0
+                isStrip  = self.hits.WorS == 1
+                
+                wireCh0to31 = np.mod(self.hits.WiresStrips,self.config.DETparameters.numOfWires) 
+                
+                self.WireCh  = np.round((wireCh0to31[sel]+10) * isWire[sel])
+                self.StripCh = np.round((self.hits.WiresStrips[sel]+20) * isStrip[sel])
+       
+            elif self.config.DETparameters.operationMode == 'clustered':
+                wireCh0to31 = np.mod(self.hits.WiresStrips1,self.config.DETparameters.numOfWires) 
+                
+                self.WireCh  = np.round((wireCh0to31[sel]+10))
+                self.StripCh = np.round((self.hits.WiresStrips[sel]+20))
+                
+            self.WireCh[self.WireCh == 0]   = np.ma.masked # same as np.nan for int64 instead of floats   
+            self.StripCh[self.StripCh == 0] = np.ma.masked # same as np.nan for int64 instead of floats
             
-            self.WireCh  = np.round((wireCh0to31[sel]+10))
-            self.StripCh = np.round((self.hits.WiresStrips[sel]+20))
+            self.WireCh  = self.WireCh   - 10
+            self.StripCh = self.StripCh  - 20 + self.config.DETparameters.numOfWires
             
-        self.WireCh[self.WireCh == 0]   = np.ma.masked # same as np.nan for int64 instead of floats   
-        self.StripCh[self.StripCh == 0] = np.ma.masked # same as np.nan for int64 instead of floats
-        
-        self.WireCh  = self.WireCh   - 10
-        self.StripCh = self.StripCh  - 20 + self.config.DETparameters.numOfWires
-        
     def plotTimeStamps(self,cassetteIDs):
         
-        self.plotht = preparePlotMatrix(1004, 1, len(cassetteIDs))
-        
-        self.plotht.figHandle.suptitle('Hits - W and S time stamps')
-        
-        for k, cc in enumerate(cassetteIDs):
+        if self.flag is True:
             
-            self.extractTimeStamp1Cass(cc)  
+            self.plotht = preparePlotMatrix(1004, 1, len(cassetteIDs))
             
-            xx0 = np.arange(0,len(self.timeStampW),1)
-            xx1 = np.arange(0,len(self.timeStampS),1)
+            self.plotht.figHandle.suptitle('Hits - W and S time stamps')
             
-            self.plotht.axHandle[0][k].scatter(xx0,self.timeStampW,0.8,color='r',marker='+') 
-            self.plotht.axHandle[0][k].scatter(xx1,self.timeStampS,0.8,color='b',marker='+')
-            self.plotht.axHandle[0][k].set_xlabel('trigger no.')   
-            self.plotht.axHandle[0][k].set_ylabel('time (ns)')
-            self.plotht.axHandle[0][k].set_title('ID '+str(cc)) 
-            self.plotht.axHandle[0][k].grid(axis='x', alpha=0.75)
-            self.plotht.axHandle[0][k].grid(axis='y', alpha=0.75)
-            
+            for k, cc in enumerate(cassetteIDs):
+                
+                self.extractTimeStamp1Cass(cc)  
+                
+                xx0 = np.arange(0,len(self.timeStampW),1)
+                xx1 = np.arange(0,len(self.timeStampS),1)
+                
+                self.plotht.axHandle[0][k].scatter(xx0,self.timeStampW,0.8,color='r',marker='+') 
+                self.plotht.axHandle[0][k].scatter(xx1,self.timeStampS,0.8,color='b',marker='+')
+                self.plotht.axHandle[0][k].set_xlabel('trigger no.')   
+                self.plotht.axHandle[0][k].set_ylabel('time (ns)')
+                self.plotht.axHandle[0][k].set_title('ID '+str(cc)) 
+                self.plotht.axHandle[0][k].grid(axis='x', alpha=0.75)
+                self.plotht.axHandle[0][k].grid(axis='y', alpha=0.75)
+                
     def plotTimeStampsVSCh(self,cassetteIDs):
         
-        self.plothtvs = preparePlotMatrix(1005, 1, len(cassetteIDs))
-        
-        self.plothtvs.figHandle.suptitle('Hits - W and S VS time stamps')
-        
-        for k, cc in enumerate(cassetteIDs):
+        if self.flag is True:    
+            self.plothtvs = preparePlotMatrix(1005, 1, len(cassetteIDs))
             
-            self.extractTimeStampAndCh1Cass(cc)  
+            self.plothtvs.figHandle.suptitle('Hits - W and S VS time stamps')
             
-            self.plothtvs.axHandle[0][k].scatter(self.WireCh,self.timeStampW,0.8,color='r',marker='+') 
-            self.plothtvs.axHandle[0][k].scatter(self.StripCh,self.timeStampS,0.8,color='b',marker='+')
-            self.plothtvs.axHandle[0][k].set_ylabel('time (ns)')   
-            self.plothtvs.axHandle[0][k].set_xlabel('W or S channel (after mapping)')
-            self.plothtvs.axHandle[0][k].set_title('ID '+str(cc)) 
-            self.plothtvs.axHandle[0][k].grid(axis='x', alpha=0.75)
-            self.plothtvs.axHandle[0][k].grid(axis='y', alpha=0.75)
+            for k, cc in enumerate(cassetteIDs):
+                
+                self.extractTimeStampAndCh1Cass(cc)  
+                
+                self.plothtvs.axHandle[0][k].scatter(self.WireCh,self.timeStampW,0.8,color='r',marker='+') 
+                self.plothtvs.axHandle[0][k].scatter(self.StripCh,self.timeStampS,0.8,color='b',marker='+')
+                self.plothtvs.axHandle[0][k].set_ylabel('time (ns)')   
+                self.plothtvs.axHandle[0][k].set_xlabel('W or S channel (after mapping)')
+                self.plothtvs.axHandle[0][k].set_title('ID '+str(cc)) 
+                self.plothtvs.axHandle[0][k].grid(axis='x', alpha=0.75)
+                self.plothtvs.axHandle[0][k].grid(axis='y', alpha=0.75)
         
 
 ################################################################################################
@@ -422,6 +460,7 @@ class checkEventsClass():
          self.events = events
          
          self.flag   =  True
+ 
          
          if len(self.events.positionW) == 0 :
              
@@ -904,7 +943,7 @@ class plottingMON():
         
         histTM  = hh.histog(self.outOfBounds).hist1D(self.allAxis.axToF.axis,self.eventsMON.ToF/1e9) 
         
-        histPM  = hh.histog(self.outOfBounds).hist1D(self.allAxis.axEnergy.axis,self.eventsMON.PHW) 
+        histPM  = hh.histog(self.outOfBounds).hist1D(self.allAxis.axEnergyMON.axis,self.eventsMON.PHW) 
 
         figMONTOF, (ax1, ax2) = plt.subplots(num=999,figsize=(9,6), nrows=1, ncols=2) 
         figMONTOF.suptitle('MONITOR')
@@ -914,7 +953,7 @@ class plottingMON():
         ax1.set_ylabel('counts')
         ax1.set_title('ToF')
         
-        ax2.step(self.allAxis.axEnergy.axis,histPM,'k',where='mid',label='MON')
+        ax2.step(self.allAxis.axEnergyMON.axis,histPM,'k',where='mid',label='MON')
         ax2.set_xlabel('Pulse Heigth (a.u.)')
         ax2.set_ylabel('counts')
         ax2.set_title('PHS')

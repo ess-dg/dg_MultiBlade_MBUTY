@@ -1591,8 +1591,8 @@ if __name__ == '__main__':
    file = 'ESSmask2023_1000pkts.pcapng'
    # file = 'ESSmask2023.pcapng'
    
-   filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
-   file =   '20251008_133204_duration_s_60_testMuons_00000.pcapng'
+   # filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
+   # file =   '20251008_133204_duration_s_60_testMuons_00000.pcapng'
    
    
    
