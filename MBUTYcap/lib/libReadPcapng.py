@@ -803,6 +803,8 @@ class pcapng_reader_PreAlloc():
  
         self.readouts = readouts()
         
+        self.warnedBM = False
+        
         ##########################################################
         
         if self.kafkaStream is False:
@@ -1302,7 +1304,7 @@ class pcapng_reader_PreAlloc():
         # the ICMP protocal adds 28 bytes 
         ICMPbyteExtraLength = 28 
         ICMPflag            = False 
-  
+        
         indexESS = packetData.find(b'ESS') # index of(cookie) ESS = 0x 45 53 53 it is always 44 with pcap 
         
         self.dprint('index where ESS word starts {}'.format(indexESS))
@@ -1339,7 +1341,7 @@ class pcapng_reader_PreAlloc():
                    print(' \033[1;33m    ... ---> ICMP packet found in data -> skipping packet. \033[1;37m')
                    ICMPflag = True
                else:
-                   print(' \033[1;31m    ... ---> this packet is not a ICMP packet that can be skipped, DATA MIGHT BE CORRUPTED. \033[1;37m')
+                   print(' \033[1;31m    ... ---> this packet is not an ICMP packet that can be skipped, DATA MIGHT BE CORRUPTED. \033[1;37m')
                    time.sleep(2)
            
            # if the packet is a good packet then...
@@ -1446,9 +1448,15 @@ class pcapng_reader_PreAlloc():
                                     
                                     
                                elif  self.InstrType == 'BM':
+                                   
+                                    if self.warnedBM == False : 
+                                        print('\n \033[1;33mWARNING ---> BM data found in ring < 11, treated as a detector! \033[1;37m')
+                                        self.warnedBM = True
 
+                                    # this will read the BM data it comes from rings below 11 as a detector with hybrid 0
+            
                                     mondata = MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
-                                
+
                                     self.data[index, 0] = mondata.Ring
                                     self.data[index, 1] = mondata.Fen
                                     self.data[index, 2] = 0   # VMM for MON always 0

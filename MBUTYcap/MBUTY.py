@@ -579,8 +579,6 @@ if __name__ == '__main__':
     # configFileName  = "MGEMMA_2det.json"
     
     # configFileName  = "test1h.json"
-    
-    # configFileName  = "test.json"
 
     # configFileName  = "ESTIA.json"
 
