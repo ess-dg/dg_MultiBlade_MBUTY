@@ -57,7 +57,7 @@ class checkReadoutsClass():
          
          self.flag   =  True
          
-         print(len(self.readouts.Channel[self.readouts.Ring<=10]))
+         # print(len(self.readouts.Channel[self.readouts.Ring<=10]))
          
          if len(self.readouts.Channel[self.readouts.Ring<=10]) == 0 :
              
@@ -72,7 +72,8 @@ class checkReadoutsClass():
 class plottingReadouts():
    
     def __init__(self, readouts, parameters, outOfBounds = True):
-    
+
+        
         self.parameters  = parameters
         self.config      = parameters.config
         self.outOfBounds = outOfBounds
@@ -85,6 +86,8 @@ class plottingReadouts():
 
         if self.flag is True:
             self.xbins = np.linspace(0,63,64)
+            
+        
             
     def selectHybridFromCassetteID(self,cassette1ID):
         
@@ -303,9 +306,7 @@ class plottingHits():
         self.xbins = np.linspace(0,63,64)
         
     def histChRaw1Cass(self,cassette1ID):
-        
 
-        
             cass = self.hits.Cassette == cassette1ID
             
             if self.config.DETparameters.operationMode == 'normal':
@@ -344,7 +345,6 @@ class plottingHits():
     def extractTimeStamp1Cass(self,cassette1ID):
              
 
-            
             sel = self.hits.Cassette == cassette1ID
             
             if self.config.DETparameters.operationMode == 'normal':
@@ -369,7 +369,6 @@ class plottingHits():
                 
         
     def extractTimeStampAndCh1Cass(self,cassette1ID):
-           
 
            
             self.extractTimeStamp1Cass(cassette1ID) 
@@ -517,6 +516,8 @@ class plottingEvents():
                 h2D, _, hToF = hh.histog(self.outOfBounds).histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
         
                 hProjAll = hh.histog(self.outOfBounds).hist1D(self.allAxis.axWires.axis, self.events.positionW)
+                
+
                 
                 hProj2D  = np.sum(h2D,axis=0)
                 

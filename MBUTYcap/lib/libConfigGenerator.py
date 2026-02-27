@@ -9,6 +9,7 @@ Created on Thu Jun 19 11:59:32 2025
 import json
 import os
 import sys
+import numpy as np 
 
 ###############################################################################
 ###############################################################################
@@ -54,6 +55,35 @@ def _generateCassette2ElectronicsConfigMG(num_cassettes):
             ring += 1
             hybridW = 0
             hybridS = 1
+            
+    return cassette_config
+
+
+
+# FOR SKADI
+# The helper function (renamed from a method)
+def _generateCassette2ElectronicsConfigSKADI(num_cassettes):
+    cassette_config = []
+    ring    = 0
+    IP      = 0
+    sysID      = 0
+    rotation = 'normal'
+    for i in range(num_cassettes):
+        cassette_config.append({
+            "ID": i,
+            "Ring": ring,
+            "Fen": 0,
+            "IP": IP,
+            "sysID": sysID,
+            "rotation": rotation,
+        })
+        ring += 1
+        if np.mod(i,2) == 0 :
+            rotation = 'flip'
+        else:
+            rotation = 'normal'
+            
+            
             
     return cassette_config
 
@@ -157,7 +187,38 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
             print(f"Error writing config file {filePathName}: {e}")
             return None # Return None on error
     
+    elif  DetectorType == 'SKADI':  
+        
+        # Call the helper function
+        cassette2electronics_config = _generateCassette2ElectronicsConfigSKADI(cassettes)
     
+        data = {
+            "DetectorName": DetectorName,
+            "DetectorType": DetectorType,
+            "operationMode": operationMode,
+            "cassettes": cassettes,
+            "orientation": orientation,
+            "Cassette2ElectronicsConfig": cassette2electronics_config,
+            "Xpix": 16,
+            "Ypix": 16,
+            	"PitchX_mm" : 4,
+            	"PitchY_mm" : 4,
+            	"tilesPerRow" : 20,
+            "Monitor": [
+                # {"ID": 99, "type": "RING", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
+                {"ID": 99, "type": "RING", "Ring": 11, "Channel": 0}
+            ]
+        }
+    
+        try:
+            os.makedirs(path, exist_ok=True) # Ensure directory exists
+            with open(filePathName, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=4)
+            print(f"Successfully config file generated '{filePathName}'")
+            return filePathName # Return the path as required by the GUI
+        except IOError as e:
+            print(f"Error writing config file {filePathName}: {e}")
+            return None # Return None on error
     else:
         
         print('\n \t \033[1;33mWARNING: Detector type {} not supported (only MB or MG accepted) --> exiting!\033[1;37m\n'.format(DetectorType))
@@ -194,10 +255,10 @@ def checkIfExists(pathFile):
 ###############################################################################
 
 if __name__ == '__main__':
-    path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcapDEV/config/'
+    path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
 
     DetectorName = "test"
-    DetectorType = 'MG'
+    DetectorType = 'SKADI'
     operationMode = 'normal'
     cassettes = 6
     orientation = 'vertical'

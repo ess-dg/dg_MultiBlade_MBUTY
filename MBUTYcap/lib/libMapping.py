@@ -238,9 +238,31 @@ class read_json_config():
         
         self.debug = False
         
+        self.openFile()
+
+            
+        try:
+            
+                # Process parameters
+                self.get_allParameters()
+                
+                self.checkRing11()
+                        
+                if printFlag is True:
+                    self.print_DETname()
+                    self.print_check_operationMode()
+                        
+                self.check_cassetteLabelling()
+
+        
+        except Exception as e:
+                self.get_DETtype()
+                
+       
+    def openFile(self):   
         # Open the file
         try:
-            self.ff   = open(configFile_PathAndFileName,'r') 
+            self.ff   = open(self.configFile_PathAndFileName,'r') 
         except:
             print('\n \033[1;31m---> Config File: ' + self.configFileName + ' not found \033[1;37m')
             print('\n ---> in folder: ' + self.configFilePath + ' \n -> exiting.')
@@ -253,22 +275,23 @@ class read_json_config():
             print('\n \033[1;31m---> Error in config File: ' + self.configFileName + ' \033[1;37m',end='')
             print(' ---> common mistake: last line of Cassette2ElectronicsConfig: {"ID" : X, "Ring" : X, "Fen" : X, "Hybrid" : X} must not have comma! \n -> exiting.')
             sys.exit()
-            
-        try:
-                # Process parameters
-                self.get_allParameters()
                 
-                self.checkRing11()
-                        
-                if printFlag is True:
-                    self.print_DETname()
+                
+      # # Open the file
+      #           try:
+      #               self.ff   = open(configFile_PathAndFileName,'r') 
+      #           except:
+      #               print('\n \033[1;31m---> Config File: ' + self.configFileName + ' not found \033[1;37m')
+      #               print('\n ---> in folder: ' + self.configFilePath + ' \n -> exiting.')
+      #               sys.exit()
                     
-                self.print_check_operationMode()
-                        
-                self.check_cassetteLabelling()
-                
-        except:
-                self.get_DETtype()
+      #           # Load JSON data
+      #           try:    
+      #               self.conf = json.load(self.ff)
+      #           except:
+      #               print('\n \033[1;31m---> Error in config File: ' + self.configFileName + ' \033[1;37m',end='')
+      #               print(' ---> common mistake: last line of Cassette2ElectronicsConfig: {"ID" : X, "Ring" : X, "Fen" : X, "Hybrid" : X} must not have comma! \n -> exiting.')
+      #               sys.exit()
               
         
     def __del__(self):
@@ -304,19 +327,28 @@ class read_json_config():
         self.get_DETcassettesInConfig()
         self.get_channelMap()
         self.get_MONmap()
-        # get_Mmap    = MOMm.get_MONmap(self.conf)
-        # self.MONmap = get_Mmap.MONmap 
+
             
     def print_DETname(self):
         print('\033[1;36mConfiguration for {} Detector: {}\033[1;37m'.format(self.DETparameters.type,self.DETparameters.name))
         
     def print_check_operationMode(self):
+        
     
-        if self.DETparameters.operationMode == "normal" or self.DETparameters.operationMode == "clustered":
-            print('\033[1;36mOperation Mode: {}\033[1;37m'.format(self.DETparameters.operationMode))
-        else:
-            print('\n\t\033[1;31mERROR: Operation mode (found {}) can only be either normal or clustered -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.DETparameters.operationMode),end='') 
-            sys.exit()
+        if (self.DETparameters.type == 'MG') or (self.DETparameters.type == 'MB'): 
+            if self.DETparameters.operationMode == "normal" or self.DETparameters.operationMode == "clustered":
+                print('\033[1;36mOperation Mode: {}\033[1;37m'.format(self.DETparameters.operationMode))
+            else:
+                print('\n\t\033[1;31mERROR: Operation mode (found {}) can only be either normal or clustered for VMM-based detectors -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.DETparameters.operationMode),end='') 
+                sys.exit()
+                
+        else:    
+             
+             if self.DETparameters.operationMode == "normal":
+                 print('\033[1;36mOperation Mode: {}\033[1;37m'.format(self.DETparameters.operationMode))
+             else:
+                 print('\n\t\033[1;31mERROR: Operation mode (found {}) can only be either normal for {} detectors -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.DETparameters.operationMode,self.DETparameters.type),end='') 
+                 sys.exit()
 
         
     def get_DETname(self):

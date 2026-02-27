@@ -12,8 +12,8 @@ import sys
 # import pkg_resources
 import importlib.metadata
 import time
-from lib import libEventsSoftThresholds as thre
-from lib import libMapping as maps
+# from lib import libEventsSoftThresholds as thre
+# from lib import libMapping as maps
 
 # import libEventsSoftThresholds as thre
 # import libMapping as maps
@@ -416,31 +416,44 @@ class parameters():
              
 #################
     
-    def HistNotification(self,plottingInBlocks=False):
+    # def HistNotification(self,plottingInBlocks=False):
         
-        # if plottingInBlocks is False:
-        #     if self.plotting.histogOutBounds is True:
-        #         print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin)')
-        #     else:
-        #         print('\n\t histogram outBounds param set as False (Events out of bounds not stored in any bin)')
-        # else:
-        #     if self.plotting.histogOutBounds is True:
-        #         print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin) -> overridden with False since plottingInSections is True')
-        #         self.plotting.histogOutBounds = False
-        #     else: 
-        #         print('\n\t histogram outBounds param set as False (Events out of bounds not stored in any bin)')
+    #     # if plottingInBlocks is False:
+    #     #     if self.plotting.histogOutBounds is True:
+    #     #         print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin)')
+    #     #     else:
+    #     #         print('\n\t histogram outBounds param set as False (Events out of bounds not stored in any bin)')
+    #     # else:
+    #     #     if self.plotting.histogOutBounds is True:
+    #     #         print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin) -> overridden with False since plottingInSections is True')
+    #     #         self.plotting.histogOutBounds = False
+    #     #     else: 
+    #     #         print('\n\t histogram outBounds param set as False (Events out of bounds not stored in any bin)')
             
         
-        if self.plotting.histogOutBounds is True:
+    #     if self.plotting.histogOutBounds is True:
             
-            if plottingInBlocks is False:
-                print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin)')
-            else:
-                print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin) -> overridden with False since plottingInSections is True')
-                self.plotting.histogOutBounds = False
+    #         if plottingInBlocks is False:
+    #             print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin)')
+    #         else:
+    #             print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin) -> overridden with False since plottingInSections is True')
+    #             self.plotting.histogOutBounds = False
                 
-        else:
+    #     else:
 
+    #         print('\n\t histogram outBounds param set as False (Events out of bounds not stored in any bin)')
+            
+            
+    def HistNotification(self, plottingInBlocks=False):
+        # Check if we need to perform the override
+        if plottingInBlocks and self.plotting.histogOutBounds:
+            print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin) -> overridden with False since plottingInSections is True')
+            self.plotting.histogOutBounds = False
+        
+        # Standard notification for other states
+        elif self.plotting.histogOutBounds:
+            print('\n\t histogram outBounds param set as True (Events out of bounds stored in first and last bin)')
+        else:
             print('\n\t histogram outBounds param set as False (Events out of bounds not stored in any bin)')
             
     def check_acqMode(self):

@@ -45,6 +45,7 @@ from lib import libMapping as maps
 DETECTOR_LIB_MAP = {
     'MB': {'units': 'libAbsUnitsAndLambda', 'map': 'libMapping', 'plot': 'libPlotting', 'hh': 'libHistograms'},
     'MG': {'units': 'libAbsUnitsAndLambdaMG', 'map': 'libMappingMG', 'plot': 'libPlottingMG', 'hh': 'libHistogramsMG'}
+    # 'SKADI': {'units': 'libAbsUnitsAndLambdaSKADI', 'map': 'libMapping', 'plot': 'libPlotting', 'hh': 'libHistograms'}
 }
 
 ###############################################################################
@@ -85,7 +86,7 @@ class MBUTYmain():
         
         user_name = os.environ.get('USER', os.environ.get('USERNAME', 'User'))
         print('----------------------------------------------------------------------')
-        print('\033[1;32mCiao '+user_name+'! Welcome to MBUTY 7.0\033[1;37m')
+        print('\033[1;32mCiao '+user_name+'! Welcome to MBUTY 7.1\033[1;37m')
         print('----------------------------------------------------------------------')
         plt.close("all")
         ### check version ###
@@ -140,10 +141,10 @@ class MBUTYmain():
         else:
             print('\n \033[1;31m---> Error in config File: detector type {} not supported (MB or MG only) \033[1;37m'.format(det_type),end='')
             sys.exit()
-
+               
         config = self.maps.read_json_config(os.path.join(self.parameters.fileManagement.configFilePath , self.parameters.fileManagement.configFileName))
         self.parameters.loadConfigAndUpdate(config)
-        
+
         # self.parameters.update()
         ###############################################################################
         ###############################################################################
@@ -211,6 +212,7 @@ class MBUTYmain():
             timeResolutionType =self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF=self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
             operationMode=self.parameters.config.DETparameters.operationMode, testing=testing)
             self.readouts.append(pcap.readouts)
+
         
         self.heartbeats1 = self.readouts.heartbeats
         self.heartbeats2 = self.readouts.removeNonESSpacketsHeartbeats(self.readouts.heartbeats)
@@ -218,6 +220,8 @@ class MBUTYmain():
         self.readouts.checkChopperFreq()
         
         self.readouts.checkInvalidToFsInReadouts()
+    
+        pcapr.checkIfDataIsSupported(pcap.flagSupported)
         
         ####################    
         ### for debug, generate sample readouts
@@ -426,17 +430,17 @@ class MBUTYmain():
         else:
             print('\n\033[1;36m \t Plotting Cassettes in blocks of {} \033[1;37m\n'.format(self.parameters.plottingInSectionsBlocks)) 
             fullConfig = self.parameters.config
+ 
         
         self.parameters.HistNotification(self.parameters.plottingInSections)
+
         
-            
         numOfLoops = int(np.ceil(self.parameters.config.DETparameters.numOfCassettes/self.parameters.plottingInSectionsBlocks))
             
         for loop in range(numOfLoops):
             
             plt.close("all")
             
-               
             start = loop*self.parameters.plottingInSectionsBlocks
             stop  = (loop+1)*self.parameters.plottingInSectionsBlocks
             
@@ -446,7 +450,7 @@ class MBUTYmain():
                 
             self.parameters.loadConfig(self.parameters.config)
             self.allAxis.createAllAxis(self.parameters,cassOffset = start)
-                
+
             ######################
             ### readouts
             
@@ -462,7 +466,7 @@ class MBUTYmain():
                     plread.plotChoppResets()
                     
             ######################
-            
+        
             ######################
             if self.parameters.plotting.bareReadoutsCalculation is False:
                 ### hits
@@ -478,6 +482,8 @@ class MBUTYmain():
             
             ######################
             ### events
+            
+            
             
             if self.parameters.plotting.bareReadoutsCalculation is False:
                 ### XY and XToF
@@ -581,6 +587,8 @@ if __name__ == '__main__':
     # configFileName  = "test1h.json"
 
     # configFileName  = "ESTIA.json"
+    
+    # configFileName  = "test.json"
 
     # configFileName  = "ESTIA_sect0.json"
     # configFileName  = "ESTIA_sect1.json"
@@ -657,7 +665,7 @@ if __name__ == '__main__':
 
     parameters.fileManagement.filePath = currentPath+'data/'
 
-    # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/dataVMM'
+    # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/transfer/'
 
     # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
     # parameters.fileManagement.fileName = [ 'sampleData_NormalMode.pcapng']
@@ -665,10 +673,11 @@ if __name__ == '__main__':
 
     ### folder and file to open (file can be a list of files)
 
-    parameters.fileManagement.fileName = ['ESSmask2023_1000pkts.pcapng']
+    parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
+    # parameters.fileManagement.fileName = ['ESSmask2023_1000pkts.pcapng']
     # parameters.fileManagement.fileName = ['miracles_trig2.pcapng']
     # parameters.fileManagement.fileName = ['MG_2EMMAprototypes.pcapng']
-    # parameters.fileManagement.fileName = ['testData.pcapng']
+    # parameters.fileManagement.fileName = ['skadiDataQ.pcapng']
     
 
     parameters.fileManagement.fileSerials = [6,2,4,9]
@@ -834,7 +843,7 @@ if __name__ == '__main__':
     ### ToF plot integrated over individual cassette, one per cassette
     parameters.plotting.plotToFDistr    = False
 
-    parameters.plotting.ToFrange        = 0.15    # s
+    parameters.plotting.ToFrange        = 0.12    # s
     parameters.plotting.ToFbinning      = 100e-6 # s
 
     parameters.plotting.ToFGate         = False
@@ -871,7 +880,7 @@ if __name__ == '__main__':
     ### plot PHS in log scale 
     parameters.pulseHeigthSpect.plotPHSlog = False
 
-    parameters.pulseHeigthSpect.energyBins = 128
+    parameters.pulseHeigthSpect.energyBins = 256
     parameters.pulseHeigthSpect.maxEnerg   = 1700
 
     ### plot the PHS correaltion wires vs strips
@@ -964,7 +973,8 @@ if __name__ == '__main__':
     # # ax5666.set_xlim([0,1200])
     # ax5666.grid()
     # ax5666.set_yscale('log')
-    
+    # figl5666, ax5666 = plt.subplots(num=567655,figsize=(6,6), nrows=1, ncols=1)
+    # ax5666.plot(readouts.timeStamp,readouts.ADC,'-+r')
     
     # chaxis = np.linspace(0,63,64)
     
@@ -1008,6 +1018,38 @@ if __name__ == '__main__':
     # fig334, ax335 = plt.subplots(num=101445,figsize=(12,6), nrows=1, ncols=1)   
     # ax335.step(xax,hitows,'r')
     # ax335.set_yscale('log')
+    
+    ###############################################################################
+    ###############################################################################
+    
+    # skadi
+    
+    # plt.close('all')
+    # figl5666, ax5666 = plt.subplots(num=567655,figsize=(6,6), nrows=1, ncols=1)
+    # ax5666.plot(readouts.Channel,readouts.Channel1,'+r')
+    
+    # from matplotlib.colors import LogNorm
+    # from lib import libHistograms as hh
+    
+    # bins = 16
+    # xbins = np.linspace(0,15,bins)
+    # h2D = hh.histog().hist2D(xbins, readouts.Channel, xbins, readouts.Channel1)
+    
+    # figl1, ax1 = plt.subplots(num=5,figsize=(12,12), nrows=1, ncols=1)
+    # pos1  = ax1.imshow(h2D,aspect='auto',norm=None,interpolation='none',extent=[0,bins-1,0,bins-1], origin='lower',cmap='viridis')
+    # figl1.colorbar(pos1, ax=ax1, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
+  
+
+    # temp = hh.histog(outBounds=False)
+    # h2DADC = temp.hist2D_ADC(xbins, readouts.Channel, xbins, readouts.Channel1,  readouts.ADC)
+    
+    # # h2DADC = h2DADC/len(readouts.ADC)
+    
+    # figl2, ax2 = plt.subplots(num=6,figsize=(12,12), nrows=1, ncols=1)
+    # pos2  = ax2.imshow(h2DADC,aspect='auto',norm=None,interpolation='none',extent=[0,bins-1,0,bins-1], origin='lower',cmap='viridis')
+    # figl1.colorbar(pos2, ax=ax2, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
+    
+  
     
     ###############################################################################
     ###############################################################################

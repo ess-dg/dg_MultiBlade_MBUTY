@@ -49,31 +49,19 @@ histog   = libHistograms.histog
 ###############################################################################
 ############################################################################### 
 
-class allAxis():        
-    def __init__(self):
-        
-        start = 0
-        stop  = 1
-        steps = 1
+class allAxis():    
 
-        self.axEnergyMON    = createAx(start, stop, steps)
-        self.axEnergy    = createAx(start, stop, steps)
-        self.axLambda    = createAx(start, stop, steps)
-        self.axWires     = createAx(start, stop, steps)
-        self.axStrips    = createAx(start, stop, steps)
-        self.axWires_mm  = createAx(start, stop, steps)
-        self.axStrips_mm = createAx(start, stop, steps)
-        self.axToF       = createAx(start, stop, steps)
-        self.axMult      = createAx(start, stop, steps)
-        self.axInstRate  = createAx(start, stop, steps)
-        
+    def __init__(self):
+        """ Acts as a pointer/wrapper for the central library """
+        return libHistograms.allAxis.__init__(self)    
+    
+    def updateAllAxis(self):
+        """ Acts as a pointer/wrapper for the central library """
+        return libHistograms.allAxis.updateAllAxis(self)   
+    
     def createAllAxis(self,parameters,cassOffset=0): 
         
-        # param.update()
-        
-        # sine = np.sin(np.deg2rad(parameters.config.DETparameters.bladesInclination))
-        
-        sinne = 1 
+        # sinne = 1 
         
         self.axEnergyMON = createAx(0, parameters.MONitor.maxEnerg, parameters.MONitor.energyBins) 
         
@@ -118,20 +106,8 @@ class allAxis():
         steps = round((stop-start)/parameters.plotting.instRateBin)
         self.axInstRate = createAx(start, stop, steps)
         
-    def updateAllAxis(self):
-        
-        self.axEnergyMON.update()
-        self.axEnergy.update()
-        self.axLambda.update()
-        self.axWires.update()
-        self.axStrips.update()
-        self.axWires_mm.update()
-        self.axStrips_mm.update()
-        self.axToF.update()
-        self.axMult.update()
-        self.axInstRate.update()
-        
-
+    
+ 
     
 ###############################################################################
 ############################################################################### 

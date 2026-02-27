@@ -45,20 +45,16 @@ plottingMON        = libPlotting.plottingMON
 ###############################################################################   
         
 class plottingReadouts():
-   
-    def __init__(self, readouts, parameters, outOfBounds = True):
     
-        self.parameters  = parameters
-        self.config      = parameters.config
-        self.outOfBounds = outOfBounds
-        
-        checkke = checkReadoutsClass(readouts)
-        self.readouts = checkke.readouts
-        self.flag = checkke.flag 
-        
-        # self.parameters = parameters
-        if self.flag is True:
-            self.xbins = np.linspace(0,63,64)
+    def __init__(self,  readouts, parameters, outOfBounds = True):
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingReadouts.__init__(self,  readouts, parameters, outOfBounds)   
+
+    def plotChoppResets(self):
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingReadouts.plotChoppResets(self)
+
+
             
     
     def selectHybridFromCassetteID(self,cassette1ID):
@@ -202,11 +198,7 @@ class plottingReadouts():
             
     
     
-    def plotChoppResets(self):
-        """
-        Acts as a pointer/wrapper for the central library libPlotting  
-        """
-        return libPlotting.plottingReadouts.plotChoppResets(self)
+
     
         
     def plotADCvsCh(self,cassetteIDs,allAxis,logScale = False):
@@ -261,20 +253,29 @@ class plottingReadouts():
 ############################################################################### 
         
 class plottingHits():
-    def __init__(self, hits, parameters, outOfBounds = True):
+    
+    
+    def __init__(self,  hits, parameters, outOfBounds = True):
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingHits.__init__(self,  hits, parameters, outOfBounds)   
+    
+    def plotChRaw(self,cassetteIDs): 
+     """ Acts as a pointer/wrapper for the central library """
+     return libPlotting.plottingHits.plotChRaw(self,cassetteIDs)
+
+
+    def plotTimeStamps(self,cassetteIDs): 
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingHits.plotTimeStamps(self,cassetteIDs)
+    
+    def plotTimeStampsVSCh(self,cassetteIDs): 
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingHits.plotTimeStampsVSCh(self,cassetteIDs)
+
         
-        self.hits = hits
-        self.parameters  = parameters
-        self.config      = parameters.config
-        self.outOfBounds = outOfBounds 
-        
-        checkke = checkHitsClass(hits)
-        self.flag     = checkke.flag 
-        
-        self.xbins = np.linspace(0,127,128)
-        
+
+
     def histChRaw1Cass(self,cassette1ID):
-        
         
             cass = self.hits.Cassette == cassette1ID
             
@@ -294,14 +295,6 @@ class plottingHits():
             #     self.histow = hh.histog().hist1D(self.xbins, wireCh0to31)
             #     self.histos = hh.histog().hist1D(self.xbins, self.hits.WiresStrips[cass])
             
-
-    def plotChRaw(self,cassetteIDs): 
-     """
-     Acts as a pointer/wrapper for the central library libPlotting  
-     """
-     return libPlotting.plottingHits.plotChRaw(self,cassetteIDs)
-
-     
             
     def extractTimeStamp1Cass(self,cassette1ID):
              
@@ -344,53 +337,46 @@ class plottingHits():
         self.StripCh = self.StripCh  - 20 + self.config.DETparameters.numOfWires
         
    
-    def plotTimeStamps(self,cassetteIDs): 
-     """
-     Acts as a pointer/wrapper for the central library libPlotting  
-     """
-     return libPlotting.plottingHits.plotTimeStamps(self,cassetteIDs)
-   
-    
-    def plotTimeStampsVSCh(self,cassetteIDs): 
-     """
-     Acts as a pointer/wrapper for the central library libPlotting  
-     """
-     return libPlotting.plottingHits.plotTimeStampsVSCh(self,cassetteIDs)
-            
-  
-
 ################################################################################################
 ################################################################################################
 
 
 class plottingEvents():
     
-    def __init__(self, events, parameters, allAxis, coincidenceWS_ONOFF, outOfBounds = True):
-        
-        self.parameters  = parameters
-        self.config      = parameters.config
-        self.allAxis     = allAxis
-        self.coincidenceWS_ONOFF = coincidenceWS_ONOFF
-        self.outOfBounds = outOfBounds 
-  
-        checkke = checkEventsClass(events)
-        self.events = checkke.events
-        self.flag   = checkke.flag
+    def __init__(self,  events, parameters, allAxis, coincidenceWS_ONOFF, outOfBounds = True):
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingEvents.__init__(self,  events, parameters, allAxis, coincidenceWS_ONOFF, outOfBounds) 
     
-        if self.flag is True:
-            if self.coincidenceWS_ONOFF is True:
-                print('\t building histograms ... coincidence W/S ON for ToF and Lambda ...')
-                self.selc = events.positionS >= 0 
-            else:
-                print('\t building histograms ... coincidence W/S OFF for ToF and Lambda ...')
-                self.selc = events.positionS >= - np.inf
-        
-        # self.sharex='col'
-        # self.sharey='row' 
-            
+    def plotXLambda(self,logScale=False, absUnits = False): 
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingEvents.plotXLambda(self,logScale, absUnits)
+ 
+    def plotInstantaneousRate(self,cassetteIDs): 
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingEvents.plotInstantaneousRate(self,cassetteIDs)
+    
+    def plotMultiplicity(self, cassettes):   
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingEvents.plotMultiplicity(self,cassettes)
+       
+    def plotPHS(self, cassetteIDs, logScale = False):
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingEvents.plotPHS(self,cassetteIDs, logScale )
+  
+    def plotPHScorrelation(self, cassetteIDs, logScale = False):
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingEvents.plotPHScorrelation(self,cassetteIDs, logScale )
+          
+    def plotToF(self, cassetteIDs):
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingEvents.plotToF(self,cassetteIDs)
+               
+    def plotLambda(self, cassetteIDs):
+        """ Acts as a pointer/wrapper for the central library """
+        return libPlotting.plottingEvents.plotLambda(self,cassetteIDs)    
+       
     def plotXYToF(self, logScale = False, absUnits = False, orientation = 'vertical'):
 
-        
         if self.flag is True:
             normColors = logScaleMap(logScale).normColors
          
@@ -401,7 +387,6 @@ class plottingEvents():
                 #    self.events.ToF = np.zeros((len(self.events.positionW)),dtype='int64')
                 
                 h2D, _, hToF = hh.histog(self.outOfBounds).histXYZ(self.allAxis.axWires.axis, self.events.positionW[self.selc], self.allAxis.axStrips.axis, self.events.positionS[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)
-        
         
                 # h2D[0,0]    = 8
                 # h2D[10,237] = 8
@@ -415,8 +400,7 @@ class plottingEvents():
                     fig2D, ax22 = plt.subplots(num=101,figsize=(9,9), nrows=2, ncols=2)    
                     # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
                     pos1  = ax22[0][0].imshow(h2D,aspect='auto',norm=normColors,interpolation='none', extent=[self.allAxis.axWires.start-0.5,self.allAxis.axWires.stop+0.5,self.allAxis.axStrips.start-0.5,self.allAxis.axStrips.stop+0.5], origin='lower',cmap='viridis')
-                    
-                   
+  
                     #  temporary fix because LogNorm crashes tihe imShow when Log 
                     try:
                         fig2D.colorbar(pos1, ax=ax22[0][0], orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
@@ -438,16 +422,13 @@ class plottingEvents():
                     for k in range(1,self.config.DETparameters.numOfCassettes):
                         ax22[0][0].plot([k*self.config.DETparameters.numOfWires-0.5, k*self.config.DETparameters.numOfWires-0.5], [-0.5, self.config.DETparameters.numOfStrips-1+0.5], color='m', linewidth = 1)
                         
-                    
+                    ax22[0][0].set_xlim(self.allAxis.axWires.axis[0],self.allAxis.axWires.axis[-1])
                     
                 elif orientation == 'horizontal':  
                     
                     print('\n --> \033[1;33mWARNING: horizontal is not supported for MG for now, change in config file\033[1;37m',end='')
                    
                            
- 
-                    
-    
                 
                 pos2 = ax22[1][0].step(self.allAxis.axWires.axis,hProjAll,'r',where='mid',label='1D')
                 ax22[1][0].step(self.allAxis.axWires.axis,hProj2D,'b',where='mid',label='2D')
@@ -455,10 +436,11 @@ class plottingEvents():
                    ax22[1][0].set_yscale('log')
                 ax22[1][0].set_xlabel('Wire ch.')
                 ax22[1][0].set_ylabel('counts')
-                ax22[1][0].set_xlim(self.allAxis.axWires.start,self.allAxis.axWires.stop)
+                ax22[1][0].set_xlim(self.allAxis.axWires.axis[0],self.allAxis.axWires.axis[-1])
                 legend = ax22[1][0].legend(loc='upper right', shadow=False, fontsize='large')
                 
                 
+                ###############################################################################
                 # projected over window in depth image 2D
                 
                 wireChforX = np.floor_divide(self.events.positionW[self.selc],self.config.DETparameters.wiresPerRow)
@@ -468,6 +450,8 @@ class plottingEvents():
                     time.sleep(2)
                 
                 rowsPerCol = int(self.config.DETparameters.numOfWires/self.config.DETparameters.wiresPerRow)
+                
+                
                 
                 steps   = self.config.DETparameters.numOfCassettes*rowsPerCol
                 stop    = steps - 1
@@ -487,12 +471,14 @@ class plottingEvents():
     
                 ax22[0][1].set_xlabel('Row no.')
                 ax22[0][1].set_ylabel('Grid ch.')
+
+                
+                ax22[0][1].set_xlim(self.allAxis.axWires.axis[0]/self.config.DETparameters.wiresPerRow-0.5,self.allAxis.axWires.axis[-1]/self.config.DETparameters.wiresPerRow-0.5)
                 
                 
+                # add magenta lines to plot IMG
                 for k in range(1,self.config.DETparameters.numOfCassettes):
                     ax22[0][1].plot([k*rowsPerCol-0.5, k*rowsPerCol-0.5], [-0.5, self.config.DETparameters.numOfStrips-1+0.5], color='m', linewidth = 1)
-                    
-                    
                     
                 hProjAll2 = hh.histog().hist1D(rowsAxis, wireChforX)
                     
@@ -505,7 +491,7 @@ class plottingEvents():
                    ax22[1][1].set_yscale('log')
                 ax22[1][1].set_xlabel('Row no.')
                 ax22[1][1].set_ylabel('counts')
-                ax22[1][1].set_xlim(0,stop)
+                ax22[1][1].set_xlim(self.allAxis.axWires.axis[0]/self.config.DETparameters.wiresPerRow-0.5,self.allAxis.axWires.axis[-1]/self.config.DETparameters.wiresPerRow-0.5)
                 legend = ax22[1][1].legend(loc='upper right', shadow=False, fontsize='large')
     
                 ########
@@ -528,278 +514,10 @@ class plottingEvents():
             elif absUnits == True:
                 
                 print('\n --> \033[1;33mWARNING: absUnits is not supported for MG for now, change to False to get det image\033[1;37m',end='')
-               
-          
-                # if  len(self.events.ToF) == 0 :
-                #     print('\t \033[1;33mWARNING: ToF arrasy is empty ')
-                #     self.events.ToF = np.zeros(len(self.events.positionWmm),dtype='int64')
-                
-                
-                # h2D, hProj, hToF = hh.histog(self.outOfBounds).histXYZ(self.allAxis.axWires_mm.axis, self.events.positionWmm[self.selc], self.allAxis.axStrips_mm.axis, self.events.positionSmm[self.selc], self.allAxis.axToF.axis, self.events.ToF[self.selc]/1e9)    
-        
-                # hProjAll = hh.histog(self.outOfBounds).hist1D(self.allAxis.axWires_mm.axis, self.events.positionWmm)
-                
-                # hProj2D  = np.sum(h2D,axis=0)
-                
-                # if orientation == 'vertical':
-                
-                #     fig2D, (ax1, ax2) = plt.subplots(num=101,figsize=(6,12), nrows=2, ncols=1)    
-                #     # #fig.add_axes([0,0,1,1]) #if you want to position absolute coordinate
-                #     pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop,self.allAxis.axStrips_mm.stop,self.allAxis.axStrips_mm.start], origin='upper',cmap='viridis')
-                    
-                #     #  temporary fix because LogNorm crashes tihe imShow when Log 
-                #     try:
-                #         fig2D.colorbar(pos1, ax=ax1, orientation="horizontal",fraction=0.07,anchor=(1.0,0.0))
-                #     except:
-                #         print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
-                        
-                    
-                #     # cbar1 =fig2D.colorbar(pos1,ax=ax1)
-                #     # cbar2.minorticks_on()
-                #     # ax1.set_aspect('tight')
-                #     ax1.set_xlabel('Wire coord. (mm)')
-                #     ax1.set_ylabel('Grid (mm)')
-                #     fig2D.suptitle('DET image')
-     
-                   
-                # elif orientation == 'horizontal':  
-                #     print(' --> horizontal is not supported for MG for now')
-      
-        
-        
-                # pos2 = ax2.step(self.allAxis.axWires_mm.axis,hProjAll,'r',where='mid',label='1D')
-                # ax2.step(self.allAxis.axWires_mm.axis,hProj2D,'b',where='mid',label='2D')
-                # if logScale is True:
-                #    ax2.set_yscale('log')
-                # ax2.set_xlabel('Wire coord. (mm)')
-                # ax2.set_ylabel('counts')
-                # ax2.set_xlim(self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop)
-                # legend = ax2.legend(loc='upper right', shadow=False, fontsize='large')
-            
-            
-                # fig2, ax2 = plt.subplots(num=102,figsize=(6,6), nrows=1, ncols=1) 
-                # pos2  = ax2.imshow(hToF,aspect='auto',norm=normColors,interpolation='nearest',extent=[self.allAxis.axToF.start*1e3,self.allAxis.axToF.stop*1e3,self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop], origin='lower',cmap='viridis')
-                
-                # #  temporary fix because LogNorm crashes tihe imShow when Log 
-                # try:
-                #      fig2.colorbar(pos2, ax=ax2)
-                # except:
-                #      print('\n --> \033[1;33mWARNING: Cannot plot XY in Log scale, changed to linear\033[1;37m',end='')
-                
-                
-                # ax2.set_ylabel('Wire coord. (mm)')
-                # ax2.set_xlabel('ToF (ms)')
-                # fig2.suptitle('DET ToF')
-                
-            # return h2D
-        
-            
-    def plotXLambda(self,logScale=False, absUnits = False): 
-         """
-         Acts as a pointer/wrapper for the central library libPlotting  
-         """
-         return libPlotting.plottingEvents.plotXLambda(self,logScale, absUnits)
-
-    
-
-    def plotMultiplicity(self, cassettes):
-        
-        if self.flag is True:
-        
-            self.width      = 0.2
-            self.extentplot = 7
-
-            ########
-
-            self.plotMult = preparePlotMatrix(401, 2, len(cassettes))
-            
-            self.plotMult.figHandle.suptitle('Events - multiplicity')
-            
-            xx =  self.allAxis.axMult.axis
-
-            for k, cass in enumerate(cassettes):
-   
-                selc  = self.events.Cassette  == cass
-                sel2D = self.events.positionS >= 0
-
-                myw  = hh.histog(self.outOfBounds).hist1D(xx,self.events.multW[selc]) # wires all
-                mys  = hh.histog(self.outOfBounds).hist1D(xx,self.events.multS[selc]) # strips all
-                mywc = hh.histog(self.outOfBounds).hist1D(xx,self.events.multW[selc & sel2D]) # wires coinc
-           
-                my2Dwc = hh.histog().hist2D(xx,self.events.multW[selc & sel2D],xx,self.events.multS[selc & sel2D]) # wires coinc with strips 2D
-                
-                if np.any(selc):
-                    mywnorm    = myw/np.sum(myw[1:])
-                    mysnorm    = mys/np.sum(mys[1:])
-                    mysnormall = mys/np.sum(mys)
-                    mywcnorm   = mywc/np.sum(mywc[1:])
-                    my2Dwcnorm = my2Dwc/np.sum(my2Dwc)
-                else:
-                    mywnorm    = np.zeros((len(xx)))
-                    mysnorm    = np.zeros((len(xx)))
-                    mysnormall = np.zeros((len(xx)))
-                    mywcnorm   = np.zeros((len(xx)))
-                    my2Dwcnorm = np.zeros((len(xx),len(xx)))
-
-             ########
-       
-                self.plotMult.axHandle[0][k].bar(xx[:self.extentplot]-self.width,mywnorm[:self.extentplot],self.width,color='m',label='w') 
-                self.plotMult.axHandle[0][k].bar(xx[1:self.extentplot]+self.width,mysnorm[1:self.extentplot],self.width,color='b',label='s')
-                self.plotMult.axHandle[0][k].bar(xx[0]+self.width,mysnormall[0],self.width,color='c',label='no s')
-                self.plotMult.axHandle[0][k].bar(xx[:self.extentplot],mywcnorm[:self.extentplot],self.width,color='r',label='w/s')
-                self.plotMult.axHandle[0][k].set_xlabel('multiplicity')
-                self.plotMult.axHandle[0][k].set_title('ID '+str(cass))
-                legend = self.plotMult.axHandle[0][k].legend(loc='upper right', shadow=False, fontsize='large')
-                if k == 0:
-                    self.plotMult.axHandle[0][k].set_ylabel('probability')
-                
-                
-                pos1 = self.plotMult.axHandle[1][k].imshow(my2Dwcnorm[:self.extentplot,:self.extentplot],aspect='auto',norm=None,interpolation='none',extent=[xx[0]-0.5,xx[self.extentplot]-0.5,xx[0]-0.5,xx[self.extentplot]-0.5], origin='lower',cmap='jet')
-                self.plotMult.axHandle[1][k].set_xlabel('multiplicity wires')
-                if k == 0:
-                    self.plotMult.axHandle[1][k].set_ylabel('multiplicity grids')
-                    
-                plt.colorbar(pos1,ax=self.plotMult.axHandle[1][k])
-       
-
-    def plotPHS(self, cassetteIDs, logScale = False):
-        
-        if self.flag is True:
-        
-            normColors = logScaleMap(logScale).normColors
-            
-            self.plotPHS = preparePlotMatrix(601, 4, len(cassetteIDs))
-            
-            self.plotPHS.figHandle.suptitle('Pulse Heigth Spectra')
-            
-            wireCh0to31Round = np.round(np.mod(self.events.positionW,self.config.DETparameters.numOfWires))
-                    
-            stripChRound     = np.round(self.events.positionS)
-            
-            wireAx  = np.linspace(0,self.config.DETparameters.numOfWires-1, self.config.DETparameters.numOfWires)
-            
-            stripAx = np.linspace(0,self.config.DETparameters.numOfStrips-1, self.config.DETparameters.numOfStrips)
-            
-            for k, cass in enumerate(cassetteIDs):
-       
-                    selc  = self.events.Cassette  == cass
-                    sel2D = self.events.positionS >= 0
-                    
-                    PHSw  = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc],wireAx,wireCh0to31Round[selc]) # wires 
-                    PHSs  = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis,self.events.PHS[selc & sel2D],stripAx,stripChRound[selc & sel2D]) # strips
-                    PHSwc = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc & sel2D],wireAx,wireCh0to31Round[selc & sel2D]) # wires coinc with strips 2D
-                    
-                    self.plotPHS.axHandle[0][k].imshow(PHSw,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,wireAx[0],wireAx[-1]], origin='lower',cmap='jet')
-                    self.plotPHS.axHandle[1][k].imshow(PHSs,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,stripAx[0],stripAx[-1]], origin='lower',cmap='jet')
-                    self.plotPHS.axHandle[2][k].imshow(PHSwc,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,wireAx[0],wireAx[-1]], origin='lower',cmap='jet')
-                    
-                    self.plotPHS.axHandle[0][k].set_title('ID '+str(cass))
-                    if k == 0:
-                        self.plotPHS.axHandle[0][k].set_ylabel('wires ch. no.')
-                        self.plotPHS.axHandle[1][k].set_ylabel('grid ch. no.')
-                        self.plotPHS.axHandle[2][k].set_ylabel('wires coinc. ch. no.')
-               
-                       #global PHS
-                    PHSGw  = np.sum(PHSw,axis=0)
-                    PHSGs  = np.sum(PHSs,axis=0)
-                    PHSGwc = np.sum(PHSwc,axis=0)
-           
-                    # global PHS plot
-                    self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGw,'r',where='mid',label='w')
-                    self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGs,'b',where='mid',label='g')
-                    self.plotPHS.axHandle[3][k].step(self.allAxis.axEnergy.axis,PHSGwc,'k',where='mid',label='w/g')
-                    self.plotPHS.axHandle[3][k].set_xlabel('pulse height (a.u.)')
-                    self.plotPHS.axHandle[3][k].legend(loc='upper right', shadow=False, fontsize='large')
-                    if k == 0:
-                       self.plotPHS.axHandle[3][k].set_ylabel('counts')
-                   
-    def plotPHScorrelation(self, cassetteIDs, logScale = False):
-        
-        if self.flag is True:
-              
-           normColors = logScaleMap(logScale).normColors
-        
-           self.plotPHScorr = preparePlotMatrix(602, 1, len(cassetteIDs), figSize=(12,6))
-           
-           self.plotPHScorr.figHandle.suptitle('Pulse Heigth Spectrum - Correlation W/G')
-        
-           for k, cass in enumerate(cassetteIDs):
-   
-                selc  = self.events.Cassette  == cass
-                sel2D = self.events.positionS >= 0
-                
-                PHScorr  = hh.histog(self.outOfBounds).hist2D(self.allAxis.axEnergy.axis,self.events.PHW[selc & sel2D],self.allAxis.axEnergy.axis,self.events.PHS[selc & sel2D]) 
-               
-                self.plotPHScorr.axHandle[0][k].imshow(PHScorr,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop,self.allAxis.axEnergy.start,self.allAxis.axEnergy.stop], origin='lower',cmap='jet')
-                
-                self.plotPHScorr.axHandle[0][k].set_title('ID '+str(cass))
-                self.plotPHScorr.axHandle[0][k].set_xlabel('pulse height wires (a.u.)')
-                if k == 0:
-                    self.plotPHScorr.axHandle[0][k].set_ylabel('pulse height grids (a.u.)')
-    
-            
-    def plotInstantaneousRate(self,cassetteIDs): 
-         """
-         Acts as a pointer/wrapper for the central library libPlotting  
-         """
-         return libPlotting.plottingEvents.plotInstantaneousRate(self,cassetteIDs)
-    
-                   
-    def plotToF(self, cassetteIDs):
-        
-        if self.flag is True:
-           
-          self.plotTT = preparePlotMatrix(333, 1, len(cassetteIDs))
-          
-          self.plotTT.figHandle.suptitle('ToF distr per column')
-          
-          for k, cass in enumerate(cassetteIDs):
-               
-               selc  = self.events.Cassette  == cass
-               sel2D = self.events.positionS >= 0
-               
-               histTT  = hh.histog(self.outOfBounds).hist1D(self.allAxis.axToF.axis,self.events.ToF[selc & sel2D]/1e9) 
-               
-               histTT1 = hh.histog(self.outOfBounds).hist1D(self.allAxis.axToF.axis,self.events.ToF[selc]/1e9)
-               
-               self.plotTT.axHandle[0][k].step(self.allAxis.axToF.axis*1e3,histTT1,'r',where='mid',label='all')
-               self.plotTT.axHandle[0][k].step(self.allAxis.axToF.axis*1e3,histTT,'b',where='mid',label='2D')
-               self.plotTT.axHandle[0][k].set_xlabel('ToF (ms)')
-               self.plotTT.axHandle[0][k].set_title('ID '+str(cass))
-               if k == 0:
-                   self.plotTT.axHandle[0][k].set_ylabel('counts')
-                   
-              
-               legend = self.plotTT.axHandle[0][k].legend(loc='upper right', shadow=False, fontsize='large')
-               
-    def plotLambda(self, cassetteIDs):
-        
-        if self.flag is True:
-           
-          self.plotWA = preparePlotMatrix(339, 1, len(cassetteIDs))
-          
-          self.plotWA.figHandle.suptitle('Wavelength distr per column')
-          
-          for k, cass in enumerate(cassetteIDs):
-               
-               selc  = self.events.Cassette  == cass
-               sel2D = self.events.positionS >= 0
-               
-               histWA  = hh.histog(self.outOfBounds).hist1D(self.allAxis.axLambda.axis,self.events.wavelength[selc & sel2D]) 
-               
-               histWA1 = hh.histog(self.outOfBounds).hist1D(self.allAxis.axLambda.axis,self.events.wavelength[selc])
-               
-               self.plotWA.axHandle[0][k].step(self.allAxis.axLambda.axis,histWA1,'r',where='mid',label='all')
-               self.plotWA.axHandle[0][k].step(self.allAxis.axLambda.axis,histWA,'b',where='mid',label='2D')
-               self.plotWA.axHandle[0][k].set_xlabel('wavelength (A)')
-               self.plotWA.axHandle[0][k].set_title('ID '+str(cass))
-               if k == 0:
-                   self.plotWA.axHandle[0][k].set_ylabel('counts')
-                   
-              
-               legend = self.plotWA.axHandle[0][k].legend(loc='upper right', shadow=False, fontsize='large')
   
 
+
+ 
             
 ###############################################################################
 ###############################################################################

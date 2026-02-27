@@ -17,6 +17,10 @@ import sys
 import ipaddress
 # from lib import libPlotting as plo
 
+import matplotlib.pyplot as plt
+
+# import libHistograms as hh 
+
 
 ###############################################################################
 ###############################################################################
@@ -49,7 +53,8 @@ class readouts():
         self.mult0     = np.zeros((0), dtype = datype)
         self.mult1     = np.zeros((0), dtype = datype)
         self.heartbeats = np.zeros((0), dtype = datype)
-               
+                      
+    
     def transformInReadouts(self, data):
         self.Ring       = data[:,0]
         self.Fen        = data[:,1]
@@ -349,12 +354,16 @@ class readouts():
            
         print('\n \033[1;33m\t Readouts %d: %d ToFs valid (%d valid, %d PrevPulse corrected) - invalid %d \033[1;37m' % (NumReadouts,validToFs,validValid,validPrevP,invalidToFsCounter2))
  
-    
+
+        
+        
 ###############################################################################
 ###############################################################################
 
 class checkInstrumentID():
     def __init__(self):
+        
+        self.flagSupported  = True
         
         self.FREIAID   = 72     #0x48
         self.ESTIAID   = 76     #0x4c
@@ -370,6 +379,7 @@ class checkInstrumentID():
         self.CSPECID     = 60
         self.MIRACLESID  = 56
         self.DREAMID     = 96  #0x48
+        self.SKADIID     = 32  #0x20
         
     def setBytesPerReadout(self,ID):
         
@@ -378,20 +388,29 @@ class checkInstrumentID():
         if ID in (self.FREIAID, self.ESTIAID, self.AMORID, self.TBLVMMID, self.NMXID, self.TREXID):
             self.bytesPerReadout = 20
             self.InstrType = 'VMM'
+            self.flagSupported = True
         elif ID == self.LOKIID:
             self.bytesPerReadout = 24
             self.InstrType = 'R5560bis'
+            self.flagSupported = False
         elif ID in (self.BIFROSTID, self.CSPECID, self.MIRACLESID):
             self.bytesPerReadout = 24
             self.InstrType = 'R5560'
+            self.flagSupported = False
+        elif ID == self.SKADIID:
+            self.bytesPerReadout = 20
+            self.InstrType = 'SKADI'
+            self.flagSupported = False
         elif ID == self.BMID:
             self.bytesPerReadout = 20
             self.InstrType = 'BM'
+            self.flagSupported = True
         else:
             self.bytesPerReadout = 20
             self.InstrType = None
+            self.flagSupported  = False
         
-        return self.bytesPerReadout, self.InstrType
+        return self.bytesPerReadout, self.InstrType, self.flagSupported
       
     def printInfoDataStream(self,ID):
         
@@ -418,7 +437,10 @@ class checkInstrumentID():
         elif ID == self.LOKIID:
              print('found LOKI data stream - R5560')   
              print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis, NOT SUPPORTED FOR NOW \033[1;37m',end='')
-             
+        
+        elif ID == self.SKADIID:
+                  print('found SKADI data stream')
+                  print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
         elif ID == self.BMID:
                   print('found BM data stream',end='') 
             
@@ -428,6 +450,18 @@ class checkInstrumentID():
         else:
              print('found some other data stream',end='')
              
+        
+#################################################             
+ 
+class checkIfDataIsSupported():
+    def __init__(self, flagSupported):
+        
+        if flagSupported == False:
+            print('\n\t\033[1;31m---> This data format is not supported yet, only reader, nor plotting or analysis ---> Exiting ... \n\033[1;37m') 
+            sys.exit()
+   
+        # else:
+        #     pass
         
 #################################################  
 
@@ -476,7 +510,44 @@ class  checkWhich_RingFenHybrid_InFile():
 
            
         
-#################################################   
+#################################################  
+class SKADI():
+    def __init__(self, buffer, NSperClockTick):
+        
+        # valid for MIRACLES, BIFROST and  CSPEC -- NOT LOKI!  
+         
+        # decode into little endian integers
+        PhysicalRing = int.from_bytes(buffer[0:1], byteorder='little')
+        self.Fen     = int.from_bytes(buffer[1:2], byteorder='little')
+        self.Length  = int.from_bytes(buffer[2:4], byteorder='little')
+        timeHI       = int.from_bytes(buffer[4:8], byteorder='little')
+        timeLO       = int.from_bytes(buffer[8:12], byteorder='little')
+        
+        opModeFlags  = int.from_bytes(buffer[12:13], byteorder='little')
+        self.sysID        = int.from_bytes(buffer[13:14], byteorder='little')
+        self.IP           = int.from_bytes(buffer[14:15], byteorder='little')
+        self.ASICchannel  = int.from_bytes(buffer[15:16], byteorder='little')
+        self.column       = int.from_bytes(buffer[16:17], byteorder='little')
+        self.row          = int.from_bytes(buffer[17:18], byteorder='little')
+        self.ADC          = int.from_bytes(buffer[18:20], byteorder='little')
+        
+        
+        #######################
+        #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
+        self.Ring = int(np.floor(PhysicalRing/2))
+        # self.Ring = PhysicalRing
+        #######################
+        
+        self.OpMod    = (opModeFlags & 0xF0) >> 4
+        self.flags    = (opModeFlags & 0x0F) 
+
+        timeHIns = int(round(timeHI * 1000000000))
+        timeLOns = int(round(timeLO * NSperClockTick))
+        
+        self.timeCoarse  = timeHIns + timeLOns
+        
+#################################################
+ 
 class R5560():
     def __init__(self, buffer, NSperClockTick):
         
@@ -742,12 +813,15 @@ class checkIfFileExistInFolder():
 class pcapng_reader():
     def __init__(self, filePathAndFileName, NSperClockTick, MONtype = 'RING' , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, operationMode = 'normal', pcapLoadingMethod='allocate'):
         
+        self.flagSupported = True
         # try:
             # print('PRE-ALLOC method to load data ...')
         pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONtype,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
         pcapng.allocateMemory(pcapLoadingMethod)
         pcapng.read()
         self.readouts = pcapng.readouts
+        
+        self.flagSupported = pcapng.flagSupported
 
         # except:
         #     # print('\n... PRE-ALLOC method failed, trying APPEND method to load data ...')
@@ -845,6 +919,8 @@ class pcapng_reader_PreAlloc():
         self.overallDataIndex         = 0 
         self.preallocLength           = 0   
         
+        self.flagSupported = True
+        
         self.data = np.zeros((self.preallocLength,19), dtype='int64')
         
         ##########################################################
@@ -930,7 +1006,7 @@ class pcapng_reader_PreAlloc():
                     checkInstrumentID().printInfoDataStream(ids)
                 
                 # Dynamically update readout size (using first packet as reference)
-                self.singleReadoutSize, _ = checkInstrumentID().setBytesPerReadout(packetsInstrIDs[0])
+                self.singleReadoutSize, _, _ = checkInstrumentID().setBytesPerReadout(packetsInstrIDs[0])
             
             else:
                 # Handle all Warning cases (3+ IDs, or 2 IDs without BM)
@@ -940,7 +1016,7 @@ class pcapng_reader_PreAlloc():
                     print('\n---> ', end='')
                     checkInstrumentID().printInfoDataStream(ids)
                     
-                self.singleReadoutSize, _ = checkInstrumentID().setBytesPerReadout(packetsInstrIDs[0])
+                self.singleReadoutSize, _, _ = checkInstrumentID().setBytesPerReadout(packetsInstrIDs[0])
  
         except: 
              print('--> unable to verify data format version.')   
@@ -1237,16 +1313,24 @@ class pcapng_reader_PreAlloc():
             sys.exit()      
         
     def timeAdjustedWithResolution(self):
-        
+
         # self.readouts.calculateTimeStamp(self.NSperClockTick)
-        if self.operationMode == 'normal':
-            if self.timeResolutionType == 'fine':
-                self.readouts.calculateTimeStampWithTDC(self.NSperClockTick)
-            elif self.timeResolutionType == 'coarse':
-                self.readouts.timeStamp = self.readouts.timeCoarse       
-        elif self.operationMode == 'clustered': 
-            # tere is no time fine in clustered mode is already one sigle time 
-                    self.readouts.timeStamp = self.readouts.timeCoarse
+        
+        if self.InstrType == 'VMM':
+
+            if self.operationMode == 'normal':
+                if self.timeResolutionType == 'fine':
+                    self.readouts.calculateTimeStampWithTDC(self.NSperClockTick)
+                elif self.timeResolutionType == 'coarse':
+                    self.readouts.timeStamp = self.readouts.timeCoarse       
+            elif self.operationMode == 'clustered': 
+                # tere is no time fine in clustered mode is already one sigle time 
+                        self.readouts.timeStamp = self.readouts.timeCoarse
+                        
+        else:     
+             
+             self.readouts.timeStamp = self.readouts.timeCoarse
+
 
     def removeOtherDataTypes(self,removeONOFF=True):
         
@@ -1338,7 +1422,7 @@ class pcapng_reader_PreAlloc():
                
                if (indexDataStart == self.headerSize + ICMPbyteExtraLength):
                    # this is the case where the packet is sent instead of UDP but as a ping from RMM ICMP message -> need to skip this package 
-                   print(' \033[1;33m    ... ---> ICMP packet found in data -> skipping packet. \033[1;37m')
+                   print(' \033[1;33m    ... ---> but it is an ICMP packet -> skipping packet. \033[1;37m')
                    ICMPflag = True
                else:
                    print(' \033[1;31m    ... ---> this packet is not an ICMP packet that can be skipped, DATA MIGHT BE CORRUPTED. \033[1;37m')
@@ -1347,7 +1431,7 @@ class pcapng_reader_PreAlloc():
            # if the packet is a good packet then...
            if ICMPflag == False:
                # dinamically change readoutsize 20 or 24 bytes 
-               self.singleReadoutSize, self.InstrType = checkInstrumentID().setBytesPerReadout(self.extractInstrID(packetData,indexESS))             
+               self.singleReadoutSize, self.InstrType, self.flagSupported = checkInstrumentID().setBytesPerReadout(self.extractInstrID(packetData,indexESS))             
                
                readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
                # or alternatively
@@ -1445,8 +1529,33 @@ class pcapng_reader_PreAlloc():
                                     self.data[index, 16] = R5560data.ampB     # ADC1 = AMP B
                                     self.data[index, 17] = 1  #mult0 for R5560 always 1
                                     self.data[index, 18] = 1  #mult1 for R5560 always 1
-                                    
-                                    
+                                 
+                               elif self.InstrType == 'SKADI':
+                                   
+                                   SKADIdata = SKADI(packetData[indexStart:indexStop], self.NSperClockTick)
+                                     
+                                   # SKADIdata.ASICchannel = 0
+                                   
+                                   self.data[index, 0] = SKADIdata.Ring
+                                   self.data[index, 1] = SKADIdata.Fen
+                                   self.data[index, 2] = SKADIdata.IP     #VMM 
+                                   self.data[index, 3] = SKADIdata.sysID  #hybrid
+                                   self.data[index, 4] = SKADIdata.ASICchannel #ASIC 
+                                   self.data[index, 5] = SKADIdata.column      # channel 
+                                   self.data[index, 6] = SKADIdata.ADC      # ADC 
+                                   self.data[index, 7] = SKADIdata.flags # BC 
+                                   self.data[index, 8] = 1 #OTh for SKADI always 1
+                                   self.data[index, 9] = 0 #TDC for SKADI always 0
+                                   self.data[index, 10] = SKADIdata.OpMod  #GEO 
+                                   self.data[index, 11] = SKADIdata.timeCoarse
+                                   self.data[index, 12] = PulseT
+                                   self.data[index, 13] = PrevPT
+                                   self.data[index, 14] = 0  # G0 if 1 is calibration so always 0 
+                                   self.data[index, 15] = SKADIdata.row      # ch1 
+                                   self.data[index, 16] = 0   # ADC1 is 0 for SKADI 
+                                   self.data[index, 17] = 1  #mult0 for SKADI always 1
+                                   self.data[index, 18] = 1  #mult1 for SKADI always 1
+ 
                                elif  self.InstrType == 'BM':
                                    
                                     if self.warnedBM == False : 
@@ -1480,7 +1589,7 @@ class pcapng_reader_PreAlloc():
                                else:
                                         
                                      print('\n\t\033[1;31mERROR: Data format not supported ---> Exiting ... \n\033[1;37m',end='') 
-                                     sys.exit() 
+                                     # sys.exit() 
                            
                            # overwrite if MONITOR 
                            is_lemo_mode = (self.MONtype == 'LEMO' and vmm3.Ring >= 11)
@@ -1604,6 +1713,9 @@ if __name__ == '__main__':
    file = 'ESSmask2023_1000pkts.pcapng'
    # file = 'ESSmask2023.pcapng'
    
+   filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
+   file = 'skadiDataQ.pcapng'
+   
    # filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
    # file =   '20251008_133204_duration_s_60_testMuons_00000.pcapng'
    
@@ -1724,6 +1836,28 @@ if __name__ == '__main__':
    # for k in range(446900,447000,1):
    #      print(" \t Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time {} s, BC {}, OverTh {}, ADC {}, TDC {}, GEO {} " \
    #                               .format(vmm3.Ring[k],vmm3.Fen[k],vmm3.VMM[k],vmm3.hybrid[k],vmm3.ASIC[k],vmm3.Channel[k],vmm3.timeStamp[k],vmm3.BC[k],vmm3.OTh[k],vmm3.ADC[k],vmm3.TDC[k],vmm3.GEO[k]))
+   
+   # skadi 
+   # plt.close('all')
+   # figl5666, ax5666 = plt.subplots(num=567655,figsize=(6,6), nrows=1, ncols=1)
+   # ax5666.plot(readouts.Channel,readouts.Channel1,'+r')
+   
+   # bins = 16
+   # xbins = np.linspace(0,15,bins)
+   # h2D = hh.histog().hist2D(xbins, readouts.Channel, xbins, readouts.Channel1)
+   
+   # figl1, ax1 = plt.subplots(num=5,figsize=(12,12), nrows=1, ncols=1)
+   # pos1  = ax1.imshow(h2D,aspect='auto',norm=None,interpolation='none',extent=[0,bins-1,0,bins-1], origin='lower',cmap='viridis')
+   # figl1.colorbar(pos1, ax=ax1, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
+ 
+
+   # h2DADC = hh.histog().hist2DADC(xbins, readouts.Channel, xbins, readouts.Channel1, readouts.ADC)
+   
+   # figl2, ax2 = plt.subplots(num=6,figsize=(12,12), nrows=1, ncols=1)
+   # pos2  = ax2.imshow(h2DADC,aspect='auto',norm=None,interpolation='none',extent=[0,bins-1,0,bins-1], origin='lower',cmap='viridis')
+   # figl1.colorbar(pos2, ax=ax2, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
+   
+   
    
    tElapsedProfiling = time.time() - tProfilingStart
    print('\n Data Loading Completed in %.2f s' % tElapsedProfiling) 

@@ -152,7 +152,7 @@ class histog():
         self.outBounds=outBounds
     
     def hist1D(self,xbins,xvar):
-    
+        
         binX   = len(xbins) 
             
         Xmin   = np.min(xbins) 
@@ -165,11 +165,10 @@ class histog():
         if self.outBounds == False:
             if not(np.all(index >= 0) and np.all(index <= binX-1)):
                 print('\033[1;33mWARNING: 1D hist out of bounds values found.\033[1;37m') 
-                return self.hist
+                # return self.hist
         
         for k in range(binX):    
             self.hist[k] = np.sum(index == k) 
-           
             if self.outBounds == True:
                 # fill overflow last bin and first bin
                 self.hist[0]  += np.sum(index<0)
@@ -234,6 +233,74 @@ class histog():
                        cont = 1  
                           
         return self.hist
+    
+    ###############################################################################
+    ############################################################################### 
+    
+    def hist2D_ADC(self, xbins, xvar, ybins, yvar, ADC):
+        
+        # if np.size(self.ybins) == 1 and np.size(self.yvar) == 1:
+        #     hist = 0
+        #     return hist
+        
+        binX   = len(xbins) 
+        binY   = len(ybins) 
+            
+        Xmin   = np.min(xbins) 
+        Xmax   = np.max(xbins) 
+        
+        Ymin   = np.min(ybins) 
+        Ymax   = np.max(ybins) 
+    
+        cont = 0
+        
+        self.hist = np.zeros((binY,binX)) 
+        
+        if not( (len(xvar) == len(yvar)) or (len(xvar) == len(ADC)) or (len(ADC) == len(yvar))):
+            print('\n \t \033[1;31m----> ABORTED: X and Y not same length! \033[1;37m\n')
+            return self.hist
+        
+        xxtemp =  np.int_(np.around(((binX-1)*((xvar-Xmin)/(Xmax-Xmin)))))
+        yytemp =  np.int_(np.around(((binY-1)*((yvar-Ymin)/(Ymax-Ymin)))))
+             
+        self.norma = np.zeros((binY,binX))
+        
+        for k in range(len(xvar)):
+         
+            xx =  xxtemp[k]
+            yy =  yytemp[k]
+        
+            if self.outBounds == True:
+                
+               if ( (xx >= 0) and (xx <= binX-1) and (yy >= 0) and (yy <= binY-1) ):
+                   self.hist[yy,xx]  += ADC[k]
+                   self.norma[yy,xx] += 1
+               elif ( (xx >= 0) and (xx > binX-1) and (yy >= 0) and (yy <= binY-1) ):
+                   self.hist[yy,-1]  += ADC[k]
+                   self.norma[yy,-1] += 1
+               elif ( (xx < 0) and (xx <= binX-1) and (yy >= 0) and (yy <= binY-1) ):
+                    self.hist[yy,0]   += ADC[k]
+                    self.norma[yy,0]  += 1
+               elif ( (xx >= 0) and (xx <= binX-1) and (yy < 0) and (yy <= binY-1) ):
+                   self.hist[0,xx]   += ADC[k]
+                   self.norma[0,xx]  += 1
+               elif ( (xx >= 0) and (xx <= binX-1) and (yy >= 0) and (yy > binY-1) ):
+                   self.hist[-1,xx]   += ADC[k]
+                   self.norma[-1,xx]  += 1
+                   
+            elif self.outBounds == False:
+  
+               if ( (xx >= 0) and (xx <= binX-1) and (yy >= 0) and (yy <= binY-1) ):
+                  self.hist[yy,xx] += ADC[k]
+                  self.norma[yy,xx]  += 1
+               else:
+                   if cont == 0:
+                       print('\033[1;33mWARNING: 2D hist out of bounds values found.\033[1;37m') 
+                       cont = 1  
+                          
+            self.histNorm = self.hist / self.conta  
+                        
+        return self.hist, self.histNorm 
     
     ###############################################################################
     ############################################################################### 

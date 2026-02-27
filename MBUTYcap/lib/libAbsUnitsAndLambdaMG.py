@@ -40,7 +40,6 @@ from lib import libAbsUnitsAndLambda
 ###############################################################################
 #  import std dewfault class 
 
-
 Tof2LambdaConverter = libAbsUnitsAndLambda.Tof2LambdaConverter
 gateToF             = libAbsUnitsAndLambda.gateToF
 
@@ -48,21 +47,36 @@ gateToF             = libAbsUnitsAndLambda.gateToF
 ###############################################################################
 
 
-###############################################################################
-
 class calculateAbsUnits():
-    def __init__(self, events, parameters, text=''): 
-         
-         if text == '':
-             print('\033[1;36m\nCalculating absolute units ... \033[1;37m',end='')
-         else: 
-             print('\033[1;36m\nCalculating absolute units '+text+'  ... \033[1;37m',end='')
-         
-         self.events = events
-         self.events.createAbsUnitsArrays()
-         
-         self.parameters = parameters
-                 
+    
+    def __init__(self, events, parameters, text=''):
+        """ Acts as a pointer/wrapper for the central library """
+        return libAbsUnitsAndLambda.calculateAbsUnits.__init__(self, events, parameters, text)    
+
+    def calculateToF(self, removeInvalidToFs = False):
+        """ Acts as a pointer/wrapper for the central library """
+        return libAbsUnitsAndLambda.calculateAbsUnits.calculateToF(self, removeInvalidToFs)
+
+    def calculateWavelength(self):
+        """ Acts as a pointer/wrapper for the central library """
+        return libAbsUnitsAndLambda.calculateAbsUnits.calculateWavelength(self)     
+
+    def calculateWavelengthMON(self):
+        """ Acts as a pointer/wrapper for the central library """
+        return libAbsUnitsAndLambda.calculateAbsUnits.calculateWavelengthMON(self)    
+    
+    def calculateToFandWavelength(self,removeInvalidToFs = False):
+        """ Acts as a pointer/wrapper for the central library """
+        return libAbsUnitsAndLambda.calculateAbsUnits.calculateToFandWavelength(self,removeInvalidToFs) 
+
+    def cleanInvalidToFs(self):
+        """ Acts as a pointer/wrapper for the central library """
+        return libAbsUnitsAndLambda.calculateAbsUnits.cleanInvalidToFs(self) 
+    
+    
+    
+    
+    
     def calculatePositionAbsUnit(self):
          
          # IF glob coordinates :
@@ -122,47 +136,7 @@ class calculateAbsUnits():
              
              # here do trigonometry ... 
      
-        
-     ###############################################################################
-     ###############################################################################
-     
-    def calculateToF(self, removeInvalidToFs = False):
-        """
-        Acts as a pointer/wrapper for the central library 
-        """
-        return libAbsUnitsAndLambda.calculateAbsUnits.calculateToF(self, removeInvalidToFs)
 
-
-    def calculateWavelength(self):
-        """
-        Acts as a pointer/wrapper for the central library 
-        """
-        return libAbsUnitsAndLambda.calculateAbsUnits.calculateWavelength(self)     
-
-
-    def calculateWavelengthMON(self):
-        """
-        Acts as a pointer/wrapper for the central library 
-        """
-        return libAbsUnitsAndLambda.calculateAbsUnits.calculateWavelengthMON(self)    
-
-    
-    def calculateToFandWavelength(self,removeInvalidToFs = False):
-        """
-        Acts as a pointer/wrapper for the central library 
-        """
-        return libAbsUnitsAndLambda.calculateAbsUnits.calculateToFandWavelength(self) 
-   
-            
-         
-    def cleanInvalidToFs(self):
-        """
-        Acts as a pointer/wrapper for the central library 
-        """
-        return libAbsUnitsAndLambda.calculateAbsUnits.cleanInvalidToFs(self) 
-
-        
-  
 ###############################################################################
 ###############################################################################
 

@@ -38,10 +38,14 @@ from lib import libKafkaRawReadoutMessage as rawmsg
 class  kafka_reader():
     def __init__(self, NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONtype = 'RING' , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = False):
         
+        self.flagSupported = True
+        
         kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets, broker, topic, MONtype, MONring, timeResolutionType,operationMode,testing)
         kaf.allocateMemory()
         kaf.read()
         self.readouts = kaf.readouts  
+        
+        self.flagSupported = kaf.flagSupported
              
         if sortByTimeStampsONOFF is True:
        
@@ -70,6 +74,8 @@ class kafka_reader_preAlloc():
         self.MONring        = MONring
         self.timeResolutionType  = timeResolutionType
         self.operationMode       = operationMode
+        
+        self.flagSupported = True
 
         #############################
         
@@ -218,6 +224,7 @@ class kafka_reader_preAlloc():
                         if flagTopicFound == True:    
                             self.rea.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
                             indexPackets += 1
+                            
         
   
  
@@ -268,6 +275,7 @@ class kafka_reader_preAlloc():
             self.rea.removeOtherDataTypes(removeONOFF=self.removeremoveOtherDataTypesONOFF)
             
             self.readouts = self.rea.readouts
+            self.flagSupported = self.rea.flagSupported
             
             # print(self.readouts.Channel)
             
