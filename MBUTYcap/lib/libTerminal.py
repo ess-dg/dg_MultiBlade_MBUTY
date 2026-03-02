@@ -354,6 +354,7 @@ class dumpToPcapngUtil():
         
         # delay in seconds 
         delay = int(round(delay)) 
+    
         
         # capture all packets 
         # command1 = self.pathToTshark+'tshark'+' -i '+str(self.interface)
@@ -373,7 +374,7 @@ class dumpToPcapngUtil():
             
         fileExt  = '.pcapng'
         
-        print('\nrecording '+str(numOfFiles)+' pcapng files ...')
+        print('recording {} pcapng file(s) from interface {} ...'.format(numOfFiles,self.interface))
         
         if delay > 0:
             print('\ndelaying each file start of '+str(delay)+' s ...')
@@ -384,21 +385,24 @@ class dumpToPcapngUtil():
             
             currentAcqStr = str(format(currentAcq,'05d'))
             
-            print('\n... recording file no. '+currentAcqStr+' of '+str(format(numOfFiles-1,'05d')))
+            print('... recording file no. '+currentAcqStr+' of '+str(format(numOfFiles-1,'05d')))
             
             ###############################
             if typeOfCapture == 'packets':
                 
-                print('by packets -> {} packets'.format(extraArgs))
+                print('    by packets -> {} packets'.format(extraArgs))
                 
                 numOfPackets   = extraArgs
-                commandDetails = ' -c '+str(numOfPackets)
+                try:
+                    commandDetails = ' -c '+str(numOfPackets)
+                except Exception as e:
+                     print(f"{e}")    
                 
                 fileNameDetails2    = 'pkts'+str(numOfPackets)
   
             elif typeOfCapture == 'filesize':
                 
-                print('by file size -> {} kbytes'.format(extraArgs))
+                print('    by file size -> {} kbytes'.format(extraArgs))
                 
                 sizekbytes     = extraArgs
                 commandDetails = ' -a filesize:'+str(sizekbytes)
@@ -408,7 +412,7 @@ class dumpToPcapngUtil():
                 
             elif typeOfCapture == 'duration':
                 
-                print('by duration -> {} s'.format(extraArgs))
+                print('    by duration -> {} s'.format(extraArgs))
                 
                 duration_s     = extraArgs
                 commandDetails = ' -a duration:'+str(duration_s)
@@ -446,12 +450,12 @@ class dumpToPcapngUtil():
             
             if temp != 0:
                 # print(' \033[1;31mERROR ... \n\033[1;37m')
-                print(' ERROR ... EXIT!\n')
+                print(f"\033[1;31mERROR: interface does not exist or you do not have the rights to record -> exiting. \033[1;37m")
                 sys.exit()
                 
         allStatus = sum(status)      
         if allStatus == 0: 
-               print('\nrecording completed!')
+               print('recording completed!')
         else:
                print(' \033[1;31mERROR ... \n\033[1;37m')
                   
