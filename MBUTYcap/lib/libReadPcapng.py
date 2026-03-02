@@ -890,7 +890,7 @@ class pcapng_reader_PreAlloc():
             fileName = temp2[1]
             
             self.fileSize   = os.path.getsize(self.filePathAndFileName) #bytes
-            print('{} is {} kbytes'.format(fileName,self.fileSize/1000))
+            print(f'{fileName} is {self.fileSize/1000000:.4f} Mbytes')
             
             self.mainHeaderSize  = 42  #bytes only if pcap file otherise from kafka this is 0 
             
@@ -1724,10 +1724,10 @@ if __name__ == '__main__':
    # file = 'ESSmask2023.pcapng'
    
    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
-   file = 'skadiDataQ.pcapng'
+   # file = 'skadiDataQ.pcapng'
    
-   filePath = '/Users/francescopiscitelli/Desktop/'
-   file =   'testNOData.pcapng'
+   # filePath = '/Users/francescopiscitelli/Desktop/'
+   # file =   'testNOData.pcapng'
    
    
    
