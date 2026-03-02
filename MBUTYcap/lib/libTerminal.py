@@ -393,10 +393,8 @@ class dumpToPcapngUtil():
                 print('    by packets -> {} packets'.format(extraArgs))
                 
                 numOfPackets   = extraArgs
-                try:
-                    commandDetails = ' -c '+str(numOfPackets)
-                except Exception as e:
-                     print(f"{e}")    
+
+                commandDetails = ' -c '+str(numOfPackets)
                 
                 fileNameDetails2    = 'pkts'+str(numOfPackets)
   
