@@ -5,14 +5,17 @@ import platform
 import subprocess
 
 # --- Configuration ---
-APP_NAME = "MBUTY GUI"
+APP_NAME    = "MBUTY GUI"
 SCRIPT_NAME = "MBUTY_GUI.py"
-# For best results on Windows, use a .ico file if available
-ICON_PATH = os.path.expanduser("~/mbuty/MBUTYcap/GUI/logos/MBlogo.png")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_PATH = os.path.join(BASE_DIR, SCRIPT_NAME)
 SYSTEM = platform.system()
+
+# For best results on Windows, use a .ico file if available
+ICON_PATH1 = os.path.join(BASE_DIR, "GUI", "logos", "MBUTYlogo.ico")
+ICON_PATH2  = os.path.join(BASE_DIR, "GUI", "logos", "MBUTYlogo.png")
+ICON_PATH3 = os.path.join(BASE_DIR, "GUI", "logos", "MBUTYlogo.icns")
 
 def make_executable(path):
     st = os.stat(path)
@@ -30,7 +33,7 @@ def create_windows_shortcut():
     oLink.TargetPath = "pythonw.exe"
     oLink.Arguments = "{SCRIPT_PATH}"
     oLink.WorkingDirectory = "{BASE_DIR}"
-    oLink.IconLocation = "{ICON_PATH}"
+    oLink.IconLocation = "{ICON_PATH1}"
     oLink.Save
     """
     vbs_path = os.path.join(BASE_DIR, "temp_shortcut.vbs")
@@ -48,7 +51,7 @@ Type=Application
 Name={APP_NAME}
 Exec=python3 {SCRIPT_PATH}
 Path={BASE_DIR}
-Icon={ICON_PATH}
+Icon={ICON_PATH2}
 Terminal=false
 Categories=Application;Development;
 """
@@ -82,12 +85,12 @@ def create_macos_shortcut():
         subprocess.run(["osacompile", "-o", app_path, "-e", applescript], check=True)
         
         # 3. Apply the Icon (Using the AppKit bridge)
-        if os.path.exists(ICON_PATH):
+        if os.path.exists(ICON_PATH3):
             icon_cmd = f'''
 try:
     from AppKit import NSWorkspace, NSImage
     ws = NSWorkspace.sharedWorkspace()
-    img = NSImage.alloc().initByReferencingFile_("{ICON_PATH}")
+    img = NSImage.alloc().initByReferencingFile_("{ICON_PATH2}")
     ws.setIcon_forFile_options_(img, "{app_path}", 0)
 except Exception as e:
     print(e)
@@ -100,6 +103,8 @@ except Exception as e:
         
     except Exception as e:
         print(f"macOS Error: {e}")
+
+
 
 def main():
     if SYSTEM == "Windows":

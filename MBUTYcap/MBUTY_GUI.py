@@ -777,7 +777,7 @@ class MBUTY_GUI_App:
             "style": ("bold",) # Font style
         })
         # === Right Logo ===
-        right_logo_path = os.path.join(currentPath,"GUI", "logos", "MGMBlogos.png")
+        right_logo_path = os.path.join(currentPath,"GUI", "logos", "MBMGMBUTYlogos.png")
         if os.path.isfile(right_logo_path):
             try:
                 img = Image.open(right_logo_path)
@@ -885,7 +885,7 @@ class MBUTY_GUI_App:
     def show_about_dialog(self):
         """Displays software version and author information."""
         # Assuming these are defined in your library/constants
-        version = "7.1 (Feb 27, 2026)" 
+        version = "7.1 (Mar 2, 2026)" 
         author = "Francesco Piscitelli"
         
         about_text = (
@@ -895,7 +895,7 @@ class MBUTY_GUI_App:
             f"Author: {author}\n"
             f"mail: francesco.piscitelli@ess.eu\n\n"
             f"Created: June 13, 2021\n"
-            f"Description: Utility Tool for Analysis. Supports readers for all data formats from VMM, BM, R5560 and SKADI. Supports MB and MG detectors for analysis. "
+            f"Description: Utility Tool for Analysis. Supports readers for all data formats: VMM, BM, R5560 and SKADI. Supports MB and MG detectors for analysis. "
         )
         messagebox.showinfo("About MBUTY", about_text)    
 
