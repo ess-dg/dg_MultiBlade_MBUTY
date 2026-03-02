@@ -1,60 +1,115 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Mar  2 14:28:31 2026
-
-@author: essdaq
-"""
-
 import os
 import stat
+import platform
+import subprocess
 
 # --- Configuration ---
 APP_NAME = "MBUTY GUI"
 SCRIPT_NAME = "MBUTY_GUI.py"
-# Pointing specifically to your logo path
+# For best results on Windows, use a .ico file if available
 ICON_PATH = os.path.expanduser("~/mbuty/MBUTYcap/GUI/logos/MBlogo.png")
 
-# Automatically gets the full path to your current folder
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_PATH = os.path.join(BASE_DIR, SCRIPT_NAME)
-DESKTOP_PATH = os.path.expanduser("~/Desktop/mbuty.desktop")
+SYSTEM = platform.system()
 
-# --- Verification ---
-if not os.path.exists(ICON_PATH):
-    print(f"⚠️ Warning: Icon not found at {ICON_PATH}")
-    # Fallback to a system icon if yours is missing
-    ICON_PATH = "utilities-terminal"
+def make_executable(path):
+    st = os.stat(path)
+    os.chmod(path, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
-# --- The Content of the .desktop file ---
-desktop_content = f"""[Desktop Entry]
+def create_windows_shortcut():
+    desktop = os.path.join(os.environ['USERPROFILE'], 'Desktop')
+    shortcut_path = os.path.join(desktop, f"{APP_NAME}.lnk")
+    
+    # Use 'pythonw.exe' instead of 'python.exe' to suppress the console window
+    vbs_script = f"""
+    Set oWS = WScript.CreateObject("WScript.Shell")
+    sLinkFile = "{shortcut_path}"
+    Set oLink = oWS.CreateShortcut(sLinkFile)
+    oLink.TargetPath = "pythonw.exe"
+    oLink.Arguments = "{SCRIPT_PATH}"
+    oLink.WorkingDirectory = "{BASE_DIR}"
+    oLink.IconLocation = "{ICON_PATH}"
+    oLink.Save
+    """
+    vbs_path = os.path.join(BASE_DIR, "temp_shortcut.vbs")
+    with open(vbs_path, "w") as f: f.write(vbs_script)
+    subprocess.run(["cscript", "//NoLogo", vbs_path], check=True)
+    os.remove(vbs_path)
+    print(f"Windows: Shortcut created using 'pythonw' (No Terminal).")
+
+def create_linux_shortcut():
+    desktop_path = os.path.expanduser("~/Desktop/mbuty.desktop")
+    # Setting Terminal=false prevents the terminal window from opening
+    content = f"""[Desktop Entry]
 Version=1.0
 Type=Application
 Name={APP_NAME}
-Comment=Launch MBUTY Control GUI
 Exec=python3 {SCRIPT_PATH}
 Path={BASE_DIR}
 Icon={ICON_PATH}
-Terminal=true
+Terminal=false
 Categories=Application;Development;
 """
+    with open(desktop_path, "w") as f: f.write(content)
+    make_executable(desktop_path)
+    print(f"Linux: Shortcut created with Terminal=false.")
+    print(f"FINAL STEP: You MUST right-click the file on the Desktop and select 'Allow Launching'.")
 
-def create_shortcut():
+def create_macos_shortcut():
+    app_path = os.path.expanduser(f"~/Desktop/{APP_NAME}.app")
+    
+    # 1. Get the absolute path to the current python3 executable
     try:
-        # 1. Write the file to the Desktop
-        with open(DESKTOP_PATH, "w") as f:
-            f.write(desktop_content)
+        python_path = subprocess.check_output(["which", "python3"]).decode().strip()
+    except:
+        python_path = "python3" # Fallback
+
+    # 2. Build the AppleScript. 
+    # We 'cd' into the directory so your script's relative paths work.
+    applescript = (
+        f'do shell script "cd \'{BASE_DIR}\' && '
+        f'{python_path} \'{SCRIPT_PATH}\' > /dev/null 2>&1 &"'
+    )
+    
+    try:
+        # Clear old version if it exists
+        if os.path.exists(app_path):
+            subprocess.run(["rm", "-rf", app_path])
+            
+        # Create the .app bundle
+        subprocess.run(["osacompile", "-o", app_path, "-e", applescript], check=True)
         
-        # 2. Make it executable (chmod +x)
-        st = os.stat(DESKTOP_PATH)
-        os.chmod(DESKTOP_PATH, st.st_mode | stat.S_IEXEC)
-        
-        print(f"✅ Success! Shortcut created at: {DESKTOP_PATH}")
-        print(f"🖼️  Icon set to: {ICON_PATH}")
-        print("\n👉 Final Step: Right-click the icon on your Desktop and select 'Allow Launching'.")
+        # 3. Apply the Icon (Using the AppKit bridge)
+        if os.path.exists(ICON_PATH):
+            icon_cmd = f'''
+try:
+    from AppKit import NSWorkspace, NSImage
+    ws = NSWorkspace.sharedWorkspace()
+    img = NSImage.alloc().initByReferencingFile_("{ICON_PATH}")
+    ws.setIcon_forFile_options_(img, "{app_path}", 0)
+except Exception as e:
+    print(e)
+'''
+            subprocess.run(["python3", "-c", icon_cmd], check=False)
+            # Force Finder to refresh the icon
+            subprocess.run(["touch", app_path])
+
+        print(f"macOS: Created silent .app bundle at {app_path}")
         
     except Exception as e:
-        print(f"❌ Failed to create shortcut: {e}")
+        print(f"macOS Error: {e}")
+
+def main():
+    if SYSTEM == "Windows":
+        create_windows_shortcut()
+    elif SYSTEM == "Linux":
+        create_linux_shortcut()
+    elif SYSTEM == "Darwin":
+        create_macos_shortcut()
+    else:
+        print(f"Unsupported OS: {SYSTEM}")
 
 if __name__ == "__main__":
-    create_shortcut()
+    main()
