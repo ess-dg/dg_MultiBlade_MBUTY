@@ -1116,43 +1116,49 @@ class pcapng_reader_PreAlloc():
         
         counter = 0
         
-        for block in scanner:
-            
-            if counter <= endCounter:
-            
-                counter+=1
-    
-                if counter == 4 or np.mod(counter,5000) == 0:
-                    print('.',end='')
+        try:
+            for block in scanner:
+                
+                if counter <= endCounter:
+                
+                    counter+=1
         
-                self.counterPackets += 1
-                self.dprint("packet {}".format(self.counterPackets))
-        
-                try:
-                    packetSize = block.packet_len
-                    self.dprint("packetSize {} bytes".format(packetSize))
-                    
-                    packetData = block.packet_data
-                    
-                    indexESS   = packetData.find(b'ESS')
- 
-                    if indexESS != -1:
-                        
-                       FWversionTemp = self.extractFWversion(packetData, indexESS)
-                       instrIDtemp   = self.extractInstrID(packetData, indexESS)
-
-                except:
-                    self.dprint('--> other packet found No. {}'.format(self.counterPackets-self.counterCandidatePackets))
-                else:
-                    self.counterCandidatePackets += 1
-
-                    packetsSizes     = np.append(packetsSizes,packetSize)
+                    if counter == 4 or np.mod(counter,5000) == 0:
+                        print('.',end='')
+            
+                    self.counterPackets += 1
+                    self.dprint("packet {}".format(self.counterPackets))
+            
                     try:
-                        packetsFWversion  = np.append(packetsFWversion,FWversionTemp)
-                        packetsInstrID    = np.append(packetsInstrID,instrIDtemp)
+                        packetSize = block.packet_len
+                        self.dprint("packetSize {} bytes".format(packetSize))
+                        
+                        packetData = block.packet_data
+                        
+                        indexESS   = packetData.find(b'ESS')
+     
+                        if indexESS != -1:
+                            
+                           FWversionTemp = self.extractFWversion(packetData, indexESS)
+                           instrIDtemp   = self.extractInstrID(packetData, indexESS)
+    
                     except:
-                        # print('this data does not contain FW version')
-                        pass
+                        self.dprint('--> other packet found No. {}'.format(self.counterPackets-self.counterCandidatePackets))
+                    else:
+                        self.counterCandidatePackets += 1
+    
+                        packetsSizes     = np.append(packetsSizes,packetSize)
+                        try:
+                            packetsFWversion  = np.append(packetsFWversion,FWversionTemp)
+                            packetsInstrID    = np.append(packetsInstrID,instrIDtemp)
+                        except:
+                            # print('this data does not contain FW version')
+                            pass
+                            
+        except Exception as e:
+            print(f"\n\033[1;31mERROR: {e} ---> probably data is being created and file not closed -> exiting. \033[1;37m")
+            sys.exit()  
+        
       
         self.dprint('counterPackets {}, counterCandidatePackets {}'.format(self.counterPackets,self.counterCandidatePackets))    
         
@@ -1447,8 +1453,8 @@ class pcapng_reader_PreAlloc():
                else:
                    
                    if readoutsInPacket.is_integer() is not True:
-                       print('\n \033[1;31mWARNING ---> something wrong with data bytes dimensions \033[1;37m')
-                       time.sleep(2)
+                       print('\n\033[1;31mWARNING ---> something wrong with data bytes dimensions \033[1;37m')
+                       time.sleep(1)
                    else:
                        
                        # only read header if there is no emplty packet
@@ -1627,8 +1633,12 @@ class pcapng_reader_PreAlloc():
     
            
                            ###########
-                           
-               self.readouts.heartbeats[indexPackets] = PulseT
+               try:            
+                   self.readouts.heartbeats[indexPackets] = PulseT
+               except:
+                   print('\033[1;31m        ---> probably rings are offline or data is corrupted \033[1;37m')
+                   sys.exit()
+                     
             
     
            if np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0:
@@ -1716,8 +1726,8 @@ if __name__ == '__main__':
    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    file = 'skadiDataQ.pcapng'
    
-   # filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
-   # file =   '20251008_133204_duration_s_60_testMuons_00000.pcapng'
+   filePath = '/Users/francescopiscitelli/Desktop/'
+   file =   'testNOData.pcapng'
    
    
    
