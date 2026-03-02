@@ -52,3 +52,7 @@ import importlib.metadata
 
 -----
 For changing default values in the GUI change values in GUI/gui_config.py
+
+-----
+For installing the GUI with a desktop ICON in Linux execute in a terminal:
+>> python install_gui.py
