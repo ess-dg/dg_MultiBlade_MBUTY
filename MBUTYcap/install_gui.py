@@ -8,13 +8,13 @@ import subprocess
 APP_NAME    = "MBUTY GUI"
 SCRIPT_NAME = "MBUTY_GUI.py"
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_PATH = os.path.join(BASE_DIR, SCRIPT_NAME)
-SYSTEM = platform.system()
+SYSTEM      = platform.system()
 
 # For best results on Windows, use a .ico file if available
 ICON_PATH1 = os.path.join(BASE_DIR, "GUI", "logos", "MBUTYlogo.ico")
-ICON_PATH2  = os.path.join(BASE_DIR, "GUI", "logos", "MBUTYlogo.png")
+ICON_PATH2 = os.path.join(BASE_DIR, "GUI", "logos", "MBUTYlogo.png")
 ICON_PATH3 = os.path.join(BASE_DIR, "GUI", "logos", "MBUTYlogo.icns")
 
 def make_executable(path):
@@ -90,11 +90,12 @@ def create_macos_shortcut():
 try:
     from AppKit import NSWorkspace, NSImage
     ws = NSWorkspace.sharedWorkspace()
-    img = NSImage.alloc().initByReferencingFile_("{ICON_PATH2}")
+    img = NSImage.alloc().initByReferencingFile_("{ICON_PATH3}")
     ws.setIcon_forFile_options_(img, "{app_path}", 0)
 except Exception as e:
     print(e)
 '''
+
             subprocess.run(["python3", "-c", icon_cmd], check=False)
             # Force Finder to refresh the icon
             subprocess.run(["touch", app_path])
@@ -115,6 +116,9 @@ def main():
         create_macos_shortcut()
     else:
         print(f"Unsupported OS: {SYSTEM}")
+
+###############################################################################
+###############################################################################
 
 if __name__ == "__main__":
     main()

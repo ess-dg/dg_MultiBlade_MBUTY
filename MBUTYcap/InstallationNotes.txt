@@ -1,0 +1,89 @@
+
+INSTALLATION NOTES and PACKAGES 
+
+MBUTY 7.1 
+--------------------------------------------------
+What is in this version:
+
+libReader for CAEN R5560, SKADI and VMM
+Plots and analysis for VMM MG and MB detectors 
+
+--------------------------------------------------
+
+the repository is cloned via git as git clone https://gitlab.esss.lu.se/detectorgroup/multiblade/mbuty.git
+
+MBUTY.py is the backend and runs from spyder or terminal, settings are at the bottom of the file. 
+MBUTY_GUI.py is the GUI and can be started from terminal as: >> pyhton MBUTY_GUI.py 
+
+For installing the GUI with a desktop ICON in Linux/Mac OS or Windows execute in a terminal:
+>> python install_gui.py
+
+--------------------------------------------------
+PACKAGES NEEDED:
+
+Install pacing package in anaconda 
+Python >=3.9 
+>> pip install python-pcapng
+
+NOTE: must be the python installation you use to run the scripts, e.g. >> /opt/anaconda3/bin/python -m pip install python-pcapng 
+
+For Kafka streamer is needed:
+
+>> pip install flatbuffers
+>> pip install configargparse
+>> pip install confluent_kafka
+
+if you dont'use kafka you can skip those three above. 
+
+Other packages (included in anaconda):
+    pkg_resources
+    pillow
+    matplotlib
+    pandas
+    PyQt5
+    h5py
+
+The GUI uses tkinter so no Qt needed. 
+--------------------------------------------------
+
+NOTES after installation : 
+
+-----
+If sudo is needed:
+
+In /lib/libTerminal.py -> class dumpToPcapngutil -> function dump 
+
+Comment/uncomment 
+
+# command1 = 'sudo ' + os.path.join(self.pathToTshark,'tshark')+' -i '+str(self.interface) + ' -f "udp"'
+command1 = os.path.join(self.pathToTshark,'tshark')+' -i '+str(self.interface) + ' -f "udp"'
+
+-----
+The drop-down window to select the files in the GUI change the file display default:
+
+In /GUI/multi_select_dropdown.py -> class MultiSelectDropDown -> init 
+
+# make this true to sort filenames Z to A, instead false means A -> Z 
+self.rev = False
+
+-----
+
+For changing default values in the GUI when it opens -> change values in GUI/gui_config.py
+
+-----
+
+This is probably obsolete now, and it works as is. Kept here just in case. 
+
+MBUTY checks your packages isntalled and prompt a measage if they are not found. 
+
+For some OS you need to change the method:
+In /lib/libParameters.py -> class checkPackageInstallation -> function init
+
+# self.installed = {pkg.key for pkg in pkg_resources.working_set}
+self.installed = {dist.name for dist in importlib.metadata.distributions()}
+
+And import
+# import pkg_resources
+import importlib.metadata
+
+--------------------------------------------------
