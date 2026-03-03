@@ -44,12 +44,13 @@ def create_windows_shortcut():
 
 def create_linux_shortcut():
     desktop_path = os.path.expanduser("~/Desktop/mbuty.desktop")
+    python_exe = subprocess.check_output(["which", "python3"]).decode().strip()  
     # Setting Terminal=false prevents the terminal window from opening
     content = f"""[Desktop Entry]
 Version=1.0
 Type=Application
 Name={APP_NAME}
-Exec=python3 {SCRIPT_PATH}
+Exec={python_exe} {SCRIPT_PATH}
 Path={BASE_DIR}
 Icon={ICON_PATH2}
 Terminal=false
