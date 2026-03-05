@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V7.0 2026/02/17     francescopiscitelli     ######################
+########    V7.1 2026/02/17     francescopiscitelli     ######################
 ###############################################################################
 ###############################################################################
 #  includes streaming from kafka 
@@ -200,14 +200,14 @@ class MBUTYmain():
                 ### check which Ring, Fen and Hybrid is present in the selected File
                 # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,self.parameters.clockTicks.NSperClockTick).check()
                 ### load data
-                pcap = pcapr.pcapng_reader(os.path.join(fileDialogue.filePath,fileName), self.parameters.clockTicks.NSperClockTick, MONtype = self.parameters.config.MONmap.type, MONring = self.parameters.config.MONmap.RingID, \
+                pcap = pcapr.pcapng_reader(os.path.join(fileDialogue.filePath,fileName), NSperClockTick=self.parameters.clockTicks.NSperClockTick, MONtype = self.parameters.config.MONmap.type, MONring = self.parameters.config.MONmap.RingID, \
                 timeResolutionType = self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF = self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
                 operationMode = self.parameters.config.DETparameters.operationMode, pcapLoadingMethod=self.parameters.fileManagement.pcapLoadingMethod)
                 self.readouts.append(pcap.readouts)
                 
         elif self.parameters.acqMode == 'kafka':
             testing = False
-            pcap = self.kaf.kafka_reader(self.parameters.clockTicks.NSperClockTick, nOfPackets = self.parameters.kafkaSettings.numOfPackets, \
+            pcap = self.kaf.kafka_reader(NSperClockTick=self.parameters.clockTicks.NSperClockTick, nOfPackets = self.parameters.kafkaSettings.numOfPackets, \
             broker = self.parameters.kafkaSettings.broker, topic = self.parameters.kafkaSettings.topic, MONtype = self.parameters.config.MONmap.type , MONring = self.parameters.config.MONmap.RingID, \
             timeResolutionType =self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF=self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
             operationMode=self.parameters.config.DETparameters.operationMode, testing=testing)
@@ -1049,7 +1049,17 @@ if __name__ == '__main__':
     # pos2  = ax2.imshow(h2DADC,aspect='auto',norm=None,interpolation='none',extent=[0,bins-1,0,bins-1], origin='lower',cmap='viridis')
     # figl1.colorbar(pos2, ax=ax2, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
     
-  
+    
+    # sel = readouts.Channel == 1
+    
+    # bins = 128
+    # xbins = np.linspace(0,30000,bins)
+
+    # h2D = hh.histog().hist2D(xbins, readouts.ADC[sel], xbins, readouts.ADC1[sel])
+    
+    # figl1, ax1 = plt.subplots(num=5,figsize=(12,12), nrows=1, ncols=1)
+    # pos1  = ax1.imshow(h2D,aspect='auto',norm=None,interpolation='none', origin='lower',cmap='viridis')
+    # figl1.colorbar(pos1, ax=ax1, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
     
     ###############################################################################
     ###############################################################################

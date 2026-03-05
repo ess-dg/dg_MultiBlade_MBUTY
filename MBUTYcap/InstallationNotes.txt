@@ -21,7 +21,7 @@ For installing the GUI with a desktop ICON in Linux/Mac OS or Windows execute in
 --------------------------------------------------
 PACKAGES NEEDED:
 
-Install pacing package in anaconda 
+Install placing package in anaconda 
 Python >=3.9 
 >> pip install python-pcapng
 

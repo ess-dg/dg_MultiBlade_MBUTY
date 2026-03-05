@@ -36,7 +36,7 @@ from lib import libKafkaRawReadoutMessage as rawmsg
 ###############################################################################
 
 class  kafka_reader():
-    def __init__(self, NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONtype = 'RING' , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = False):
+    def __init__(self, NSperClockTick=11.356860963629653, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONtype = 'RING' , MONring = 11, timeResolutionType = 'coarse', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = False):
         
         self.flagSupported = True
         
@@ -48,13 +48,10 @@ class  kafka_reader():
         self.flagSupported = kaf.flagSupported
              
         if sortByTimeStampsONOFF is True:
-       
                   print('Readouts are sorted by TimeStamp')
-                 
                   self.readouts.sortByTimeStamps()
             
         else:
-                
                   print('Readouts are NOT sorted by TimeStamp')
                 
         self.readouts.calculateDuration()   
@@ -64,13 +61,13 @@ class  kafka_reader():
 
 
 class kafka_reader_preAlloc():
-    def __init__(self, NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , MONring = 11, timeResolutionType = 'fine',operationMode='normal',testing=False):
+    def __init__(self, NSperClockTick=11.356860963629653, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONtype = 'RING' , MONring = 11, timeResolutionType = 'coarse' ,operationMode='normal', testing=False):
                 
         self.NSperClockTick = NSperClockTick 
         self.nOfPackets     = nOfPackets
         self.broker         = broker 
         self.topic          = topic 
-        self.MONTTLtype     = MONTTLtype
+        self.MONtype        = MONtype
         self.MONring        = MONring
         self.timeResolutionType  = timeResolutionType
         self.operationMode       = operationMode
@@ -85,7 +82,7 @@ class kafka_reader_preAlloc():
         
         self.testing = testing
   
-        self.rea = pcapr.pcapng_reader_PreAlloc(self.NSperClockTick, self.MONTTLtype, self.MONring, self.timeResolutionType, self.operationMode, kafkaStream = True)
+        self.rea = pcapr.pcapng_reader_PreAlloc(self.NSperClockTick, self.MONtype, self.MONring, self.timeResolutionType, self.operationMode, kafkaStream = True)
             
         self.rea.timeResolutionType = self.timeResolutionType
         self.rea.operationMode      = self.operationMode
@@ -334,7 +331,7 @@ if __name__ == "__main__":
     NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
     
     
-    # kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONTTLtype = True , \
+    # kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONtype = True , \
     # MONring = 11, timeResolutionType = 'fine', operationMode='normal',testing=True)
                 
     # kaf.allocateMemory()

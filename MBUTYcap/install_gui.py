@@ -42,8 +42,26 @@ def create_windows_shortcut():
     os.remove(vbs_path)
     print(f"Windows: Shortcut created using 'pythonw' (No Terminal).")
 
+
+def get_linux_desktop():
+    try:
+        # Queries the system for the actual Desktop path
+        return subprocess.check_output(["xdg-user-dir", "DESKTOP"]).decode().strip()
+    except Exception:
+        # Fallback to the standard path if xdg-user-dir isn't installed
+        return os.path.expanduser("~/Desktop")
+
 def create_linux_shortcut():
-    desktop_path = os.path.expanduser("~/Desktop/mbuty.desktop")
+    desktop_dir = get_linux_desktop()
+    # Check if the directory actually exists
+    if not os.path.exists(desktop_dir):
+        print(f"Error: Could not find desktop directory at {desktop_dir}")
+        return
+
+    # IF YOU WANT TO INSTALL IN APPLICATIONS INSTEAD OF DESKTOP 
+    # desktop_path = os.path.expanduser("~/.local/share/applications/mbuty.desktop")
+    
+    desktop_path = os.path.join(desktop_dir, "mbuty.desktop")
     python_exe = subprocess.check_output(["which", "python3"]).decode().strip()  
     # Setting Terminal=false prevents the terminal window from opening
     content = f"""[Desktop Entry]

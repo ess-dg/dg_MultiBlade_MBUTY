@@ -885,14 +885,14 @@ class MBUTY_GUI_App:
     def show_about_dialog(self):
         """Displays software version and author information."""
         # Assuming these are defined in your library/constants
-        version = "7.1 (Mar 2, 2026)" 
-        author = "Francesco Piscitelli"
+        version = "7.1 (Mar 5, 2026)" 
+        author = "Francesco Piscitelli, Sheila Monera Cabarique"
         
         about_text = (
             f"MBUTY GUI Analysis Suite\n"
             f"--------------------------\n"
             f"Version: {version}\n"
-            f"Author: {author}\n"
+            f"Authors: {author}\n"
             f"mail: francesco.piscitelli@ess.eu\n\n"
             f"Created: June 13, 2021\n"
             f"Description: Utility Tool for Analysis. Supports readers for all data formats: VMM, BM, R5560 and SKADI. Supports MB and MG detectors for analysis. "

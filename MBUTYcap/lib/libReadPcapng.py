@@ -365,21 +365,21 @@ class checkInstrumentID():
         
         self.flagSupported  = True
         
-        self.FREIAID   = 72     #0x48
-        self.ESTIAID   = 76     #0x4c
-        self.AMORID    = 78     #0x4e
-        self.TBLVMMID  = 73     #0x49
+        self.FREIAID     = 72   #0x48
+        self.ESTIAID     = 76   #0x4c
+        self.AMORID      = 78   #0x4e
+        self.TBLVMMID    = 73   #0x49
         
         self.LOKIID      = 48   #0x30
         self.BMID        = 16   #0x10
-        self.BIFROSTID   = 52
-        self.NMXID       = 68
-        self.MAGICID     = 100
-        self.TREXID      = 64
-        self.CSPECID     = 60
-        self.MIRACLESID  = 56
-        self.DREAMID     = 96  #0x48
-        self.SKADIID     = 32  #0x20
+        self.BIFROSTID   = 52   #0x34
+        self.NMXID       = 68   #0x44
+        self.MAGICID     = 100  #0x64
+        self.TREXID      = 64   #0x40
+        self.CSPECID     = 60   #0x3c
+        self.MIRACLESID  = 56   #0x38
+        self.DREAMID     = 96   #0x48
+        self.SKADIID     = 32   #0x20
         
     def setBytesPerReadout(self,ID):
         
@@ -811,7 +811,7 @@ class checkIfFileExistInFolder():
 ################################################## 
 
 class pcapng_reader():
-    def __init__(self, filePathAndFileName, NSperClockTick, MONtype = 'RING' , MONring = 11, timeResolutionType = 'fine', sortByTimeStampsONOFF = True, operationMode = 'normal', pcapLoadingMethod='allocate'):
+    def __init__(self, filePathAndFileName, NSperClockTick=11.356860963629653, MONtype = 'RING' , MONring = 11, timeResolutionType = 'coarse', sortByTimeStampsONOFF = False, operationMode = 'normal', pcapLoadingMethod='allocate'):
         
         self.flagSupported = True
         # try:
@@ -837,15 +837,10 @@ class pcapng_reader():
         # finally:
              
         if sortByTimeStampsONOFF is True:
-
-                  print('Readouts are sorted by TimeStamp')
-                 
-                  self.readouts.sortByTimeStamps()
-                 
-            
-        else:
-                
-                 print('Readouts are NOT sorted by TimeStamp')
+            print('Readouts are sorted by TimeStamp')
+            self.readouts.sortByTimeStamps()   
+        else: 
+            print('Readouts are NOT sorted by TimeStamp')
                 
         self.readouts.calculateDuration()     
                         
@@ -1720,7 +1715,7 @@ if __name__ == '__main__':
    
    filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
    file = 'miracles_trig2.pcapng'
-   file = 'ESSmask2023_1000pkts.pcapng'
+   # file = 'ESSmask2023_1000pkts.pcapng'
    # file = 'ESSmask2023.pcapng'
    
    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
