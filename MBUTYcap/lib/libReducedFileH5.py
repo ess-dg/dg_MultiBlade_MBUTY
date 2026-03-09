@@ -6,20 +6,27 @@ Created on Mon Aug 30 14:18:41 2021
 @author: francescopiscitelli
 """
 
-import numpy as np
+# import numpy as np
 import time
 import os
 import h5py
 import sys
 
 
-from lib import libReadPcapng as pcapr
-from lib import libSampleData as sdat
-from lib import libMapping as maps
-from lib import libCluster as clu
-from lib import libAbsUnitsAndLambda as absu
-from lib import libParameters as para
+try:
+####### if you run default
+    from lib import libMapping as maps
+    from lib import libCluster as clu
+    from lib import libParameters as para
 
+
+except ImportError:
+    ####### if you run in lib 
+    import libMapping as maps
+    import libCluster as clu
+    import libParameters as para
+
+    
 ###############################################################################
 ###############################################################################
 

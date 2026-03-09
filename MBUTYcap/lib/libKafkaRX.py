@@ -3,9 +3,15 @@ import configargparse as argparse
 
 from confluent_kafka import Consumer, TopicPartition
  
-from lib import libKafkaRawReadoutMessage as rawmsg
 
-# import libKafkaRawReadoutMessage as rawmsg
+try:
+####### if you run default
+    from lib import libKafkaRawReadoutMessage as rawmsg
+
+except ImportError:
+    ####### if you run in lib 
+    import libKafkaRawReadoutMessage as rawmsg
+    
 
 ###############################################################################
 ############################################################################### 

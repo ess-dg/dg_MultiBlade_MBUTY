@@ -12,15 +12,15 @@ import os
 import sys
 import copy
 
-from lib import libMapping 
 
-# import pandas as pd
-# from lib import libReadPcapng as pcapr
-# from lib import libSampleData as sdat
-# import libSampleData as sdat
-# 
-# import libReadPcapng as pcapr
+try:
+####### if you run default
+    from lib import libMapping 
 
+except ImportError:
+    ####### if you run in lib 
+    import libMapping 
+    
 
 # NOTE: THIS SUPPORTS ONLY 1 MONITOR
 
@@ -144,8 +144,7 @@ class read_json_config():
     def get_MONmap(self):
         """ Acts as a pointer/wrapper for the central library """
         return libMapping.read_json_config.get_MONmap(self)
-    
-    
+
         
     def checkOpModeMG(self):
         if self.DETparameters.operationMode == "clustered" and self.DETparameters.type == 'MG':
@@ -185,7 +184,7 @@ class read_json_config():
                 self.cassMap.hybridWID = None
                 self.cassMap.hybridSID = None
                 self.cassMap.hybridSerial = None
-                print('\t \033[1;33mWARNING: Cassette ID ',str(cassetteID),' not found! Skipped! This CONFIG file only contains cassettes:', end=' ')
+                print('\t \033[1;33mWARNING: MG Column ID ',str(cassetteID),' not found! Skipped! This CONFIG file only contains columns:', end=' ')
                 for cass in self.DETparameters.cassInConfig:
                     print(cass,end=' ')
                 print('\033[1;37m')

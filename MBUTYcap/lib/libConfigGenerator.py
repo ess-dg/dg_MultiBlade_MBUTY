@@ -87,6 +87,29 @@ def _generateCassette2ElectronicsConfigSKADI(num_cassettes):
             
     return cassette_config
 
+
+# FOR MIRACLES
+# The helper function (renamed from a method)
+def _generateCassette2ElectronicsConfigMIRACLES(num_cassettes):
+    cassette_config = []
+    ring    = 0
+    tube    = 0
+    for i in range(num_cassettes):
+        cassette_config.append({
+            "ID": i,
+            "Ring": ring,
+            "Fen": 0,
+            "Tube": tube,
+        })
+        tube += 1
+        if i >= 11 :
+            ring = 1
+        if  i == 11 :    
+            tube = 0
+     
+    return cassette_config
+
+
 ###############################################################################
 ###############################################################################
 
@@ -141,15 +164,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
                 ]
             }
         
-            try:
-                os.makedirs(path, exist_ok=True) # Ensure directory exists
-                with open(filePathName, 'w', encoding='utf-8') as f:
-                    json.dump(data, f, indent=4)
-                print(f"Successfully config file generated '{filePathName}'")
-                return filePathName # Return the path as required by the GUI
-            except IOError as e:
-                print(f"Error writing config file {filePathName}: {e}")
-                return None # Return None on error
+            filePathName = makeFile(path,filePathName,data)
             
     elif  DetectorType == 'MG':  
         
@@ -177,15 +192,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
             ]
         }
     
-        try:
-            os.makedirs(path, exist_ok=True) # Ensure directory exists
-            with open(filePathName, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=4)
-            print(f"Successfully config file generated '{filePathName}'")
-            return filePathName # Return the path as required by the GUI
-        except IOError as e:
-            print(f"Error writing config file {filePathName}: {e}")
-            return None # Return None on error
+        filePathName = makeFile(path,filePathName,data)
     
     elif  DetectorType == 'SKADI':  
         
@@ -210,19 +217,55 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
             ]
         }
     
-        try:
-            os.makedirs(path, exist_ok=True) # Ensure directory exists
-            with open(filePathName, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=4)
-            print(f"Successfully config file generated '{filePathName}'")
-            return filePathName # Return the path as required by the GUI
-        except IOError as e:
-            print(f"Error writing config file {filePathName}: {e}")
-            return None # Return None on error
+        filePathName = makeFile(path,filePathName,data)
+        
+    
+    elif  DetectorType == 'He3':  
+        
+        # Call the helper function
+        cassette2electronics_config = _generateCassette2ElectronicsConfigMIRACLES(cassettes)
+    
+        data = {
+            "DetectorName": DetectorName,
+            "DetectorType": DetectorType,
+            "operationMode": operationMode,
+            "cassettes": cassettes,
+            "orientation": orientation,
+            "Cassette2ElectronicsConfig": cassette2electronics_config,
+            "positionBins" : 256,
+            # "wires":  256,
+            # "strips": 16,
+            "tubesPerRow" : 8,
+            "tubeLength" : 300,
+            "tubeSpacing" : 10,
+            "Monitor": [
+                {"ID": 99, "type": "RING", "Ring": 11, "Channel": 0}
+            ]
+        }
+    
+        filePathName = makeFile(path,filePathName,data)
     else:
         
-        print('\n \t \033[1;33mWARNING: Detector type {} not supported (only MB or MG accepted) --> exiting!\033[1;37m\n'.format(DetectorType))
+        print('\n \t \033[1;33mWARNING: Detector type {} not supported (only MB, MG and He3 accepted) --> exiting!\033[1;37m\n'.format(DetectorType))
         sys.exit()
+        
+    return filePathName  
+##########################
+
+def makeFile(path,filePathName,data):
+    
+    try:
+        os.makedirs(path, exist_ok=True) # Ensure directory exists
+        with open(filePathName, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4)
+        print(f"Successfully config file generated '{filePathName}'")
+        return filePathName # Return the path as required by the GUI
+    except IOError as e:
+        print(f"Error writing config file {filePathName}: {e}")
+        return None # Return None on error
+
+
+
 ###############################################################################
 ###############################################################################
 
@@ -257,10 +300,10 @@ def checkIfExists(pathFile):
 if __name__ == '__main__':
     path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
 
-    DetectorName = "test"
-    DetectorType = 'SKADI'
+    DetectorName = "MIRACLES2"
+    DetectorType = 'MIRACLES'
     operationMode = 'normal'
-    cassettes = 6
+    cassettes = 2
     orientation = 'vertical'
 
     # Call the function directly

@@ -13,19 +13,7 @@ import sys
 import copy
 
 
-
-# from lib import libSampleData as sdat
-# from lib import libReadPcapng as pcapr
-
-# import libReadPcapng as pcapr
-
-# import libSampleData as sdat
-
-# from lib import libMappingMON as MOMm
-
-
 # NOTE: THIS SUPPORTS ONLY 1 MONITOR
-
 ###############################################################################
 ###############################################################################
 
@@ -221,6 +209,9 @@ class DETparameters():
 ################################################        
 
 class read_json_config():
+    
+    
+    # NOTE config for other detectors contains stuff for MB but also adds the specific for other detectors 
     
     def __init__(self, configFile_PathAndFileName, printFlag = True):
         

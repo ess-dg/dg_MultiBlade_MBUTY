@@ -1,0 +1,27 @@
+{
+    "DetectorName": "MIRACLES1",
+    "DetectorType": "MIRACLES",
+    "operationMode": "normal",
+    "cassettes": 1,
+    "orientation": "vertical",
+    "Cassette2ElectronicsConfig": [
+        {
+            "ID": 0,
+            "Ring": 0,
+            "Fen": 0,
+            "Tube": 2
+        }
+    ],
+    "positionBins": 256,
+    "tubesPerRow": 8,
+    "tubeLength": 150,
+    "tubeSpacing": 10,
+    "Monitor": [
+        {
+            "ID": 99,
+            "type": "RING",
+            "Ring": 11,
+            "Channel": 0
+        }
+    ]
+}

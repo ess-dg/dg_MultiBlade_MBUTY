@@ -75,16 +75,16 @@ ui_config = {
         "DetectorType": {
             "label": "Detector Type",
             "type": "bool",
-            "options": ["MB", "MG"],
+            "options": ["MB", "MG", "He3"],
             "default": "MB",
-            "info": "Select the type of the detector: MB or MG."
+            "info": "Select the type of the detector: MB, MG or He3 (MIRA,CSPEC,BIFRO)."
         },
         "cassettes": {
-            "label": "Number of Cassettes",
+            "label": "Number of Units",
             "type": "entry",
             "default": "14",
             "inputValidation": "int",
-            "info": "Number of cassettes, must be an integer"
+            "info": "Number of units, must be an integer"
         },
         "orientation": {
             "label": "Orientation",

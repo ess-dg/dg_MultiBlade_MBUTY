@@ -15,11 +15,10 @@ import os
 import time
 import sys
 import ipaddress
-# from lib import libPlotting as plo
+
 
 import matplotlib.pyplot as plt
 
-# import libHistograms as hh 
 
 
 ###############################################################################
@@ -387,28 +386,28 @@ class checkInstrumentID():
    
         if ID in (self.FREIAID, self.ESTIAID, self.AMORID, self.TBLVMMID, self.NMXID, self.TREXID):
             self.bytesPerReadout = 20
-            self.InstrType = 'VMM'
-            self.flagSupported = True
+            self.InstrType       = 'VMM'
+            self.flagSupported   = True
         elif ID == self.LOKIID:
             self.bytesPerReadout = 24
-            self.InstrType = 'R5560bis'
-            self.flagSupported = False
+            self.InstrType       = 'R5560bis'
+            self.flagSupported   = False
         elif ID in (self.BIFROSTID, self.CSPECID, self.MIRACLESID):
             self.bytesPerReadout = 24
-            self.InstrType = 'R5560'
-            self.flagSupported = False
+            self.InstrType       = 'R5560'
+            self.flagSupported   = True
         elif ID == self.SKADIID:
             self.bytesPerReadout = 20
-            self.InstrType = 'SKADI'
-            self.flagSupported = False
+            self.InstrType       = 'SKADI'
+            self.flagSupported   = False
         elif ID == self.BMID:
             self.bytesPerReadout = 20
-            self.InstrType = 'BM'
-            self.flagSupported = True
+            self.InstrType       = 'BM'
+            self.flagSupported   = True
         else:
             self.bytesPerReadout = 20
-            self.InstrType = None
-            self.flagSupported  = False
+            self.InstrType       = None
+            self.flagSupported   = False
         
         return self.bytesPerReadout, self.InstrType, self.flagSupported
       
@@ -426,14 +425,15 @@ class checkInstrumentID():
              print('found TREX data stream - VMM',end='')
              
         elif ID == self.MIRACLESID:
-             print('found MIRACLES data stream - R5560')
-             print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
+             print('found MIRACLES data stream - R5560',end='')
+             # print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
         elif ID == self.CSPECID:
-             print('found CSPEC data stream - R5560')
-             print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
+             print('found CSPEC data stream - R5560',end='')
+             # print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
         elif ID == self.BIFROSTID:
-             print('found BIFROST data stream - R5560')
-             print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
+             print('found BIFROST data stream - R5560',end='')
+             # print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
+        
         elif ID == self.LOKIID:
              print('found LOKI data stream - R5560')   
              print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis, NOT SUPPORTED FOR NOW \033[1;37m',end='')
@@ -441,6 +441,7 @@ class checkInstrumentID():
         elif ID == self.SKADIID:
                   print('found SKADI data stream')
                   print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
+        
         elif ID == self.BMID:
                   print('found BM data stream',end='') 
             
@@ -455,6 +456,8 @@ class checkInstrumentID():
  
 class checkIfDataIsSupported():
     def __init__(self, flagSupported):
+        
+        
         
         if flagSupported == False:
             print('\n\t\033[1;31m---> This data format is not supported yet, only reader, nor plotting or analysis ---> Exiting ... \n\033[1;37m') 

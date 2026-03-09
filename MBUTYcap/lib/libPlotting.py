@@ -9,24 +9,14 @@ Created on Wed Aug 25 10:46:16 2021
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-# import time
 
-# from lib import libSampleData as sdat
-from lib import libMapping as maps
-# from lib import libCluster as clu
-# from lib import libAbsUnitsAndLambda as absu
-from lib import libHistograms as hh
-from lib import libParameters as para
-from lib import libReadPcapng as pcapr
+try:
+####### if you run default
+    from lib import libHistograms as hh
 
-
-# import libSampleData as sdat
-# import libMapping as maps
-# import libCluster as clu
-# import libAbsUnitsAndLambda as absu
-# import libHistograms as hh
-# import libParameters as para
-# import libReadPcapng as pcapr
+except ImportError:
+    ####### if you run in lib 
+    import libHistograms as hh
 
 ###############################################################################
 ###############################################################################
@@ -71,13 +61,14 @@ class checkReadoutsClass():
         
 class plottingReadouts():
    
-    def __init__(self, readouts, parameters, outOfBounds = True):
+    def __init__(self, readouts, parameters, allAxis, outOfBounds = True):
 
         
         self.parameters  = parameters
         self.config      = parameters.config
+        self.allAxis     = allAxis
         self.outOfBounds = outOfBounds
-        
+    
         checkke = checkReadoutsClass(readouts)
         self.readouts = checkke.readouts
         self.flag     = checkke.flag 
@@ -213,9 +204,7 @@ class plottingReadouts():
                 self.plothc.axHandle[0][1].set_xlabel('trigger no.')
                 self.plothc.axHandle[0][1].set_ylabel('delta time betweeen resets (s)')
             
-    def plotADCvsCh(self,cassetteIDs,allAxis,logScale = False):
-        
-        self.allAxis = allAxis
+    def plotADCvsCh(self,cassetteIDs,logScale = False):
         
         if self.flag is True:
 
@@ -293,12 +282,13 @@ class checkHitsClass():
 
 class plottingHits():
    
-    def __init__(self, hits, parameters, outOfBounds = True):
+    def __init__(self, hits, parameters, allAxis, outOfBounds = True):
         
         self.hits = hits
         self.parameters  = parameters
         self.config      = parameters.config
         self.outOfBounds = outOfBounds 
+        self.allAxis     = allAxis
         
         checkke = checkHitsClass(hits)
         self.flag     = checkke.flag 
@@ -864,7 +854,7 @@ class plottingEvents():
                sel2D = self.events.positionS >= 0
                diffeTime = np.diff(self.events.timeStamp[selc & sel2D])
                
-               histRate = hh.histog(self.outOfBounds).hist1D(self.allAxis.axInstRate.axis,diffeTime) 
+               histRate = hh.histog(outBounds=False).hist1D(self.allAxis.axInstRate.axis,diffeTime/1000000000) 
                
                self.plotInst.axHandle[0][k].step(self.allAxis.axInstRate.axis*1e6,histRate,'k',where='mid',label='w')
                self.plotInst.axHandle[0][k].set_xlabel('delta time between events (us)')
@@ -984,9 +974,7 @@ if __name__ == '__main__' :
     
     
     parameters  = para.parameters('./')
-    
-    
-    
+
     
     config = maps.read_json_config(configFilePath)
     parameters.loadConfigAndSetParameters(config)

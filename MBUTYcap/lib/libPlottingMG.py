@@ -8,26 +8,19 @@ Created on Wed Aug 25 10:46:16 2021
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
+# from matplotlib.colors import LogNorm
 import time
 
-# from lib import libSampleData as sdat
-# from lib import libMapping as maps
-# from lib import libCluster as clu
-# from lib import libAbsUnitsAndLambda as absu
-from lib import libHistogramsMG as hh
-# from lib import libParameters as para
-# from lib import libReadPcapngVMM as pcapr
 
-from lib import libPlotting
+try:
+####### if you run default
+    from lib import libPlotting
+    from lib import libHistogramsMG as hh
 
-# import libSampleData as sdat
-# import libMappingMG as maps
-# import libCluster as clu
-# import libAbsUnitsAndLambda as absu
-# import libHistograms as hh
-# import libParameters as para
-# import libReadPcapngVMM as pcapr
+except ImportError:
+    ####### if you run in lib 
+    import libPlotting
+    import libHistogramsMG as hh
 
 ###############################################################################
 ############################################################################### 
@@ -46,9 +39,9 @@ plottingMON        = libPlotting.plottingMON
         
 class plottingReadouts():
     
-    def __init__(self,  readouts, parameters, outOfBounds = True):
+    def __init__(self,  readouts, parameters, allAxis, outOfBounds = True):
         """ Acts as a pointer/wrapper for the central library """
-        return libPlotting.plottingReadouts.__init__(self,  readouts, parameters, outOfBounds)   
+        return libPlotting.plottingReadouts.__init__(self,  readouts, parameters, allAxis, outOfBounds)   
 
     def plotChoppResets(self):
         """ Acts as a pointer/wrapper for the central library """
@@ -197,14 +190,9 @@ class plottingReadouts():
                 self.plotht.axHandle[3][k].grid(axis='y', alpha=0.75)
             
     
-    
-
-    
         
-    def plotADCvsCh(self,cassetteIDs,allAxis,logScale = False):
+    def plotADCvsCh(self,cassetteIDs,logScale = False):
         
-    
-        self.allAxis = allAxis
         
         if self.flag is True:
 
@@ -255,9 +243,9 @@ class plottingReadouts():
 class plottingHits():
     
     
-    def __init__(self,  hits, parameters, outOfBounds = True):
+    def __init__(self,  hits, parameters, allAxis, outOfBounds = True):
         """ Acts as a pointer/wrapper for the central library """
-        return libPlotting.plottingHits.__init__(self,  hits, parameters, outOfBounds)   
+        return libPlotting.plottingHits.__init__(self,  hits, parameters, allAxis, outOfBounds)   
     
     def plotChRaw(self,cassetteIDs): 
      """ Acts as a pointer/wrapper for the central library """

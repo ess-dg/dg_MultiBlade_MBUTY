@@ -24,13 +24,18 @@ from confluent_kafka import Consumer, TopicPartition
 # import os
 import sys
 
-from lib import libReadPcapng as pcapr
-from lib import libKafkaRX as krx 
-from lib import libKafkaRawReadoutMessage as rawmsg
+try:
+####### if you run default
+    from lib import libReadPcapng as pcapr
+    from lib import libKafkaRX as krx 
+    from lib import libKafkaRawReadoutMessage as rawmsg
 
-# import libReadPcapng as pcapr
-# import libKafkaRX as krx 
-# import libKafkaRawReadoutMessage as rawmsg
+except ImportError:
+    ####### if you run in lib 
+    import libReadPcapng as pcapr
+    import libKafkaRX as krx 
+    import libKafkaRawReadoutMessage as rawmsg
+
 
 ###############################################################################
 ###############################################################################

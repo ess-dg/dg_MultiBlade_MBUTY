@@ -8,14 +8,19 @@ Created on Fri Sep 24 11:05:36 2021
 import numpy as np
 import json
 import os
+import sys 
 
-import sys
 
-from lib import libMapping as maps
-from lib import libReadPcapng as pcapr
+try:
+####### if you run default
+    from lib import libMapping as maps
+    from lib import libReadPcapng as pcapr
 
-# import libMapping as maps
-# import libReadPcapng as pcapr
+
+except ImportError:
+    ####### if you run in lib 
+    import libMapping as maps
+    import libReadPcapng as pcapr
 
 ###############################################################################
 ###############################################################################
@@ -67,6 +72,7 @@ class calibrationMap():
 class read_json_calib():
     def __init__(self, calibFile_PathAndFileName, config):
         
+        
         temp =  os.path.split(calibFile_PathAndFileName)
             
         self.calibFilePath = temp[0]+os.sep
@@ -75,6 +81,12 @@ class read_json_calib():
         # self.calibFlag = True
         
         self.config = config
+        
+        if self.config.DETparameters.type == 'MB' or self.config.DETparameters.type == 'MG' : 
+            pass
+        else: 
+            print(f'\t \033[1;33mWARNING: calibrations for detector type {self.config.DETparameters.type} are not supported -> switch OFF calibration and run again!\033[0m')
+            sys.exit()
         
         self.calibrationMap = calibrationMap(self.config)
         
@@ -204,6 +216,7 @@ class read_json_calib():
 
 class calibrateVMMasic():
     def __init__(self,ADCin,channel,ADCoffset,ADCslope,vmm=0):
+        
     
         rangeSpan = [0,64]
         

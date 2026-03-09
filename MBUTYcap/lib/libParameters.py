@@ -12,11 +12,17 @@ import sys
 # import pkg_resources
 import importlib.metadata
 import time
-# from lib import libEventsSoftThresholds as thre
-# from lib import libMapping as maps
 
-# import libEventsSoftThresholds as thre
-# import libMapping as maps
+
+try:
+####### if you run default
+    from lib import libMapping as maps
+    from lib import libEventsSoftThresholds as thre
+
+except ImportError:
+    ####### if you run in lib 
+    import libMapping as maps
+    import libEventsSoftThresholds as thre
 
 
 ###############################################################################
@@ -245,6 +251,7 @@ class dataReduction():
     def createThArrays(self, parameters):   
         
         if (parameters.config) is None :
+            
             config = maps.read_json_config(os.path.join(parameters.fileManagement.configFilePath,parameters.fileManagement.configFileName))
             parameters.config = config
             cassettes = config.DETparameters.cassInConfig

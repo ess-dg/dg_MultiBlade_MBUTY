@@ -9,37 +9,8 @@ Created on Fri Aug 27 16:51:12 2021
 import numpy as np
 
 
-
-# from lib import libSampleData as sdat
-from lib import libMapping as maps
-# from lib import libCluster as clu
-from lib import libParameters as para
-# from lib import libHistograms as hh
-# from lib import libAbsUnitsAndLambda as absu
-
-# from lib import libReadPcapng as pcapr
-# from lib import libFileManagmentUtil as fd
-# from lib import libTerminal as ta
-# from lib import libPlotting as plo
-
-
-
-# import libSampleData as sdat
-# import libMapping as maps
-# import libCluster as clu
-# import libParameters as para
-# import libHistograms as hh
-# import libAbsUnitsAndLambda as absu
-# import libReadPcapng as pcapr
-# import libFileManagmentUtil as fd
-# import libTerminal as ta
-# import libPlotting as plo
-
-
-
  
 # makes 1D or 2D histograms
-
 ###############################################################################
 ############################################################################### 
 
@@ -56,7 +27,8 @@ class createAx():
         
         self.axis =  np.linspace(self.start,self.stop,self.steps)
         
-        
+ ############################################################################### 
+       
 class allAxis():        
     def __init__(self):
         
@@ -77,14 +49,26 @@ class allAxis():
         
     def createAllAxis(self,parameters,cassOffset=0): 
         
-        sine = np.sin(np.deg2rad(parameters.config.DETparameters.bladesInclination)) 
-
-        self.axEnergyMON = createAx(0, parameters.MONitor.maxEnerg, parameters.MONitor.energyBins)        
-
-        self.axEnergy = createAx(0, parameters.pulseHeigthSpect.maxEnerg, parameters.pulseHeigthSpect.energyBins)
-        self.axToF    = createAx(0, parameters.plotting.ToFrange, parameters.plotting.ToFbins)
-        self.axLambda = createAx(parameters.wavelength.lambdaRange[0], parameters.wavelength.lambdaRange[1], parameters.wavelength.lambdaBins)
+        self.createGenericAxis(parameters)
+        self.createSpecificAxis(parameters,cassOffset) 
+      
+    def createGenericAxis(self,parameters):
         
+        self.axEnergyMON = createAx(0, parameters.MONitor.maxEnerg, parameters.MONitor.energyBins)   
+        self.axEnergy    = createAx(0, parameters.pulseHeigthSpect.maxEnerg, parameters.pulseHeigthSpect.energyBins)
+        self.axToF       = createAx(0, parameters.plotting.ToFrange, parameters.plotting.ToFbins)
+        self.axLambda    = createAx(parameters.wavelength.lambdaRange[0], parameters.wavelength.lambdaRange[1], parameters.wavelength.lambdaBins)
+
+        start = -parameters.plotting.ToFrange
+        stop  = parameters.plotting.ToFrange
+        steps = round((stop-start)/parameters.plotting.instRateBin)
+        self.axInstRate = createAx(start, stop, steps)
+        
+    def createSpecificAxis(self,parameters,cassOffset=0):
+        
+        self.axMult = createAx(0, parameters.config.DETparameters.numOfStrips-1, parameters.config.DETparameters.numOfStrips) 
+        
+        sine = np.sin(np.deg2rad(parameters.config.DETparameters.bladesInclination)) 
         
         # start  = 0
         # stop   = len(parameters.config.DETparameters.cassInConfig)*parameters.config.DETparameters.numOfWires-1
@@ -117,16 +101,7 @@ class allAxis():
         stop   = (parameters.config.DETparameters.numOfStrips-1)*parameters.config.DETparameters.stripPitch
         steps  = parameters.plotting.posSbins - int(parameters.plotting.posSbins/parameters.config.DETparameters.numOfStrips - 1)
         self.axStrips_mm = createAx(start, stop, steps)
-
-
-        self.axMult = createAx(0, parameters.config.DETparameters.numOfStrips-1, parameters.config.DETparameters.numOfStrips)
-        
-        
-        start = -parameters.plotting.ToFrange
-        stop  = parameters.plotting.ToFrange
-        steps = round((stop-start)/parameters.plotting.instRateBin)
-        self.axInstRate = createAx(start, stop, steps)
-        
+   
     def updateAllAxis(self):
         
         self.axEnergyMON.update()
@@ -411,11 +386,11 @@ if __name__ == '__main__' :
     configFilePath  = '/Users/francescopiscitelli/gitlab_repos/mbuty/MBUTYcap/config/'
     # filePathD       = './'+"VMM3a_Freia.pcapng"
    
-    parameters  = para.parameters('/Users/francescopiscitelli/gitlab_repos/mbuty/MBUTYcap/')
+    # parameters  = para.parameters('/Users/francescopiscitelli/gitlab_repos/mbuty/MBUTYcap/')
     # config = maps.read_json_config(configFilePath)
    
-    config = maps.read_json_config(configFilePath + "AMOR.json")
-    parameters.loadConfigAndUpdate(config)
+    # config = maps.read_json_config(configFilePath + "AMOR.json")
+    # parameters.loadConfigAndUpdate(config)
  
     
     # parameters.plotting.positionReconstruction = 1

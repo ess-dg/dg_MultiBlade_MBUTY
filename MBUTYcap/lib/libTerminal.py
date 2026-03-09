@@ -7,13 +7,12 @@ Created on Fri Aug 27 16:38:55 2021
 """
 
 import os 
-# from lib import libParameters as para
 import sys
 import time
 from datetime import datetime
 import subprocess
 import signal
-# import numpy as np
+
 
 ###############################################################################
 ############################################################################### 

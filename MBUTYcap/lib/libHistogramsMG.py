@@ -6,38 +6,19 @@ Created on Fri Aug 27 16:51:12 2021
 @author: francescopiscitelli
 """
 
-import numpy as np
+# import numpy as np
+
+try:
+####### if you run default
+    from lib import libHistograms
 
 
-
-# from lib import libSampleData as sdat
-# from lib import libMapping as maps
-# from lib import libCluster as clu
-# from lib import libParameters as para
-# from lib import libHistograms as hh
-# from lib import libAbsUnitsAndLambda as absu
-
-# from lib import libReadPcapngVMM as pcapr
-# from lib import libFileManagmentUtil as fd
-# from lib import libTerminal as ta
-# from lib import libPlotting as plo
-
-from lib import libHistograms
-
-# import libSampleData as sdat
-# import libMapping as maps
-# import libCluster as clu
-# import libParameters as para
-# import libHistograms as hh
-# import libAbsUnitsAndLambda as absu
-# import libReadPcapngVMM as pcapr
-# import libFileManagmentUtil as fd
-# import libTerminal as ta
-# import libPlotting as plo
+except ImportError:
+    ####### if you run in lib 
+    import libHistograms
 
  
 # makes 1D or 2D histograms
-
 ###############################################################################
 ############################################################################### 
 
@@ -55,19 +36,21 @@ class allAxis():
         """ Acts as a pointer/wrapper for the central library """
         return libHistograms.allAxis.__init__(self)    
     
+    def createAllAxis(self,parameters,cassOffset=0): 
+        """ Acts as a pointer/wrapper for the central library """
+        return libHistograms.allAxis.createAllAxis(self,parameters,cassOffset)  
+    
+    def createGenericAxis(self,parameters):
+        """ Acts as a pointer/wrapper for the central library """
+        return libHistograms.allAxis.createGenericAxis(self,parameters)
+    
     def updateAllAxis(self):
         """ Acts as a pointer/wrapper for the central library """
         return libHistograms.allAxis.updateAllAxis(self)   
     
-    def createAllAxis(self,parameters,cassOffset=0): 
+    def createSpecificAxis(self,parameters,cassOffset=0):
         
-        # sinne = 1 
-        
-        self.axEnergyMON = createAx(0, parameters.MONitor.maxEnerg, parameters.MONitor.energyBins) 
-        
-        self.axEnergy = createAx(0, parameters.pulseHeigthSpect.maxEnerg, parameters.pulseHeigthSpect.energyBins)
-        self.axToF    = createAx(0, parameters.plotting.ToFrange, parameters.plotting.ToFbins)
-        self.axLambda = createAx(parameters.wavelength.lambdaRange[0], parameters.wavelength.lambdaRange[1], parameters.wavelength.lambdaBins)
+        self.axMult = createAx(0, parameters.config.DETparameters.numOfStrips-1, parameters.config.DETparameters.numOfStrips)
         
         offset = cassOffset*parameters.config.DETparameters.numOfWires
         start  = offset
@@ -78,14 +61,12 @@ class allAxis():
         start  = 0
         stop   = parameters.config.DETparameters.numOfStrips-1
         steps  = parameters.plotting.posSbins - int(parameters.plotting.posSbins/parameters.config.DETparameters.numOfStrips - 1)
-
         self.axStrips = createAx(start, stop, steps)
         
         
         # offset_mm = cassOffset*parameters.config.DETparameters.numOfWires*parameters.config.DETparameters.wirePitch*sine
         # start  = offset_mm
         start  = 0
-        
         sine = 1
 
         stop   = (len(parameters.config.DETparameters.cassInConfig)*parameters.config.DETparameters.numOfWires-1)*4*sine
@@ -99,12 +80,8 @@ class allAxis():
         
         self.axStrips_mm = createAx(start, stop, steps)
         
-        self.axMult = createAx(0, parameters.config.DETparameters.numOfStrips-1, parameters.config.DETparameters.numOfStrips)
-        
-        start = -parameters.plotting.ToFrange
-        stop  = parameters.plotting.ToFrange
-        steps = round((stop-start)/parameters.plotting.instRateBin)
-        self.axInstRate = createAx(start, stop, steps)
+       
+       
         
     
  

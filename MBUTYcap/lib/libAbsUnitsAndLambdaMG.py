@@ -10,30 +10,21 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 
+try:
 
-from lib import libSampleData as sdat
-from lib import libMappingMG as maps
-from lib import libCluster as clu
-from lib import libParameters as para
-from lib import libHistogramsMG as hh
-from lib import libPlottingMG as plo
-from lib import libReadPcapng as pcapr
-from lib import libFileManagmentUtil as fd
-from lib import libParameters as para
-from lib import libTerminal as ta
+    from lib import libMappingMG as maps
+    from lib import libCluster as clu
+    from lib import libParameters as para
+    from lib import libReadPcapng as pcapr
+    from lib import libAbsUnitsAndLambda
 
-from lib import libAbsUnitsAndLambda
+except ImportError:
 
-# import libSampleData as sdat
-# import libMappingMG as maps
-# import libCluster as clu
-# import libParameters as para
-# import libHistograms as hh
-# import libPlotting as plo
-# import libReadPcapngVMM as pcapr
-# import libFileManagmentUtil as fd
-# import libParameters as para
-# import libTerminal as ta
+    import libMappingMG as maps
+    import libCluster as clu
+    import libParameters as para
+    import libReadPcapng as pcapr
+    import libAbsUnitsAndLambda
 
 
 ###############################################################################

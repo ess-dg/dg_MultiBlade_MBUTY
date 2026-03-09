@@ -13,11 +13,17 @@ import glob
 import sys
 from PyQt5.QtWidgets import QFileDialog
 
-from lib import libMapping as maps
-from lib import libParameters as para
 
-# import libMapping as maps
-# import libParameters as para
+try:
+####### if you run default
+    from lib import libMapping as maps
+    from lib import libParameters as para
+
+
+except ImportError:
+    ####### if you run in lib 
+    import libMapping as maps
+    import libParameters as para
 
 ###############################################################################
 ###############################################################################

@@ -12,30 +12,26 @@ import matplotlib.pyplot as plt
 import copy
 
 
-from lib import libSampleData as sdat
-from lib import libMapping as maps
-from lib import libCluster as clu
-from lib import libParameters as para
-from lib import libHistograms as hh
-from lib import libPlotting as plo
 
-# from lib import libReadPcapng as pcapr
-# from lib import libFileManagmentUtil as fd
-# from lib import libParameters as para
-# from lib import libTerminal as ta
+try:
+####### if you run default
+    from lib import libSampleData as sdat
+    from lib import libMapping as maps
+    from lib import libCluster as clu
+    from lib import libParameters as para
+    from lib import libHistograms as hh
+    from lib import libPlotting as plo
+
+except ImportError:
+    ####### if you run in lib 
+    import libSampleData as sdat
+    import libMapping as maps
+    import libCluster as clu
+    import libParameters as para
+    import libHistograms as hh
+    import libPlotting as plo
 
 
-
-# import libSampleData as sdat
-# import libMapping as maps
-# import libCluster as clu
-# import libParameters as para
-# import libHistograms as hh
-# import libPlotting as plo
-# import libReadPcapng as pcapr
-# import libFileManagmentUtil as fd
-# import libParameters as para
-# import libTerminal as ta
 
 
 ###############################################################################
@@ -52,7 +48,11 @@ class Tof2LambdaConverter():
     
     def ToF2lambda (self,  distance, ToF):
         
-        velocity = distance/ToF               #m/s
+        
+        # velocity = distance/ToF               #m/s
+        
+        velocity = np.divide(distance, ToF, out=np.zeros_like(ToF), where=ToF!=0)
+        
         energy   = (1/2)*(self.mneutr/1.6e-19)*(velocity**2)     #eV
         
         selGoods =  energy > 0

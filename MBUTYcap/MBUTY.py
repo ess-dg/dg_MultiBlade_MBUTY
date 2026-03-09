@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V7.1 2026/02/17     francescopiscitelli     ######################
+########    V7.2 2026/03/09     francescopiscitelli     ######################
 ###############################################################################
 ###############################################################################
 #  includes streaming from kafka 
@@ -41,11 +41,29 @@ from lib import libMapping as maps
 # from lib import libMappingMON as mapsMON
 # from lib import libPlotting as plo
 
+suffixes = {
+    'MB': '', 
+    'MG': 'MG', 
+    'MIRACLES': 'R5560', 
+    'BIFROST': 'R5560', 
+    'CSPEC':   'R5560'
+}
 
+libs = {
+    'units': 'libAbsUnitsAndLambda',
+    'clu':   'libCluster',
+    'map':   'libMapping',
+    'plot':  'libPlotting',
+    'hh':    'libHistograms'
+}
+
+# Generate the map with the MG exception logic
 DETECTOR_LIB_MAP = {
-    'MB': {'units': 'libAbsUnitsAndLambda', 'map': 'libMapping', 'plot': 'libPlotting', 'hh': 'libHistograms'},
-    'MG': {'units': 'libAbsUnitsAndLambdaMG', 'map': 'libMappingMG', 'plot': 'libPlottingMG', 'hh': 'libHistogramsMG'}
-    # 'SKADI': {'units': 'libAbsUnitsAndLambdaSKADI', 'map': 'libMapping', 'plot': 'libPlotting', 'hh': 'libHistograms'}
+    det: {
+        k: (f"{v}{s}" if not (det == 'MG' and k == 'clu') else v)
+        for k, v in libs.items()
+    }
+    for det, s in suffixes.items()
 }
 
 ###############################################################################
@@ -77,7 +95,7 @@ DETECTOR_LIB_MAP = {
 
 class MBUTYmain():
     
-    def __init__(self,parameters, runFromGui=False, main_thread_queue = None):
+    def __init__(self, parameters, runFromGui=False, main_thread_queue = None):
         self.main_thread_queue = main_thread_queue
         self.parameters = parameters
         self.profiling = para.profiling()
@@ -86,7 +104,7 @@ class MBUTYmain():
         
         user_name = os.environ.get('USER', os.environ.get('USERNAME', 'User'))
         print('----------------------------------------------------------------------')
-        print('\033[1;32mCiao '+user_name+'! Welcome to MBUTY 7.1\033[1;37m')
+        print('\033[1;32mCiao '+user_name+'! Welcome to MBUTY 7.2\033[1;37m')
         print('----------------------------------------------------------------------')
         plt.close("all")
         ### check version ###
@@ -129,22 +147,23 @@ class MBUTYmain():
         self.parameters.set_acqMode(self.parameters.acqMode)
         ### read json and create parameters for plotting and analisys ###
         config = maps.read_json_config(os.path.join(self.parameters.fileManagement.configFilePath , self.parameters.fileManagement.configFileName),printFlag = False)
-
+        
         det_type = config.DETparameters.type
         if det_type in DETECTOR_LIB_MAP:
             libs = DETECTOR_LIB_MAP[det_type]
             # Dynamic imports
             self.absu = importlib.import_module(f"lib.{libs['units']}")
+            self.clu  = importlib.import_module(f"lib.{libs['clu']}")
             self.maps = importlib.import_module(f"lib.{libs['map']}")
             self.plo  = importlib.import_module(f"lib.{libs['plot']}")
             self.hh   = importlib.import_module(f"lib.{libs['hh']}")
         else:
             print('\n \033[1;31m---> Error in config File: detector type {} not supported (MB or MG only) \033[1;37m'.format(det_type),end='')
             sys.exit()
-               
+            
         config = self.maps.read_json_config(os.path.join(self.parameters.fileManagement.configFilePath , self.parameters.fileManagement.configFileName))
         self.parameters.loadConfigAndUpdate(config)
-
+        
         # self.parameters.update()
         ###############################################################################
         ###############################################################################
@@ -262,7 +281,7 @@ class MBUTYmain():
                 if self.MON.flagMONfound is True:
                     self.hitsMON = self.MON.hits
                     
-                    self.MONe = clu.hitsMON2events(self.hitsMON)
+                    self.MONe = self.clu.hitsMON2events(self.hitsMON)
                     self.eventsMON = self.MONe.events
                     
                     
@@ -321,7 +340,7 @@ class MBUTYmain():
             if self.parameters.config.DETparameters.operationMode == 'normal':
                 ###############################################################################
                 ### clusterize
-                cc = clu.clusterHits(self.hits,self.parameters.plotting.showStat)
+                cc = self.clu.clusterHits(self.hits,self.parameters.plotting.showStat)
                 cc.clusterizeManyCassettes(self.parameters.config.DETparameters.cassInConfig, self.parameters.dataReduction.timeWindow)
                 self.events = cc.events
                 self.deltaTimeWS = cc.deltaTimeClusterWSall
@@ -330,7 +349,7 @@ class MBUTYmain():
                 
             elif  self.parameters.config.DETparameters.operationMode == 'clustered':  
                 ### do not clusterize
-                self.events = clu.events()
+                self.events = self.clu.events()
                 self.events.importClusteredHits(self.hits,self.parameters.config)
                 self.deltaTimeWS = None
                
@@ -431,10 +450,8 @@ class MBUTYmain():
             print('\n\033[1;36m \t Plotting Cassettes in blocks of {} \033[1;37m\n'.format(self.parameters.plottingInSectionsBlocks)) 
             fullConfig = self.parameters.config
  
-        
         self.parameters.HistNotification(self.parameters.plottingInSections)
 
-        
         numOfLoops = int(np.ceil(self.parameters.config.DETparameters.numOfCassettes/self.parameters.plottingInSectionsBlocks))
             
         for loop in range(numOfLoops):
@@ -455,36 +472,33 @@ class MBUTYmain():
             ### readouts
             
             if (self.parameters.plotting.plotRawReadouts  or  self.parameters.plotting.plotReadoutsTimeStamps or self.parameters.plotting.plotChopperResets or self.parameters.plotting.plotADCvsCh) is True:
-                plread = self.plo.plottingReadouts(self.readouts, self.parameters, self.parameters.plotting.histogOutBounds)
+                plread = self.plo.plottingReadouts(self.readouts, self.parameters, self.allAxis, self.parameters.plotting.histogOutBounds)
                 if self.parameters.plotting.plotRawReadouts is True:
                     plread.plotChRaw(self.parameters.config.DETparameters.cassInConfig)
                 if self.parameters.plotting.plotReadoutsTimeStamps is True:
                     plread.plotTimeStamps(self.parameters.config.DETparameters.cassInConfig)
                 if self.parameters.plotting.plotADCvsCh is True:
-                    plread.plotADCvsCh(self.parameters.config.DETparameters.cassInConfig, self.allAxis , self.parameters.plotting.plotADCvsChlog)          
+                    plread.plotADCvsCh(self.parameters.config.DETparameters.cassInConfig, self.parameters.plotting.plotADCvsChlog)          
                 if self.parameters.plotting.plotChopperResets is True:
                     plread.plotChoppResets()
                     
             ######################
-        
-            ######################
+            ### hits
+            
             if self.parameters.plotting.bareReadoutsCalculation is False:
                 ### hits
                 if (self.parameters.plotting.plotRawHits or self.parameters.plotting.plotHitsTimeStamps or self.parameters.plotting.plotHitsTimeStampsVSChannels) is True:
-                    plhits = self.plo.plottingHits(self.hits, self.parameters, self.parameters.plotting.histogOutBounds)
+                    plhits = self.plo.plottingHits(self.hits, self.parameters, self.allAxis, self.parameters.plotting.histogOutBounds)
                     if self.parameters.plotting.plotRawHits is True:
                         plhits.plotChRaw(self.parameters.config.DETparameters.cassInConfig)
                     if self.parameters.plotting.plotHitsTimeStamps is True:
                         plhits.plotTimeStamps(self.parameters.config.DETparameters.cassInConfig)
                     if self.parameters.plotting.plotHitsTimeStampsVSChannels is True:    
                         plhits.plotTimeStampsVSCh(self.parameters.config.DETparameters.cassInConfig)    
-            ######################
             
             ######################
             ### events
-            
-            
-            
+ 
             if self.parameters.plotting.bareReadoutsCalculation is False:
                 ### XY and XToF
                 plev = self.plo.plottingEvents(self.events,self.parameters,self.allAxis,self.parameters.plotting.coincidenceWS_ONOFF, self.parameters.plotting.histogOutBounds)
@@ -588,7 +602,8 @@ if __name__ == '__main__':
 
     # configFileName  = "ESTIA.json"
     
-    # configFileName  = "test.json"
+    # configFileName  = "MIRACLES24.json"
+    # configFileName  = "MIRACLES2.json"
 
     # configFileName  = "ESTIA_sect0.json"
     # configFileName  = "ESTIA_sect1.json"
@@ -677,6 +692,7 @@ if __name__ == '__main__':
     # parameters.fileManagement.fileName = ['ESSmask2023_1000pkts.pcapng']
     # parameters.fileManagement.fileName = ['miracles_trig2.pcapng']
     # parameters.fileManagement.fileName = ['MG_2EMMAprototypes.pcapng']
+    # parameters.fileManagement.fileName = ['miracles_source_mask.pcapng']
     # parameters.fileManagement.fileName = ['skadiDataQ.pcapng']
     
 
@@ -830,7 +846,7 @@ if __name__ == '__main__':
     parameters.plotting.plotADCvsChlog          = False 
     parameters.plotting.plotChopperResets       = False 
 
-    parameters.plotting.plotRawHits             = False
+    parameters.plotting.plotRawHits             = True
     parameters.plotting.plotHitsTimeStamps      = False
     parameters.plotting.plotHitsTimeStampsVSChannels = False
 
@@ -866,7 +882,7 @@ if __name__ == '__main__':
     parameters.plotting.coincidenceWS_ONOFF = True
 
     ### ON/OFF, if  invalid ToFs Tofare included in the plots or removed from events 
-    parameters.plotting.removeInvalidToFs   = True
+    parameters.plotting.removeInvalidToFs   = False
 
     ### histogram outBounds param set as True as default (Events out of bounds stored in first and last bin)
     parameters.plotting.histogOutBounds = True
@@ -881,7 +897,7 @@ if __name__ == '__main__':
     parameters.pulseHeigthSpect.plotPHSlog = False
 
     parameters.pulseHeigthSpect.energyBins = 256
-    parameters.pulseHeigthSpect.maxEnerg   = 1700
+    parameters.pulseHeigthSpect.maxEnerg   = 22000
 
     ### plot the PHS correaltion wires vs strips
     parameters.pulseHeigthSpect.plotPHScorrelation = False

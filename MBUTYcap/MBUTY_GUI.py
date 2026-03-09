@@ -764,7 +764,7 @@ class MBUTY_GUI_App:
         user_name = os.environ.get('USER', os.environ.get('USERNAME', 'User'))
         self.main_app_title_label = tk.Label(
             header,
-            text=f"Ciao {user_name}! Welcome to MBUTY 7.1",
+            text=f"Ciao {user_name}! Welcome to MBUTY 7.2",
             font=(const.gui_font, const.param_font_size+8, "bold"), # Initial font
             fg="#228B22", # Foreground color (Forest Green)
         )
@@ -885,7 +885,7 @@ class MBUTY_GUI_App:
     def show_about_dialog(self):
         """Displays software version and author information."""
         # Assuming these are defined in your library/constants
-        version = "7.1 (Mar 5, 2026)" 
+        version = "7.2 (Mar 9, 2026)" 
         author = "Francesco Piscitelli, Sheila Monera Cabarique"
         
         about_text = (
@@ -895,7 +895,7 @@ class MBUTY_GUI_App:
             f"Authors: {author}\n"
             f"mail: francesco.piscitelli@ess.eu\n\n"
             f"Created: June 13, 2021\n"
-            f"Description: Utility Tool for Analysis. Supports readers for all data formats: VMM, BM, R5560 and SKADI. Supports MB and MG detectors for analysis. "
+            f"Description: Utility Tool for Analysis. Supports readers for all data formats: VMM, BM, R5560 and SKADI. Supports MB, MG, CSPEC, BIFROST and MIRACLES detectors for analysis. "
         )
         messagebox.showinfo("About MBUTY", about_text)    
 

@@ -11,21 +11,14 @@ import time
 import sys
 
 
-# from lib import libSampleData as sdat
-from lib import libMapping as maps
-from lib import libHistograms as hh
-# from lib import libParameters as para
-# from lib import libProgressBar as pb
+try:
+####### if you run default
+    from lib import libHistograms as hh
 
-from lib import libReadPcapng as pcapr
-# from lib import libPlotting as plo
 
-# import libSampleData as sdat
-# import libMapping as maps
-# import libHistograms as hh
-# import libParameters as para
-# import libReadPcapng as pcapr
-# import libPlotting as plo
+except ImportError:
+    ####### if you run in lib 
+    import libHistograms as hh
 
 
 # NOTE  IF YOU CLUSTERIZE AGAIN THE SAME CASSETTE -> exit
@@ -439,11 +432,11 @@ class clusterHits():
             
             #################################
     
-            ADCCH = np.zeros((np.shape(data)[0],12),dtype='int64')
-    
-            # ADCCH2 = np.zeros((np.shape(data)[0],1),dtype='int64')
-    
+            sizeADCCH = 12
+            ADCCH = np.zeros((np.shape(data)[0],sizeADCCH),dtype='int64')
+
             ADCCH[:,0:3] = (data[:,0:3])  # first 3 columns as data
+            
             ADCCH[:,3]   = (clusterlogic.astype(int)) # col 3 is 0 where a new cluster may start
     
             ADCCH[:,4]   = ((data[:,3] == 0).astype(int))   # wire  
@@ -458,10 +451,7 @@ class clusterHits():
             ADCCH[:,10]  =  (ADCCH[:,4]*ADCCH[:,6]*ADCCH[:,8]).astype(int)    # weighted position on wires
             ADCCH[:,11]  =  (ADCCH[:,5]*ADCCH[:,7]*ADCCH[:,9]).astype(int)    # weighted position on strips
             
-            # print(ADCCH[0:20,:])
-            
-            # print('asflkasnfciawndhfclaiwcefxbxwemoif')
-            
+    
             #################################
             
             # self.dtim[:,7] = index
@@ -470,8 +460,8 @@ class clusterHits():
             
             self.events1Cass.Nevents = NumClusters
         
-            self.TPHM = np.zeros((NumClusters,9),dtype='int64')  #output data with col0 position wires, col1 poisiton strips, col2 tof, col3 pulse height wires, col4 pulse height strips, col 5 multiplicity w, col 6 muiltiplicity strips
-            self.PO   = np.zeros((NumClusters,9),dtype='float64')
+            self.TPHM = np.zeros((NumClusters,7),dtype='int64') 
+            self.PO   = np.zeros((NumClusters,2),dtype='float64')
             
             # filling timeStamp column
             self.TPHM[:,0]  = data[index[:,0],0].astype(int)    # timeStamp      
@@ -489,11 +479,8 @@ class clusterHits():
             # add a fake last cluster to make loop up to the very last true cluster
             index = np.concatenate((index,[[np.shape(data)[0]]]),axis=0)
             
-            ADCCH = np.concatenate((ADCCH,np.zeros((1,12),dtype='int64')),axis=0)
+            ADCCH = np.concatenate((ADCCH,np.zeros((1,sizeADCCH),dtype='int64')),axis=0)
             
-            # print((ADCCH[0,10]))
-            
-            # print(ADCCH[0:20,:])
 
              #################################
             if  NumClusters >= 0:
@@ -825,20 +812,19 @@ class hitsMON2events():
 
 if __name__ == '__main__':
     
-    filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"test.json"
+    filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"AMOR.json"
     # filePathD = './'+"VMM3a_Freia.pcapng"
 
     config = maps.read_json_config(filePath)
     
     filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
-    file = 'sampleData_NormalMode.pcapng'
+    file = 'ESSmask2023_1000pkts.pcapng'
     # file = 'sampleData_ClusteredMode.pcapng'
     
     filePathAndFileName = filePath+file
+
     
-    NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
-    
-    pcapng = pcapr.pcapng_reader(filePathAndFileName, NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode)
+    pcapng = pcapr.pcapng_reader(filePathAndFileName)
 
      
     readouts = pcapng.readouts
@@ -853,10 +839,15 @@ if __name__ == '__main__':
     # cc.clusterizeManyCassettes([33], 0.5e-6)
     # events = cc.events
     
-    ev = events()
-    ev.importClusteredHits(hits,config)
+    cc = clusterHits(hits,showStat='globalStat')
+    cc.clusterizeManyCassettes(config.DETparameters.cassInConfig, timeWindow=2e-6)
+    events = cc.events
+    deltaTimeWS = cc.deltaTimeClusterWSall
+    
+    # ev = events()
+    # ev.importClusteredHits(hits,config)
 
-    eventsArray = ev.concatenateEventsInArrayForDebug() 
+    eventsArray = events.concatenateEventsInArrayForDebug() 
 
    # filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MB300_FREIA_config.json"
    # filePathD = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'+'freia_1k_pkts_ng.pcapng'
