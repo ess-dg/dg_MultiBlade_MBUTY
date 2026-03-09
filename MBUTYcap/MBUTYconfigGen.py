@@ -18,12 +18,14 @@ currentPath = os.path.abspath(os.path.dirname(__file__))+os.sep
 
 path  = os.path.join(currentPath,'config')
    
-Detector      =  "MB1"
+DetectorName = "Mtest"
+DetectorType = 'MB'
 operationMode = 'normal'
-cassettes     =  14
-orientation   = 'vertical'
+cassettes = 5
+orientation = 'vertical'
 
-flag = checkIfExists(os.path.join(path,f"{Detector}.json"))
+flag = checkIfExists(os.path.join(path,f"{DetectorName}.json"))
 
-generateDefaultDetConfig(path,Detector,cassettes,orientation,operationMode,overwrite=flag)
+generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orientation, operationMode, overwrite=flag) 
+
        
