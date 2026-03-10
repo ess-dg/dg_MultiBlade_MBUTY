@@ -155,6 +155,8 @@ class kafka_reader_preAlloc():
         self.rea.data             = np.zeros((self.rea.preallocLength,19), dtype='int64') 
         
         self.rea.readouts.heartbeats = np.zeros((self.rea.counterCandidatePackets,), dtype='int64') 
+        
+        self.rea.readouts.instrType  = np.zeros((self.rea.counterCandidatePackets), dtype='U10') 
 
         self.rea.stepsForProgress = int(self.rea.counterCandidatePackets/20)+1  # 4 means 25%, 50%, 75% and 100%
         
@@ -227,16 +229,16 @@ class kafka_reader_preAlloc():
                             self.rea.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
                             indexPackets += 1
                             
-        
+                        
   
  
         if flagTopicFound == True: 
             
             print('[100%]',end=' ') 
             
-            # self.rea.checkInstrIDsetReadoutSize(packetsInstrID)
+            self.rea.readouts.instrType = packetsInstrID
             
-            # self.rea.checkFWversionSetHeaders(packetsFWversion)
+            self.rea.readouts.calculateUniqueInstrType()
 
             self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.rea.counterPackets , self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))
               
@@ -295,8 +297,8 @@ class bytesGen():
         # self.packetData   = b"\x00\x00\x45\x53\x53\x72"+bytearray([1] * self.packetLength-6)
 
         # dataPath='../data/'
-        
-        dataPath='./data/'
+       
+        # dataPath='./data/'
         
         # print(dataPath)
         
@@ -304,9 +306,15 @@ class bytesGen():
         
         # print(dataPath)
         
-        with open(dataPath+'outputBinary1pkt', 'rb') as f: 
-
-            temp =  self.packetData =  f.read()
+        try:
+            dataPath='./data/'
+            with open(dataPath+'outputBinary1pkt', 'rb') as f: 
+                temp =  self.packetData =  f.read()
+            
+        except:   
+             dataPath='../data/'
+             with open(dataPath+'outputBinary1pkt', 'rb') as f: 
+                 temp =  self.packetData =  f.read()
            
         self.packetData =  temp[42:]
            

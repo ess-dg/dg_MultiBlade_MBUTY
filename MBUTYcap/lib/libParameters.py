@@ -322,17 +322,25 @@ class plotting():
       def calculateDerivedParam(self, config):
           
           self.config = config
-             
+          
+          
           if self.config is not None:
-               if self.positionReconstruction == 'W.max-S.max': # w x s max max
-                     self.posWbins = int(self.config.DETparameters.numOfWires)
-                     self.posSbins = int(self.config.DETparameters.numOfStrips)
-               elif self.positionReconstruction == 'W.cog-S.cog': # w x s CoG CoG
-                     self.posWbins = int(self.config.DETparameters.numOfWires*2)
-                     self.posSbins = int(self.config.DETparameters.numOfStrips*2) 
-               elif self.positionReconstruction == 'W.max-S.cog': # w x s max CoG
-                     self.posWbins = int(self.config.DETparameters.numOfWires)
-                     self.posSbins = int(self.config.DETparameters.numOfStrips*2)
+              try:
+                   if self.positionReconstruction == 'W.max-S.max': # w x s max max
+                         self.posWbins = int(self.config.DETparameters.numOfWires)
+                         self.posSbins = int(self.config.DETparameters.numOfStrips)
+                   elif self.positionReconstruction == 'W.cog-S.cog': # w x s CoG CoG
+                         self.posWbins = int(self.config.DETparameters.numOfWires*2)
+                         self.posSbins = int(self.config.DETparameters.numOfStrips*2) 
+                   elif self.positionReconstruction == 'W.max-S.cog': # w x s max CoG
+                         self.posWbins = int(self.config.DETparameters.numOfWires)
+                         self.posSbins = int(self.config.DETparameters.numOfStrips*2)
+                         
+              except:
+                  
+                  self.posWbins = int(1)
+                  self.posSbins = int(1)
+                  
              
           self.ToFbins  = round(self.ToFrange/self.ToFbinning) 
           

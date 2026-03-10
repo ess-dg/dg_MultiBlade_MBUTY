@@ -15,11 +15,17 @@ import os
 import time
 import sys
 import ipaddress
-
-
 import matplotlib.pyplot as plt
 
+try: 
+    ####### if you run default
+    from lib import libMapping as maps
+    from lib import libParameters as para
 
+except ImportError:
+    ####### if you run in lib 
+    import libMapping as maps
+    import libParameters as para
 
 ###############################################################################
 ###############################################################################
@@ -52,7 +58,18 @@ class readouts():
         self.mult0     = np.zeros((0), dtype = datype)
         self.mult1     = np.zeros((0), dtype = datype)
         self.heartbeats = np.zeros((0), dtype = datype)
+        self.instrType  = np.zeros((0), dtype = 'U10')
+        self.instrTypeUnique = np.zeros((0), dtype = 'U10')
                       
+    
+    def calculateUniqueInstrType(self):
+        
+        temp = np.unique(self.instrType)
+        
+        index = temp == ''
+        
+        self.instrTypeUnique = temp[~index]
+    
     
     def transformInReadouts(self, data):
         self.Ring       = data[:,0]
@@ -102,9 +119,10 @@ class readouts():
         self.Durations  = np.append(self.Durations, reado.Durations)
         self.mult0     = np.concatenate((self.mult0, reado.mult0), axis=0)
         self.mult1     = np.concatenate((self.mult1, reado.mult1), axis=0)
-        self.heartbeats= np.concatenate((self.heartbeats, reado.heartbeats), axis=0)
-       
-              
+        self.heartbeats = np.concatenate((self.heartbeats, reado.heartbeats), axis=0)
+        self.instrType  = np.concatenate((self.instrType , reado.instrType), axis=0)
+        self.instrTypeUnique = np.concatenate((self.instrTypeUnique , reado.instrTypeUnique), axis=0)
+        
     def concatenateReadoutsInArrayForDebug(self):
         
         leng = len(self.timeStamp)
@@ -451,14 +469,146 @@ class checkInstrumentID():
         else:
              print('found some other data stream',end='')
              
+    # def checkMatchConfigWithInstrType(self,instrConfig,instrType):
+        
+    #     instrType can be eitehr one ID, e.g. MG or it can be len 2 with for exampek MG and BM. BM is allowed to be the other type. 
+    #     But if instrType is for examplke MG and BIFROST need to raise a warning. 
+        
+    #     also if instrType is VMM for example and  instrConfig is CSPEC give a warning.
+        
+    #     # Group 1: MIRACLES, CSPEC, BIFROST -> R5560
+    #     if instrConfig in ["MIRACLES", "CSPEC", "BIFROST"]:
+    #         # instrType must be == "R5560"
+    
+    #      # Group 2: MG, MB -> VMM
+    #     elif instrConfig in ["MG", "MB"]:
+    #         # instrType must be == "VMM"
+            
+    def checkMatchConfigWithInstrType(self, detType, instrTypes):
+      
+        temp = np.unique(instrTypes)
+        index = temp == ''
+        instrType = temp[~index]
+
+        # 1. Setup
+        valid_map = {
+            "MIRACLES": "R5560",
+            "CSPEC":    "R5560",
+            "BIFROST":  "R5560",
+            "MG":       "VMM",
+            "MB":       "VMM"
+        }
+        
+        accepted_configs = ", ".join(valid_map.keys())
+        global_accepted_types = set(valid_map.values())
+        global_accepted_types.add("BM")
+        
+        # 2. Setup Inputs
+        types_to_check = [instrType] if isinstance(instrType, str) else list(instrType)
+        num_types = len(types_to_check)
+        expected = valid_map.get(detType)
+        
+        if expected is None:
+            print(f"\n\033[1;31mERROR: Unknown detector configuration '{detType}'.\033[0m")
+            print(f"Accepted detector configurations are: [{accepted_configs}] and 'BM'")
+            sys.exit() 
+            
+        elif num_types == 1:
+            
+            found_type = types_to_check[0]
+            
+            if found_type == "BM":
+                print(f"\n\033[1;33mWARNING: detector config '{detType}' expects '{expected}' but found only 'BM'! Analysis continues.\033[0m")   
+                
+            elif found_type != "BM" and (found_type not in global_accepted_types):
+                print(f"\n\033[1;31mERROR: detector config '{found_type}' is not supported!\033[0m")
+                print(f"Accepted types are: [{', '.join(sorted(global_accepted_types))}]")
+                sys.exit()
+                
+            # Case: It is a known type, but wrong for THIS config (e.g., R5560 for an MG config)
+            elif found_type != expected:
+                print(f"\n\033[1;31mERROR: Mismatch! Detector config '{detType}' requires '{expected}', but found only '{found_type}' in data!\033[0m")
+                sys.exit()
+            else:
+                pass
+                
+        elif num_types == 2:
+            
+            t1, t2 = types_to_check[0], types_to_check[1]
+            
+            # Fatal: Both are completely unknown strings
+            if t1 not in global_accepted_types and t2 not in global_accepted_types:
+                print(f"\n\033[1;31mERROR: Neither '{t1}' nor '{t2}' data types are supported!\033[0m")
+                sys.exit()
+        
+            # Fatal: One is unknown
+            elif t1 not in global_accepted_types or t2 not in global_accepted_types:
+                known   = t1 if t1 in global_accepted_types else t2
+                unknown = t2 if t1 in global_accepted_types else t1
+                
+                if known == "BM":
+                    print(f"\n\033[1;33mWARNING: Detector config '{detType}' expects '{expected}' but found '{unknown}' (unknown) and 'BM'. Analysis continues.\033[0m")
+                elif known == expected:
+                    print(f"\n\033[1;33mWARNING: Detector config '{detType}' expects '{expected}' and found '{known}' but also '{unknown}' (unknown) in data! Analysis continues.\033[0m")
+                else:
+                    print(f"\n\033[1;31mERROR: Detector config '{detType}' expects '{expected}' but found '{known}' alongside '{unknown}'!\033[0m")
+                    sys.exit()
+        
+            # both are known      
+            elif t1 in global_accepted_types and t2 in global_accepted_types:
+                
+                # 1. Success: One is exactly what we expected (the other can be BM or another known type)
+                if t1 == expected or t2 == expected:
+                    # If the "other" one isn't BM, we can still throw a warning but keep going
+                    other = t2 if t1 == expected else t1
+                    if other != "BM":
+                        print(f"\n\033[1;33mWARNING: Detector config '{detType}' found expected '{expected}' but also found '{other}'. Analysis continues.\033[0m")
+                    else:
+                        pass # Perfect match: Expected + BM
+        
+                # 2. Case: Neither is the 'expected' type
+                else:
+                    # If at least one of them is BM, we allow it with a warning
+                    if t1 == "BM" or t2 == "BM":
+                        wrong_known = t2 if t1 == "BM" else t1
+                        print(f"\n\033[1;33mWARNING: Detector config '{detType}' expects '{expected}' but found only '{wrong_known}' (mismatch) and 'BM'. Analysis continues.\033[0m")
+                    
+                    # 3. Fatal: Both are known (e.g., R5560 and VMM) but neither matches 'expected' (e.g., for BIFROST)
+                    else:
+                        print(f"\n\033[1;31mERROR: Detector config '{detType}' expects '{expected}' but found '{t1}' and '{t2}'! Neither matches.\033[0m")
+                        sys.exit()
+          
+        elif num_types >= 3:
+            
+            # Standardize enumeration for the warning
+            types_list_str = ", ".join(types_to_check)
+            
+            # 1. Check if the expected type is present anywhere in the 3+ items
+            if expected in types_to_check:
+                # Create a list of the "other" types found alongside the expected one
+                others = [t for t in types_to_check if t != expected]
+                print(f"\n\033[1;33mWARNING: Detector config '{detType}' found expected '{expected}' but also found {len(others)} other types: [{', '.join(others)}]. Analysis continues.\033[0m")
+        
+            # 2. Expected is NOT found, check if at least one is BM
+            elif "BM" in types_to_check:
+                # Expected missing, but BM exists to save the analysis
+                print(f"\n\033[1;33mWARNING: Detector config '{detType}' expects '{expected}' but found only BM and other types: [{types_list_str}]. Analysis continues.\033[0m")
+        
+            # 3. Fatal: No expected type found AND no BM found
+            else:
+                print(f"\n\033[1;31mERROR: Detector config '{detType}' expects '{expected}' or 'BM', but none were found in: [{types_list_str}]!\033[0m")
+                sys.exit()
+                    
+            
+        
+        
+    
         
 #################################################             
  
 class checkIfDataIsSupported():
     def __init__(self, flagSupported):
-        
-        
-        
+
         if flagSupported == False:
             print('\n\t\033[1;31m---> This data format is not supported yet, only reader, nor plotting or analysis ---> Exiting ... \n\033[1;37m') 
             sys.exit()
@@ -1198,9 +1348,9 @@ class pcapng_reader_PreAlloc():
         
         print('\n',end='')
         
-        self.data = np.zeros((self.preallocLength,19), dtype='int64') 
-        
-        self.readouts.heartbeats = np.zeros((self.counterCandidatePackets), dtype='int64') 
+        self.data                      = np.zeros((self.preallocLength,19), dtype='int64') 
+        self.readouts.heartbeats       = np.zeros((self.counterCandidatePackets), dtype='int64')
+        self.readouts.instrType        = np.zeros((self.counterCandidatePackets), dtype='U10') 
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
@@ -1240,6 +1390,8 @@ class pcapng_reader_PreAlloc():
                 indexPackets += 1
          
         print('[100%]',end=' ') 
+        
+        self.readouts.calculateUniqueInstrType()
 
         self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.counterPackets , self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))
              
@@ -1435,7 +1587,7 @@ class pcapng_reader_PreAlloc():
            # if the packet is a good packet then...
            if ICMPflag == False:
                # dinamically change readoutsize 20 or 24 bytes 
-               self.singleReadoutSize, self.InstrType, self.flagSupported = checkInstrumentID().setBytesPerReadout(self.extractInstrID(packetData,indexESS))             
+               self.singleReadoutSize, self.InstrType, self.flagSupported = checkInstrumentID().setBytesPerReadout(self.extractInstrID(packetData,indexESS))   
                
                readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
                # or alternatively
@@ -1630,15 +1782,19 @@ class pcapng_reader_PreAlloc():
                                            .format(self.counterValidESSpackets,ESSlength,currentReadout+1,vmm3.Ring,vmm3.Fen,vmm3.VMM,vmm3.hybrid,vmm3.ASIC,vmm3.Channel,vmm3.timeCoarse,vmm3.BC,vmm3.OTh,vmm3.ADC,vmm3.TDC,vmm3.G0))
     
            
-                           ###########
+                 
+                         ###########
+
                try:            
-                   self.readouts.heartbeats[indexPackets] = PulseT
+                   self.readouts.heartbeats[indexPackets]     = PulseT
+                   self.readouts.instrType[indexPackets]      = self.InstrType
+                   
                except:
                    print('\033[1;31m        ---> probably rings are offline or data is corrupted \033[1;37m')
                    sys.exit()
                      
             
-    
+            
            if np.mod(self.counterValidESSpackets,self.stepsForProgress) == 0:
                 percents = int(round(100.0 * self.counterValidESSpackets / float(self.counterCandidatePackets), 1))
                 print('['+format(percents,'01d') + '%]',end=' ')  
@@ -1679,138 +1835,40 @@ class checkIfDataHasZeros():
 ###############################################################################
 
 if __name__ == '__main__':
-   # parser = argparse.ArgumentParser()
-   # parser.add_argument("-f", metavar='file', help = "pcap file",
-   #                     type = str, default = "VMM3a_Freia.pcapng")
-   # parser.add_argument('-d', action='store_true', help = "add debug print")
+
 
    tProfilingStart = time.time()
 
-   # arg = parser.parse_args()
-   
-   # filePath = './'+"VMM3a.pcapng"
-   
-   # path = '/Users/francescopiscitelli/Desktop/dataPcapUtgard/'
-   
-   filePath = '/Users/francescopiscitelli/Desktop/data4Testing/'
- 
-   
-   file = '20230911_103949_pkts100_intpulser-H0-vmm1ch5-12-18-H1-vmm0ch20-21-22-cfg-0x6_00000.pcapng'
-   
-   
-   filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
-   file = '20230823_105243_duration_s_3600_testDetChopMON_00000.pcapng'
-   
-   file = '20230829_113913_duration_s_1800_DetRefurbishedMONandChopp_00002.pcapng'
-   
-   filePath = '/Users/francescopiscitelli/Documents/DOC/DATA/202311_PSI_AMOR_MBnewAMOR_VMM_neutrons/SamplesAndMasks/'
-   file = '20231106_142811_duration_s_5_YESneutrons1240K1070Rth280_maskESS_00000.pcapng'
-   
-   filePath = '/Users/francescopiscitelli/Desktop/'
-   file = 'DiagonaltestData.pcapng'
-   file = 'DataRMMWrongHeader.pcapng'
-   
-   filePath = '/Users/francescopiscitelli/Documents/PYTHON/06_MBUTYcap_DETtests_Utgard/data/'
-   file = 'ESSmask2023.pcapng'
-   
-   filePath = '/Users/francescopiscitelli/Desktop/dataVMM/'
-   file ='20250320_095029_duration_s_1800_testCAB5-C0to3_00014.pcapng'
-   
-   filePath = '/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/'
-   file = 'miracles_trig2.pcapng'
-   # file = 'ESSmask2023_1000pkts.pcapng'
-   # file = 'ESSmask2023.pcapng'
-   
+
+
+   confFile  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
+   fileName  = "MIRACLES24.json"
+   # fileName  = "AMOR.json"
+    # fileName  = "MGEMMA.json"
+   # fileName  = "MIRACLES2bis.json"
+
+   config = maps.read_json_config(confFile+fileName)
+    
+   parameters  = para.parameters(confFile+fileName)
+   parameters.loadConfigAndUpdate(config)
+    
+    
    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
+   file = 'miracles_trig2.pcapng'
+   file = 'ESSmask2023_1000pkts.pcapng'
+   # file = 'ESSmask2023.pcapng'
+
    # file = 'skadiDataQ.pcapng'
-   
-   # filePath = '/Users/francescopiscitelli/Desktop/'
-   # file =   'testNOData.pcapng'
-   
-   
-   
-   
-   # file = '20251010_145429_pkts2000_testRANDOM1_00000.pcapng'
-   
-   # file  = 'BM_loki_bm.pcapng'
-   
-   # filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
-   # file = 'sampleData_NormalMode.pcapng'
-   # file = 'sampleData_ClusteredMode.pcapng'
-   
-   filePathAndFileName1 = filePath+file
-   
-   # filePath = path+'pcap_for_fra.pcapng'
-   # filePath = path+'pcap_for_fra_ch2test.pcapng'
-   # filePath = path+'pcap_for_fra_ch2test_take2.pcapng'
-   # filePath = path+'pcap_for_fra_coinc.pcapng'
-   # filePath = path+'freiatest.pcapng'
-   
-   # filePath = path+'20211005_091349_morten.pcapng'
-   
-   # path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
-   # filePath = path+'VMM3a_Freia.pcapng'
 
-   # pr = pcapng_reader(filePath,timeResolutionType='fine')
-   # # pr.debug = True
-   # # pr.ret()
-   # # data = pr.data
-   # 
 
+   filePathAndFileName = filePath+file
    
-   # pr = pcapng_reader_PreAlloc(filePath)
-
-   # # pr.debug = True
-   
-   # pr.allocateMemory()
-   
-   # pr.read(timeResolutionType='fine')
-   
-   # pcap = pcapng_reader(filePath,timeResolutionType='fine', sortByTimeStampsONOFF = True)
-   # readouts = pcap.readouts
-   
-   # readouts.sortByTimeStamps()
-   
-   # readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
-   # 
-   # ppp = plo.plottingReadouts(vmm3, config)
-   # ppp.plotChRaw(parameters.cassettes.cassettes)
-   # ppp.plotTimeStamps(parameters.cassettes.cassettes)
-   
-   # cc= checkWhich_RingFenHybrid_InFile(filePath)
-   
-   # aa = cc.check()
-   
-   # readouts = cc.readouts
-   
-   # r
-   
-   # NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
-   
-   # cc = checkWhich_RingFenHybrid_InFile(filePath,NSperClockTick).check()
-   
-   NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
-    
-    # cc = checkWhich_RingFenHybrid_InFile(filePath,NSperClockTick).check()
-    
-    
-   # readouts = readouts()
-   # pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine', operationMode='normal')
-
-   # pcapng = pcapng_reader_PreAlloc(NSperClockTick, MONTTLtype = True , MONring = 11, filePathAndFileName=filePathAndFileName, timeResolutionType='fine', operationMode='normal')
-   # pcapng.allocateMemory()
-   # pcapng.read()
-   # readouts = pcapng.readouts
-
    
    typeOfLoading = 'allocate'
-   
    # typeOfLoading = 'quick'
    
-   # pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONTTLtype=True, MONring=11,filePathAndFileName=filePathAndFileName1,timeResolutionType='fine',operationMode='normal', kafkaStream = False)
-   # pcapng.allocateMemory(typeOfLoading)
 
-   pcap = pcapng_reader(filePathAndFileName1,NSperClockTick, MONtype='LEMO', MONring=11, timeResolutionType='coarse', sortByTimeStampsONOFF=False, operationMode='normal',pcapLoadingMethod=typeOfLoading)
+   pcap = pcapng_reader(filePathAndFileName,NSperClockTick=11.356860963629653, MONtype='LEMO', MONring=11, timeResolutionType='coarse', sortByTimeStampsONOFF=False, operationMode='normal',pcapLoadingMethod=typeOfLoading)
 
    readouts = pcap.readouts
    
@@ -1821,49 +1879,36 @@ if __name__ == '__main__':
    # pcap = pcapng_reader(filePath, NSperClockTick, timeResolutionType = 'fine', sortByTimeStampsONOFF = False )
 
    
-   
    # readouts = pcap.readouts 
    readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
    
-   # tdcs = VMM3A_convertCalibrate_TDCinSec(readouts.TDC, NSperClockTick).TDC_ns
+   heartbeats1 = readouts.heartbeats
+   heartbeats2 = readouts.removeNonESSpacketsHeartbeats(readouts.heartbeats)
    
-   # timeS = readouts.timeHIs + 100e-9
+   readouts.checkChopperFreq()
    
+   readouts.checkInvalidToFsInReadouts()
    
-    # timeDIff = readouts.timeStamp - readouts.timeHIns 
-   # - readouts.timeLOns*1e-9
-   
-   # aa = np.concatenate((readouts.timeStamp[:,None],readouts.timeHIs[:,None],readouts.timeLOns[:,None]*1e-9,tdcs[:,None],timeDIff[:,None]),axis=1)
-   
-   # aa = pr.d
-   # bb = pr.e
-   
-   # aaa = aa[446900:,5:9]
-   # bbb = bb[446900:,5:9]
-   
-   # for k in range(446900,447000,1):
-   #      print(" \t Ring {}, FEN {}, VMM {}, hybrid {}, ASIC {}, Ch {}, Time {} s, BC {}, OverTh {}, ADC {}, TDC {}, GEO {} " \
-   #                               .format(vmm3.Ring[k],vmm3.Fen[k],vmm3.VMM[k],vmm3.hybrid[k],vmm3.ASIC[k],vmm3.Channel[k],vmm3.timeStamp[k],vmm3.BC[k],vmm3.OTh[k],vmm3.ADC[k],vmm3.TDC[k],vmm3.GEO[k]))
-   
-   # skadi 
-   # plt.close('all')
-   # figl5666, ax5666 = plt.subplots(num=567655,figsize=(6,6), nrows=1, ncols=1)
-   # ax5666.plot(readouts.Channel,readouts.Channel1,'+r')
-   
-   # bins = 16
-   # xbins = np.linspace(0,15,bins)
-   # h2D = hh.histog().hist2D(xbins, readouts.Channel, xbins, readouts.Channel1)
-   
-   # figl1, ax1 = plt.subplots(num=5,figsize=(12,12), nrows=1, ncols=1)
-   # pos1  = ax1.imshow(h2D,aspect='auto',norm=None,interpolation='none',extent=[0,bins-1,0,bins-1], origin='lower',cmap='viridis')
-   # figl1.colorbar(pos1, ax=ax1, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
- 
+   # pint =  readouts.packetsInstrID
 
-   # h2DADC = hh.histog().hist2DADC(xbins, readouts.Channel, xbins, readouts.Channel1, readouts.ADC)
+   checkIfDataIsSupported(pcap.flagSupported)
    
-   # figl2, ax2 = plt.subplots(num=6,figsize=(12,12), nrows=1, ncols=1)
-   # pos2  = ax2.imshow(h2DADC,aspect='auto',norm=None,interpolation='none',extent=[0,bins-1,0,bins-1], origin='lower',cmap='viridis')
-   # figl1.colorbar(pos2, ax=ax2, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
+   
+   readouts.instrTypeUnique = np.append(readouts.instrTypeUnique, 'R5560')
+   
+   
+   instrType1 = np.zeros((4), dtype='U10') 
+   instrType1[0] = 'R5560'
+   instrType1[1] = 'VMM'
+   instrType1[2] = 'BM'
+   instrType1[3] = 'BM'
+   
+   readouts.instrTypeUnique =  instrType1
+   
+   
+   
+   checkInstrumentID().checkMatchConfigWithInstrType(config.DETparameters.type, readouts.instrTypeUnique)
+   
    
    
    

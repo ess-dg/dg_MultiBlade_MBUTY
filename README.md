@@ -3,7 +3,7 @@ MBUTY is for reading / recording / analyzing the VMM3A, CAEN R5560 and SKADI dat
 --------------------------------------------------
 
 libReader for CAEN R5560, SKADI and VMM
-Plots and analysis for VMM MG and MB detectors 
+Plots and analysis for VMM MG and MB detectors and for MIRACLES, CSPEC and BIFROST  
 
 --------------------------------------------------
 

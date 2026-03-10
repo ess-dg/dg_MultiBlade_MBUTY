@@ -60,8 +60,8 @@ libs = {
 # Generate the map with the MG exception logic
 DETECTOR_LIB_MAP = {
     det: {
-        k: (f"{v}{s}" if not (det == 'MG' and k == 'clu') else v)
-        for k, v in libs.items()
+        # k: (f"{v}{s}" if not (det == 'MG' and k == 'clu') else v)
+        k: f"{v}{s}" for k, v in libs.items()
     }
     for det, s in suffixes.items()
 }
@@ -225,7 +225,7 @@ class MBUTYmain():
                 self.readouts.append(pcap.readouts)
                 
         elif self.parameters.acqMode == 'kafka':
-            testing = False
+            testing = True
             pcap = self.kaf.kafka_reader(NSperClockTick=self.parameters.clockTicks.NSperClockTick, nOfPackets = self.parameters.kafkaSettings.numOfPackets, \
             broker = self.parameters.kafkaSettings.broker, topic = self.parameters.kafkaSettings.topic, MONtype = self.parameters.config.MONmap.type , MONring = self.parameters.config.MONmap.RingID, \
             timeResolutionType =self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF=self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
@@ -241,6 +241,7 @@ class MBUTYmain():
         self.readouts.checkInvalidToFsInReadouts()
     
         pcapr.checkIfDataIsSupported(pcap.flagSupported)
+        pcapr.checkInstrumentID().checkMatchConfigWithInstrType(self.parameters.config.DETparameters.type, self.readouts.instrTypeUnique)
         
         ####################    
         ### for debug, generate sample readouts
@@ -846,7 +847,7 @@ if __name__ == '__main__':
     parameters.plotting.plotADCvsChlog          = False 
     parameters.plotting.plotChopperResets       = False 
 
-    parameters.plotting.plotRawHits             = True
+    parameters.plotting.plotRawHits             = False
     parameters.plotting.plotHitsTimeStamps      = False
     parameters.plotting.plotHitsTimeStampsVSChannels = False
 
@@ -897,7 +898,7 @@ if __name__ == '__main__':
     parameters.pulseHeigthSpect.plotPHSlog = False
 
     parameters.pulseHeigthSpect.energyBins = 256
-    parameters.pulseHeigthSpect.maxEnerg   = 22000
+    parameters.pulseHeigthSpect.maxEnerg   = 1700
 
     ### plot the PHS correaltion wires vs strips
     parameters.pulseHeigthSpect.plotPHScorrelation = False
