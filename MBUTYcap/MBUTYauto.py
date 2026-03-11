@@ -53,8 +53,9 @@ while True:
         print('\033[1;36m\nACQUISITION IS OVER --> launching MBUTY \033[1;37m\n',end='')
  
         # if acqOverPlot is True:
-        exec(open("./MBUTYcap_V2x3.py").read())
+        exec(open("./MBUTY.py").read())
         # print('open MBUTY')
+        time.sleep(2)
         sys.exit()
         
         # if mode == 'single':

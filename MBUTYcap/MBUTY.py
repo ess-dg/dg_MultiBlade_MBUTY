@@ -9,7 +9,7 @@
 #  includes streaming from kafka 
 
 import numpy as np
-# import time
+import time
 import os
 import sys
 import re
@@ -157,6 +157,7 @@ class MBUTYmain():
             self.hh   = importlib.import_module(f"lib.{libs['hh']}")
         else:
             print('\n \033[1;31m---> Error in config File: detector type {} not supported (MB, MG or He3 only) \033[1;37m'.format(det_type),end='')
+            time.sleep(2)
             sys.exit()
             
         config = self.maps.read_json_config(os.path.join(self.parameters.fileManagement.configFilePath , self.parameters.fileManagement.configFileName))
@@ -563,6 +564,7 @@ class MBUTYmain():
                         plt.close()
                         self.profiling.stop()
                         print('----------------------------------------------------------------------')
+                        time.sleep(2)
                         sys.exit()
                    
  

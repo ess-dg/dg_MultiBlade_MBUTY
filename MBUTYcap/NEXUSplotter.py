@@ -8,6 +8,7 @@ Created on Tue May 13 09:02:22 2025
 
 import numpy as np
 import os
+import time 
 import h5py
 import sys
 import matplotlib.pyplot as plt
@@ -41,6 +42,7 @@ if os.path.exists(pathAndFileName) is False:
         # print('  ---> in folder: '+self.filePath+' -> ... it will be skipped!')
         print(' ---> Exiting ... \n')
          # print('------------------------------------------------------------- \n')
+        time.sleep(2)
         sys.exit()
 else:
            
@@ -51,6 +53,7 @@ else:
    except:
         
       print('Unable to opne h5 file')
+      time.sleep(2)
       sys.exit()
                  
     # def __del__(self):

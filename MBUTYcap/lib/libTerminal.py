@@ -58,6 +58,7 @@ class checkPathCreate():
                 print(' --> folder created.')
             else:    
                 print(' --> exiting.')
+                time.sleep(2)
                 sys.exit()
             
 
@@ -269,6 +270,7 @@ class pcapConverter():
               print('\n NOTE: file name must contain extension, e.g. *.pcapng\n')
               print(' ---> Exiting ... \n')
               print('------------------------------------------------------------- \n')
+              time.sleep(2)
               sys.exit()
 
 ############################################################################### 
@@ -328,6 +330,7 @@ class verifyTsharkInstallation():
                 flag = False
                 print('\n \033[1;31mFile Tshark not found in your system, either set right path to Thark in parameters or install it.\033[1;37m\n')
                 print('... exiting.')
+                time.sleep(2)
                 sys.exit()
  
         return verified_pathToTshark, flag 
@@ -418,6 +421,7 @@ class dumpToPcapngUtil():
                 
             else:
                 print(' \033[1;31mERROR ... \033[1;37m type of capture '+typeOfCapture+' not supported or typo! -> exiting!')
+                time.sleep(2)
                 sys.exit()
                 
             ###############################   
@@ -448,6 +452,7 @@ class dumpToPcapngUtil():
             if temp != 0:
                 # print(' \033[1;31mERROR ... \n\033[1;37m')
                 print(f"\033[1;31mERROR: interface does not exist or you do not have the rights to record -> exiting. \033[1;37m")
+                time.sleep(2)
                 sys.exit()
                 
         allStatus = sum(status)      
@@ -551,6 +556,7 @@ class acquisitionStatus():
             
             acqIsOver = None
             print('status file does not exist')
+            time.sleep(2)
             sys.exit()
     
             

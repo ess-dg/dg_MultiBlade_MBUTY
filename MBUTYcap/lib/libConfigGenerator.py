@@ -9,6 +9,7 @@ Created on Thu Jun 19 11:59:32 2025
 import json
 import os
 import sys
+import time 
 import numpy as np 
 
 ###############################################################################
@@ -247,6 +248,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
     else:
         
         print('\n \t \033[1;33mWARNING: Detector type {} not supported (only MB, MG and He3 accepted) --> exiting!\033[1;37m\n'.format(DetectorType))
+        time.sleep(2)
         sys.exit()
         
     return filePathName  
@@ -285,6 +287,7 @@ def checkIfExists(pathFile):
         else:    
             writeFile  = False
             print(' --> exiting.')
+            time.sleep(2)
             sys.exit()
     else:
           

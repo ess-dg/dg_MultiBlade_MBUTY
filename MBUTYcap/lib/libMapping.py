@@ -8,6 +8,7 @@ Created on Fri Aug 20 09:14:18 2021
 
 import numpy as np
 import json
+import time 
 import os
 import sys
 import copy
@@ -256,6 +257,7 @@ class read_json_config():
         path = Path(self.configFileName)
         if len(path.suffixes) > 1 and path.suffixes[-1] == path.suffixes[-2]:
             print(f"'\n \033[1;31m---> Double extension detected in '{self.configFileName}'! Please check your file naming convention.\033[1;37m")
+            time.sleep(2)
             sys.exit()
         
         
@@ -264,6 +266,7 @@ class read_json_config():
         except:
             print('\n \033[1;31m---> Config File: ' + self.configFileName + ' not found \033[1;37m')
             print('\n ---> in folder: ' + self.configFilePath + ' \n -> exiting.')
+            time.sleep(2)
             sys.exit()
             
         # Load JSON data
@@ -272,6 +275,7 @@ class read_json_config():
         except:
             print('\n \033[1;31m---> Error in config File: ' + self.configFileName + ' \033[1;37m',end='')
             print(' ---> common mistake: last line of Cassette2ElectronicsConfig: {"ID" : X, "Ring" : X, "Fen" : X, "Hybrid" : X} must not have comma! \n -> exiting.')
+            time.sleep(2)
             sys.exit()
                 
                 
@@ -281,6 +285,7 @@ class read_json_config():
       #           except:
       #               print('\n \033[1;31m---> Config File: ' + self.configFileName + ' not found \033[1;37m')
       #               print('\n ---> in folder: ' + self.configFilePath + ' \n -> exiting.')
+      #               time.sleep(2)               
       #               sys.exit()
                     
       #           # Load JSON data
@@ -289,6 +294,7 @@ class read_json_config():
       #           except:
       #               print('\n \033[1;31m---> Error in config File: ' + self.configFileName + ' \033[1;37m',end='')
       #               print(' ---> common mistake: last line of Cassette2ElectronicsConfig: {"ID" : X, "Ring" : X, "Fen" : X, "Hybrid" : X} must not have comma! \n -> exiting.')
+      #               time.sleep(2)            
       #               sys.exit()
               
         
@@ -338,6 +344,7 @@ class read_json_config():
                 print('\033[1;36mOperation Mode: {}\033[1;37m'.format(self.DETparameters.operationMode))
             else:
                 print('\n\t\033[1;31mERROR: Operation mode (found {}) can only be either normal or clustered for VMM-based detectors -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.DETparameters.operationMode),end='') 
+                time.sleep(2)
                 sys.exit()
                 
         else:    
@@ -346,6 +353,7 @@ class read_json_config():
                  print('\033[1;36mOperation Mode: {}\033[1;37m'.format(self.DETparameters.operationMode))
              else:
                  print('\n\t\033[1;31mERROR: Operation mode (found {}) can only be either normal for {} detectors -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.DETparameters.operationMode,self.DETparameters.type),end='') 
+                 time.sleep(2)
                  sys.exit()
 
         
@@ -405,6 +413,7 @@ class read_json_config():
         for cc in self.DETmap.cassettesMap:
             if cc.get("Ring") == 11:
                 print('\t \033[1;31mERROR: Ring 11 found in config for detector and not associated to MONITOR! -> exiting! \033[1;31m', end=' ')
+                time.sleep(2)
                 sys.exit()
                      
     def check_cassetteLabelling(self):
@@ -415,6 +424,7 @@ class read_json_config():
         if numOfCass != numOfCassFromConfigFile:
             print('\033[1;31m CONFIG FILE JSON ERROR: Num of cassettes ({}) not matching num of cassettes in list ({}) in Config file\033[1;31m'.format(numOfCass,numOfCassFromConfigFile))
             print(' \n -> exiting.')
+            time.sleep(2)
             sys.exit()
         
         # print(self.DETparameters.cassInConfig)
@@ -430,6 +440,7 @@ class read_json_config():
         # if sortedCass[0] != 0:
         #     print('\033[1;31m CONFIG FILE JSON ERROR: Cassettes MUST be labelled from 0 -> please correct in JSON file\033[1;31m')
         #     print(' \n -> exiting.')
+        #     time.sleep(2) 
         #     sys.exit()
             
                      
@@ -486,17 +497,20 @@ class read_json_config():
                   if self.MONmap.type == "LEMO" :
                       if self.MONmap.RingID < 11:
                           print('\n\t\033[1;31mERROR: MON mode {} selected with RING < 11 (can be any ring 11 - inf, but not < 11)-> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONmap.type),end='') 
+                          time.sleep(2)
                           sys.exit()
                   
                   if self.MONmap.type == "RING" : 
                       if self.MONmap.RingID != 11:
                           print('\n\t\033[1;31mERROR: MON mode {} selected with RING != 11 (must be ring 11) -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONmap.type),end='') 
+                          time.sleep(2)
                           sys.exit()
 
                   if self.MONmap.type == "LEMO" or self.MONmap.type == "RING" : 
                       pass
                   else:
                       print('\n\t\033[1;31mERROR: MON mode (found {}) can only be either LEMO or RING  -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONmap.type),end='') 
+                      time.sleep(2)
                       sys.exit()
       
         
@@ -624,13 +638,16 @@ class mapDetector():
        
         if self.config.channelMap.WireASIC == self.config.channelMap.StripASIC:
             print('\t \033[1;31mWARNING: Wires and strips on same ASIC in config file ---> exiting!', end=' ')
+            time.sleep(2)
             sys.exit()
             
         # if self.config.channelMap.WireASIC == 1 and self.config.channelMap.StripASIC == 0 and self.config.channelMap.AdapterType == 'straight' :
         #     print('\t \033[1;33mWARNING: Usually with straight adapter, wires are on ASIC 0 and strips on ASIC 1', end=' ')
+        #     time.sleep(2) 
         #     sys.exit()
         # if self.config.channelMap.WireASIC == 0 and self.config.channelMap.StripASIC == 1 and self.config.channelMap.AdapterType == 'reverse' :
         #    print('\t \033[1;33mWARNING: Usually with reverse adapter, wires are on ASIC 1 and strips on ASIC 0', end=' ')
+        #    time.sleep(2)
         #    sys.exit()
         
         #  here we define the adapter type if VMM1 is on wires the oprder o channels is reversed for strips 

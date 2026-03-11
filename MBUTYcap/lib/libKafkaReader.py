@@ -140,6 +140,7 @@ class kafka_reader_preAlloc():
             if self.topic not in metadata.topics:
                 
                 print('\033[1;31mERROR: --> Topic {} does not exist in topics list --> exiting...\n\033[1;37m'.format(self.topic),end='')
+                time.sleep(2)
                 sys.exit()
                 # raise Exception("Topic {} does not exist in topics list".format(self.topic))
             
@@ -204,6 +205,7 @@ class kafka_reader_preAlloc():
                     except:
                          self.dprint('--> other packet found')
                          print('\033[1;31mERROR: --> streaming failed ... exiting ... \n\033[1;37m',end='')
+                         time.sleep(2)
                          sys.exit()
                     else:
                         
@@ -249,6 +251,7 @@ class kafka_reader_preAlloc():
                 
             elif self.rea.preallocLength < self.rea.totalReadoutCount:
                 print('something wrong with the preallocation: allocated length {}, total readouts {}'.format(self.preallocLength,self.rea.totalReadoutCount))
+                time.sleep(2)
                 sys.exit()
            
             elif self.rea.preallocLength == self.rea.totalReadoutCount:

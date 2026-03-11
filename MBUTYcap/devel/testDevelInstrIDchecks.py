@@ -8,21 +8,32 @@ Created on Tue Mar 10 15:19:19 2026
 
 import numpy as np 
 import sys 
-
+import os
 # import libReadPcapng as pcapr
 
-from libReadPcapng import checkInstrumentID
+# from lib import libReadPcapng as pc
 
-detType   = 'MB'
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Move up one level to 'main', then down into 'lib'
+lib_path = os.path.join(current_dir, '..', 'lib')
+
+# Add that path to sys.path
+sys.path.append(os.path.abspath(lib_path))
+
+# Now you can import your library
+import libReadPcapng as pc
+
+detType   = 'MG'
 
 instrType1 = -1*np.ones((100), dtype='int64') 
 # instrType1[0] = 1
-instrType1[1] = 100
+instrType1[1] = 72
 # instrType1[2] = 100
 # instrType1[3] = 60
 
 
-flagSupported = checkInstrumentID().checkDetTypeExists(detType)
+flagSupported = pc.checkInstrumentID().checkDetTypeExists(detType)
 
 temp = np.unique(instrType1)
 index1  = temp == ''
@@ -37,7 +48,7 @@ all_streams  = []
 all_types    = []
 
 for ids in instrIDs:
-     info = checkInstrumentID()
+     info = pc.checkInstrumentID()
      info.getInfoFromID(ids)
      all_streams.append(info.detName)
      all_types.append(info.detType)

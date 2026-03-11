@@ -8,6 +8,7 @@ Created on Thu Sep  2 13:15:57 2021
 
 import numpy as np
 
+import time 
 import os
 import glob
 import sys
@@ -72,6 +73,7 @@ class fileDialogue():
             print('\n \033[1;31mPlease select a correct open file mode: window, fileName, latest, secondLast, wholeFolder or sequence \033[1;37m\n')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
+            time.sleep(2)
             sys.exit()
             
         if self.openMode == 'wholeFolder' :
@@ -105,6 +107,7 @@ class fileDialogue():
               print('NOTE: file name must contain extension, e.g. *.pcapng')
               # print(' ---> Exiting ... \n')
               # print('------------------------------------------------------------- \n')
+              # time.sleep(2)
               # sys.exit()
               
            else:
@@ -118,6 +121,7 @@ class fileDialogue():
             print(' \033[1;31m---> NO File EXIST in given list \033[1;37m')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
+            time.sleep(2)
             sys.exit()
             
         #####################################
@@ -135,6 +139,7 @@ class fileDialogue():
             print('\n \033[1;31mNothing selected! \033[1;37m\n')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
+            time.sleep(2)
             sys.exit()
             
     def openFileName(self):
@@ -153,6 +158,7 @@ class fileDialogue():
             print('\n \033[1;31mNo file exists in directory \033[1;37m\n')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
+            time.sleep(2)
             sys.exit()
             
         latestFile  = max(listOfFiles, key=os.path.getmtime)
@@ -167,6 +173,7 @@ class fileDialogue():
             print('\n \033[1;31mNo file exists in directory \033[1;37m\n')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
+            time.sleep(2)
             sys.exit()
             
         listOfFiles.sort(key=os.path.getmtime)
@@ -205,6 +212,7 @@ class fileDialogue():
             print('\n \033[1;31mFileName must be a single file for sequence open mode \033[1;37m\n')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
+            time.sleep(2)
             sys.exit()
    
         # temp2 = os.path.split(self.fileName)
@@ -229,6 +237,7 @@ class fileDialogue():
             print('\n \033[1;31mFileName must be of format blabla_XXXXX.pcapng in sequence mode (XXXXX serial) \033[1;37m\n')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
+            time.sleep(2)
             sys.exit()
             
         else:
@@ -236,6 +245,7 @@ class fileDialogue():
             print('\n \033[1;31mUnknown FileName error in sequence mode \033[1;37m\n')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
+            time.sleep(2)
             sys.exit()
     
 ###############################################################################

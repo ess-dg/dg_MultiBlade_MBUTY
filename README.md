@@ -15,6 +15,8 @@ MBUTY_GUI.py is the GUI and can be started from terminal as: >> pyhton MBUTY_GUI
 For installing the GUI with a desktop ICON in Linux/Mac OS or Windows execute in a terminal:
 >> python install_gui.py
 
+Details about installation see intallationNotes file in the repository. 
+
 --------------------------------------------------
 <<<<<<< HEAD
 

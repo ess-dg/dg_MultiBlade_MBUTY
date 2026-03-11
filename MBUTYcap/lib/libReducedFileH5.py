@@ -49,6 +49,7 @@ class saveReducedDataToHDF():
                 print(' --> folder created.')
             else:    
                 print(' --> exiting, data reduced not saved.')
+                time.sleep(2)
                 sys.exit()
                 
         fileName2 =  fileName +'.h5' 
@@ -233,6 +234,7 @@ class readReducedDataFromHDF():
               # print('  ---> in folder: '+self.filePath+' -> ... it will be skipped!')
               print(' ---> Exiting ... \n')
                # print('------------------------------------------------------------- \n')
+              time.sleep(2)
               sys.exit()
         else:
            
@@ -242,7 +244,8 @@ class readReducedDataFromHDF():
                 
             except:
                  
-                 print('Unable to opne h5 file')
+                 print('Unable to open h5 file')
+                 time.sleep(2)
                  sys.exit()
                  
     def __del__(self):

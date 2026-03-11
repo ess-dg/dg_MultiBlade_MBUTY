@@ -465,6 +465,7 @@ class checkInstrumentID():
                  
             if info.detName == "Unknown":
                 print(f"\n\033[1;31mERROR: found unknown data stream with ID {target_id}\033[0m",end='')
+                time.sleep(2)
                 sys.exit()
                 
             elif info.flagSupported is True and info.flagReadSupported is True:
@@ -476,10 +477,12 @@ class checkInstrumentID():
                 
             elif info.flagSupported is False and info.flagReadSupported is False:   
                 print(f"\n\033[1;31mERROR: found '{info.detName}' data stream, analysis nor reader supported! Exit.\033[0m")
+                time.sleep(2)
                 sys.exit()
                 
             elif info.flagSupported is True and info.flagReadSupported is False:
                 print(f"\n\033[1;31mERROR: found '{info.detName}' data stream, supported but flag Reader supported is False -> check class checkInstrumentID() in pcapreadre! Exit.\033[0m")
+                time.sleep(2)
                 sys.exit()
             
         elif len(instrIDs) == 2: 
@@ -540,6 +543,7 @@ class checkInstrumentID():
             # Case 5: Total Failure
             else:
                print(f"\033[1;31m---> ERROR: 2 data streams detected: ({', '.join(all_streams)}). Neither of the 2 streams are valid for analysis or reading. Exit.\033[0m")
+               time.sleep(2)
                sys.exit() 
             
         elif len(instrIDs) >= 3: 
@@ -566,6 +570,7 @@ class checkInstrumentID():
                 print(f"\033[1;33m---> WARNING: None of the {len(instrIDs)} ({', '.join(valid_for_reading)}) streams are valid for analysis but just reader. Analysis continues. Data might be corrupted - check RMM output queue config!\033[0m")
             else:
                 print(f"\033[1;31m---> ERROR: None of the {len(instrIDs)} streams are valid for analysis nor just reader. Exit.\033[0m")
+                time.sleep(2)
                 sys.exit()       
                 
                     
@@ -592,11 +597,13 @@ class checkInstrumentID():
                     
                     elif not is_supp and not is_read_supp:
                         print(f"\033[1;31mWERROR: detector type {detType} is currently not supported.\033[0m")
+                        time.sleep(2)
                         sys.exit()
 
                
         else:
                 print(f"\n\033[1;31mERROR: detector type {detType} in config file is not a possible type. Valid types: {', '.join(existing_types)}\033[0m")
+                time.sleep(2)
                 sys.exit()
                 
         return flag 
@@ -999,6 +1006,7 @@ class checkIfFileExistInFolder():
             print('\n NOTE: file name must contain extension, e.g. *.pcapng\n')
             print(' ---> Exiting ... \n')
             print('------------------------------------------------------------- \n')
+            time.sleep(2)
             sys.exit()
             
 ################################################## 
@@ -1117,17 +1125,20 @@ class pcapng_reader_PreAlloc():
         if self.MONtype == "LEMO" :
             if self.MONring < 11:
                 print('\n\t\033[1;31mERROR: MON mode {} selected with RING < 11 (can be any ring 11 - inf, but not < 11)-> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONtype),end='') 
+                time.sleep(2)
                 sys.exit()
         
         if self.MONtype == "RING" : 
             if self.MONring != 11:
                 print('\n\t\033[1;31mERROR: MON mode {} selected with RING != 11 (must be ring 11) -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONtype),end='') 
+                time.sleep(2)
                 sys.exit()
 
         if self.MONtype == "LEMO" or self.MONtype == "RING" : 
             pass
         else:
             print('\n\t\033[1;31mERROR: MON mode (found {}) can only be either LEMO or RING  -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONtype),end='') 
+            time.sleep(2)
             sys.exit()
         ##########################################################
         
@@ -1305,6 +1316,7 @@ class pcapng_reader_PreAlloc():
                             
         except Exception as e:
             print(f"\n\033[1;31mERROR: {e} ---> probably data is being created and file not closed -> exiting. \033[1;37m")
+            time.sleep(2)
             sys.exit()  
         
       
@@ -1401,6 +1413,7 @@ class pcapng_reader_PreAlloc():
             
         elif self.preallocLength < self.totalReadoutCount:
             print('something wrong with the preallocation: allocated length {}, total readouts {}'.format(self.preallocLength,self.totalReadoutCount))
+            time.sleep(2)
             sys.exit()
        
         elif self.preallocLength == self.totalReadoutCount:
@@ -1460,6 +1473,7 @@ class pcapng_reader_PreAlloc():
         else:
             
             print('\n\t\033[1;31mERROR: Operation mode (found {}) not set either to normal or clustered ---> Exiting ... \n\033[1;37m'.format(self.operationMode),end='') 
+            time.sleep(2)
             sys.exit()  
             
         if self.timeResolutionType == 'fine' or self.timeResolutionType == 'coarse':
@@ -1469,6 +1483,7 @@ class pcapng_reader_PreAlloc():
         else:
                 
             print('\n\t\033[1;31mERROR: Time resolution (found {}) not set either to fine or coarse ---> Exiting ... \n\033[1;37m'.format(self.operationMode),end='') 
+            time.sleep(2)
             sys.exit()      
         
     def timeAdjustedWithResolution(self):
@@ -1638,6 +1653,7 @@ class pcapng_reader_PreAlloc():
                                # vmm3.G0 = 2
                            else:
                                print('\n\t\033[1;31mERROR: Operation mode ({} found) is not one of these: normal or clustered mode! --> Exiting!\033[1;37m'.format(self.operationMode),end='') 
+                               time.sleep(2)
                                sys.exit()
                            
                            index = self.overallDataIndex-1   
@@ -1750,6 +1766,7 @@ class pcapng_reader_PreAlloc():
                                else:
                                         
                                      print('\n\t\033[1;31mERROR: Data format not supported ---> Exiting ... \n\033[1;37m',end='') 
+                                     # time.sleep(2)
                                      # sys.exit() 
                            
                            # overwrite if MONITOR 
@@ -1796,6 +1813,7 @@ class pcapng_reader_PreAlloc():
                    
                except:
                    print('\033[1;31m        ---> probably rings are offline or data is corrupted \033[1;37m')
+                   time.sleep(2)
                    sys.exit()
                      
             

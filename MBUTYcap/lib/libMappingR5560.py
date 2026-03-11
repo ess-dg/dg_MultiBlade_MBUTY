@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import copy
+import time
 
 
 try:
@@ -128,6 +129,7 @@ class read_json_config():
     def checkOpModeMIRACLES(self):
         if self.DETparameters.type == 'MIRACLES' and self.DETparameters.operationMode != "normal":
             print('\n\t\033[1;31mERROR: Operation mode (found {}) not supported yet for MIRACLES, only normal mode -> check config file! \n\033[1;37m'.format(self.DETparameters.operationMode),end='') 
+            time.sleep(2)
             sys.exit()
  
     
@@ -139,6 +141,7 @@ class read_json_config():
         if numOfCass != numOfCassFromConfigFile:
             print('\033[1;31m CONFIG FILE JSON ERROR: Num of tubes ({}) not matching num of tubes in list ({}) in Config file\033[1;31m'.format(numOfCass,numOfCassFromConfigFile))
             print(' \n -> exiting.')
+            time.sleep(2)
             sys.exit()
             
     def get_allParameters(self):

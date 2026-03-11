@@ -29,10 +29,11 @@ except ImportError:
 
 class checkPythonVersion():
         # check version
-        if sys.version_info < (3,8):
+        if sys.version_info < (3,20):
            print('\n \033[1;31mPython version too old, use at least Python 3.8! \033[1;37m\n')
            print(' ---> Exiting ... \n')
            print('------------------------------------------------------------- \n')
+           time.sleep(2)
            sys.exit()
            
            
@@ -66,7 +67,8 @@ class checkPackageInstallation():
                print('\n \033[1;31mpython-pcapng package missing, install with command: pip install python-pcapng\033[1;37m\n')
                print(' ---> Exiting ... \n')
                print('------------------------------------------------------------- \n')
-               sys.exit()
+               
+               time.sleep(2)
            
     def checkPackageKafka(self):
         
@@ -89,7 +91,7 @@ class checkPackageInstallation():
              
              print(' ---> Exiting ... \n')
              print('------------------------------------------------------------- \n')
-             
+             time.sleep(2)
              sys.exit()
              
              
@@ -476,6 +478,7 @@ class parameters():
         if  self.acqMode is None:
             
             print('\n\t\033[1;31mERROR: Acq mode (found {}) not set ---> Exiting ... \n\033[1;37m'.format(self.acqMode),end='') 
+            time.sleep(2)
             sys.exit()    
             
     def set_acqMode(self,acqMode=None):
@@ -536,6 +539,7 @@ class parameters():
             else:
                 
                 print('\n\t\033[1;31mERROR: Acquisition mode (found {}) can only be only one of these 5 options: off, pcap-sync, pcap-local, pcap-local-overwrite or kafka ---> Exiting ... \n\033[1;37m'.format(self.acqMode),end='') 
+                time.sleep(2)
                 sys.exit()        
 
             self.check_acqMode()
