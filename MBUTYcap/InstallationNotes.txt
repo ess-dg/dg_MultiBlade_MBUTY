@@ -6,7 +6,7 @@ MBUTY 7.1
 What is in this version:
 
 libReader for CAEN R5560, SKADI and VMM
-Plots and analysis for VMM MG and MB detectors 
+Plots and analysis for VMM MG and MB detectors and R5560 MIRACLES, CSPEC and BIFROST 
 
 --------------------------------------------------
 
