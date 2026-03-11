@@ -304,7 +304,7 @@ class mapDetector():
 
 if __name__ == '__main__':
 
-   confFile  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MIRACLES2.json"
+   confFile  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"CSPEC.json"
    # filePathD = './'+"VMM3a_Freia.pcapng"
 
    config = read_json_config(confFile)

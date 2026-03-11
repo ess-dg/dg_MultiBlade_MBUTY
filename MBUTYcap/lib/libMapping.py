@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import copy
+from pathlib import Path 
 
 
 # NOTE: THIS SUPPORTS ONLY 1 MONITOR
@@ -252,6 +253,12 @@ class read_json_config():
        
     def openFile(self):   
         # Open the file
+        path = Path(self.configFileName)
+        if len(path.suffixes) > 1 and path.suffixes[-1] == path.suffixes[-2]:
+            print(f"'\n \033[1;31m---> Double extension detected in '{self.configFileName}'! Please check your file naming convention.\033[1;37m")
+            sys.exit()
+        
+        
         try:
             self.ff   = open(self.configFile_PathAndFileName,'r') 
         except:
@@ -862,7 +869,7 @@ class mapMonitor():
 
 if __name__ == '__main__':
 
-   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"AMOR.json"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"CSPEC.json"
    # filePathD = './'+"VMM3a_Freia.pcapng"
 
    config1 = read_json_config(filePath)
@@ -890,31 +897,31 @@ if __name__ == '__main__':
    
    # typeOfLoading = 'quick'
    
-   pcap = pcapr.pcapng_reader(filePathAndFileName1,NSperClockTick, MONtype='LEMO', MONring=11, timeResolutionType='fine', sortByTimeStampsONOFF=True, operationMode='normal',pcapLoadingMethod=typeOfLoading)
+   # pcap = pcapr.pcapng_reader(filePathAndFileName1,NSperClockTick, MONtype='LEMO', MONring=11, timeResolutionType='fine', sortByTimeStampsONOFF=True, operationMode='normal',pcapLoadingMethod=typeOfLoading)
 
-   readouts = pcap.readouts
+   # readouts = pcap.readouts
 
-   readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+   # readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
    
-   # change = readouts.Ring == 0
-   # readouts.Ring[change]    = 12
-   # readouts.Channel[change] = 5
+   # # change = readouts.Ring == 0
+   # # readouts.Ring[change]    = 12
+   # # readouts.Channel[change] = 5
    
    
-   md  = mapDetector(readouts, config1)
-   md.mappAllCassAndChannelsGlob()
-   hits = md.hits
-   hitsArray  = hits.concatenateHitsInArrayForDebug()
+   # md  = mapDetector(readouts, config1)
+   # md.mappAllCassAndChannelsGlob()
+   # hits = md.hits
+   # hitsArray  = hits.concatenateHitsInArrayForDebug()
    
-   # readouts.
+   # # readouts.
    
-   MON = mapMonitor(readouts, config1)
+   # MON = mapMonitor(readouts, config1)
    
-   # print(MON.flagMONfound)
+   # # print(MON.flagMONfound)
    
-   if MON.flagMONfound:
-       hitsMON = MON.hits
-       hitsArrayMON  = hitsMON.concatenateHitsInArrayForDebug()
+   # if MON.flagMONfound:
+   #     hitsMON = MON.hits
+   #     hitsArrayMON  = hitsMON.concatenateHitsInArrayForDebug()
    
    
    

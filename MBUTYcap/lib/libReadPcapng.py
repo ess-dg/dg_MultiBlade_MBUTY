@@ -58,17 +58,19 @@ class readouts():
         self.mult0     = np.zeros((0), dtype = datype)
         self.mult1     = np.zeros((0), dtype = datype)
         self.heartbeats = np.zeros((0), dtype = datype)
-        self.instrType  = np.zeros((0), dtype = 'U10')
-        self.instrTypeUnique = np.zeros((0), dtype = 'U10')
+        self.instrID    = np.zeros((0), dtype = datype)
+        self.instrIDUnique = np.zeros((0), dtype = datype)
                       
     
-    def calculateUniqueInstrType(self):
+    def calculateUniqueInstrIDs(self):
         
-        temp = np.unique(self.instrType)
+        temp = np.unique(self.instrID)
         
-        index = temp == ''
-        
-        self.instrTypeUnique = temp[~index]
+        index1  = temp == ''
+        index2  = temp < 0
+        index = np.logical_or(index1,index2)
+            
+        self.instrIDUnique = temp[~index]
     
     
     def transformInReadouts(self, data):
@@ -120,8 +122,8 @@ class readouts():
         self.mult0     = np.concatenate((self.mult0, reado.mult0), axis=0)
         self.mult1     = np.concatenate((self.mult1, reado.mult1), axis=0)
         self.heartbeats = np.concatenate((self.heartbeats, reado.heartbeats), axis=0)
-        self.instrType  = np.concatenate((self.instrType , reado.instrType), axis=0)
-        self.instrTypeUnique = np.concatenate((self.instrTypeUnique , reado.instrTypeUnique), axis=0)
+        self.instrID  = np.concatenate((self.instrID , reado.instrID), axis=0)
+        self.instrIDUnique = np.concatenate((self.instrIDUnique , reado.instrIDUnique), axis=0)
         
     def concatenateReadoutsInArrayForDebug(self):
         
@@ -380,241 +382,279 @@ class readouts():
 class checkInstrumentID():
     def __init__(self):
         
-        self.flagSupported  = True
-        
-        self.FREIAID     = 72   #0x48
-        self.ESTIAID     = 76   #0x4c
-        self.AMORID      = 78   #0x4e
-        self.TBLVMMID    = 73   #0x49
-        
-        self.LOKIID      = 48   #0x30
-        self.BMID        = 16   #0x10
-        self.BIFROSTID   = 52   #0x34
-        self.NMXID       = 68   #0x44
-        self.MAGICID     = 100  #0x64
-        self.TREXID      = 64   #0x40
-        self.CSPECID     = 60   #0x3c
-        self.MIRACLESID  = 56   #0x38
-        self.DREAMID     = 96   #0x48
-        self.SKADIID     = 32   #0x20
-        
-    def setBytesPerReadout(self,ID):
-        
-        # BM always 20 bytes 
-   
-        if ID in (self.FREIAID, self.ESTIAID, self.AMORID, self.TBLVMMID, self.NMXID, self.TREXID):
-            self.bytesPerReadout = 20
-            self.InstrType       = 'VMM'
-            self.flagSupported   = True
-        elif ID == self.LOKIID:
-            self.bytesPerReadout = 24
-            self.InstrType       = 'R5560bis'
-            self.flagSupported   = False
-        elif ID in (self.BIFROSTID, self.CSPECID, self.MIRACLESID):
-            self.bytesPerReadout = 24
-            self.InstrType       = 'R5560'
-            self.flagSupported   = True
-        elif ID == self.SKADIID:
-            self.bytesPerReadout = 20
-            self.InstrType       = 'SKADI'
-            self.flagSupported   = False
-        elif ID == self.BMID:
-            self.bytesPerReadout = 20
-            self.InstrType       = 'BM'
-            self.flagSupported   = True
-        else:
-            self.bytesPerReadout = 20
-            self.InstrType       = None
-            self.flagSupported   = False
-        
-        return self.bytesPerReadout, self.InstrType, self.flagSupported
-      
-    def printInfoDataStream(self,ID):
-        
-        if ID == self.FREIAID:
-             print('found FREIA data stream - VMM',end='')
-        elif ID == self.ESTIAID:
-             print('found ESTIA data stream - VMM',end='')
-        elif ID == self.AMORID:
-             print('found AMOR data stream - VMM',end='')
-        elif ID == self.TBLVMMID:
-             print('found TBL data stream - VMM',end='')        
-        elif ID == self.TREXID:
-             print('found TREX data stream - VMM',end='')
-             
-        elif ID == self.MIRACLESID:
-             print('found MIRACLES data stream - R5560',end='')
-             # print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
-        elif ID == self.CSPECID:
-             print('found CSPEC data stream - R5560',end='')
-             # print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
-        elif ID == self.BIFROSTID:
-             print('found BIFROST data stream - R5560',end='')
-             # print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
-        
-        elif ID == self.LOKIID:
-             print('found LOKI data stream - R5560')   
-             print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis, NOT SUPPORTED FOR NOW \033[1;37m',end='')
-        
-        elif ID == self.SKADIID:
-                  print('found SKADI data stream')
-                  print('\033[1;33m --> WARNING: only reader is supported for this data format, no plotting either analysis\033[1;37m',end='')
-        
-        elif ID == self.BMID:
-                  print('found BM data stream',end='') 
+        self.instruments = {
+            # ID:   {"name": Name, "hex": Hex, "tech": Type, "hw": Type, "bytes": N, "supported": Bool}
+            72:  {"name": "FREIA",    "hex": "0x48", "type": "MB",    "hw": "VMM",      "bytes": 20, "supported": True, "readerSupported": True},
+            76:  {"name": "ESTIA",    "hex": "0x4c", "type": "MB",    "hw": "VMM",      "bytes": 20, "supported": True, "readerSupported": True},
+            78:  {"name": "AMOR",     "hex": "0x4e", "type": "MB",    "hw": "VMM",      "bytes": 20, "supported": True, "readerSupported": True},
+            73:  {"name": "TBLMB",    "hex": "0x49", "type": "MB",    "hw": "VMM",      "bytes": 20, "supported": True, "readerSupported": True},
             
-        elif (ID == self.DREAMID) or (ID == self.MAGICID): 
-             print('\033[1;33mWARNING: found DREAM or MAGIC or HEIMDAL data stream - CPIX -> not supported\033[1;37m',end='')
-             time.sleep(2)
-        else:
-             print('found some other data stream',end='')
-             
-    # def checkMatchConfigWithInstrType(self,instrConfig,instrType):
-        
-    #     instrType can be eitehr one ID, e.g. MG or it can be len 2 with for exampek MG and BM. BM is allowed to be the other type. 
-    #     But if instrType is for examplke MG and BIFROST need to raise a warning. 
-        
-    #     also if instrType is VMM for example and  instrConfig is CSPEC give a warning.
-        
-    #     # Group 1: MIRACLES, CSPEC, BIFROST -> R5560
-    #     if instrConfig in ["MIRACLES", "CSPEC", "BIFROST"]:
-    #         # instrType must be == "R5560"
-    
-    #      # Group 2: MG, MB -> VMM
-    #     elif instrConfig in ["MG", "MB"]:
-    #         # instrType must be == "VMM"
+            64:  {"name": "TREX",     "hex": "0x40", "type": "MG",    "hw": "VMM",      "bytes": 20, "supported": True,  "readerSupported": True},
+            68:  {"name": "NMX",      "hex": "0x44", "type": "GDG",   "hw": "VMM",      "bytes": 20, "supported": False, "readerSupported": True},
             
-    def checkMatchConfigWithInstrType(self, detType, instrTypes):
-      
-        temp = np.unique(instrTypes)
-        index = temp == ''
-        instrType = temp[~index]
-
-        # 1. Setup
-        valid_map = {
-            "MIRACLES": "R5560",
-            "CSPEC":    "R5560",
-            "BIFROST":  "R5560",
-            "MG":       "VMM",
-            "MB":       "VMM"
+            60:  {"name": "CSPEC",    "hex": "0x3c", "type": "He3",   "hw": "R5560",    "bytes": 24, "supported": True, "readerSupported": True},
+            52:  {"name": "BIFROST",  "hex": "0x34", "type": "He3",   "hw": "R5560",    "bytes": 24, "supported": True, "readerSupported": True},
+            56:  {"name": "MIRACLES", "hex": "0x38", "type": "He3",   "hw": "R5560",    "bytes": 24, "supported": True, "readerSupported": True},
+            
+            48:  {"name": "LOKI",     "hex": "0x30", "type": "straw", "hw": "R5560bis", "bytes": 24, "supported": False, "readerSupported": False},
+            16:  {"name": "BM",       "hex": "0x10", "type": "BM",    "hw": "BM",       "bytes": 20, "supported": True, "readerSupported": True},
+            32:  {"name": "SKADI",    "hex": "0x20", "type": "SKADI", "hw": "SKADI",    "bytes": 20, "supported": False, "readerSupported": True},
+            
+            100: {"name": "MAGIC",    "hex": "0x64", "type": "JAL",   "hw": "CPIX",     "bytes": 20, "supported": False, "readerSupported": False},
+            96:  {"name": "DREAM",    "hex": "0x60", "type": "JAL",   "hw": "CPIX",     "bytes": 20, "supported": False, "readerSupported": False}
         }
         
-        accepted_configs = ", ".join(valid_map.keys())
-        global_accepted_types = set(valid_map.values())
-        global_accepted_types.add("BM")
+    def printInfoDataStream(self,ID):
         
-        # 2. Setup Inputs
-        types_to_check = [instrType] if isinstance(instrType, str) else list(instrType)
-        num_types = len(types_to_check)
-        expected = valid_map.get(detType)
+        # print('checking intrument ID ... ',end='')
+        self.getInfoFromID(ID)
+        if self.detName != "Unknown":
+            print(f'found {self.detName} data stream - {self.ROEtype}',end='')
         
-        if expected is None:
-            print(f"\n\033[1;31mERROR: Unknown detector configuration '{detType}'.\033[0m")
-            print(f"Accepted detector configurations are: [{accepted_configs}] and 'BM'")
-            sys.exit() 
-            
-        elif num_types == 1:
-            
-            found_type = types_to_check[0]
-            
-            if found_type == "BM":
-                print(f"\n\033[1;33mWARNING: detector config '{detType}' expects '{expected}' but found only 'BM'! Analysis continues.\033[0m")   
+    def getIDFromName(self, name):
+        for instrument_id, info in self.instruments.items():
+            if info["name"].upper() == name.upper():
+                return instrument_id
+        return None    
+    
+    def getInfoFromID(self, ID):
+            # Retrieve the entry using the ID as a key
+            data = self.instruments.get(ID)
+        
+            if data:
+                self.detName             = data["name"]
+                self.detType             = data["type"]
+                self.ROEtype             = data["hw"] 
+                self.bytesPerReadout     = data["bytes"]
+                self.flagSupported       = data["supported"]
+                self.flagReadSupported   = data["readerSupported"]
                 
-            elif found_type != "BM" and (found_type not in global_accepted_types):
-                print(f"\n\033[1;31mERROR: detector config '{found_type}' is not supported!\033[0m")
-                print(f"Accepted types are: [{', '.join(sorted(global_accepted_types))}]")
-                sys.exit()
-                
-            # Case: It is a known type, but wrong for THIS config (e.g., R5560 for an MG config)
-            elif found_type != expected:
-                print(f"\n\033[1;31mERROR: Mismatch! Detector config '{detType}' requires '{expected}', but found only '{found_type}' in data!\033[0m")
-                sys.exit()
             else:
-                pass
+                # Defaults if ID is unknown
+                self.detName             = "Unknown"
+                self.detType             = "N/A"
+                self.ROEtype             = None
+                self.bytesPerReadout     = 20
+                self.flagSupported       = False
+                self.flagReadSupported   = False
                 
-        elif num_types == 2:
+                # print('found some other data stream',end='')
             
-            t1, t2 = types_to_check[0], types_to_check[1]
-            
-            # Fatal: Both are completely unknown strings
-            if t1 not in global_accepted_types and t2 not in global_accepted_types:
-                print(f"\n\033[1;31mERROR: Neither '{t1}' nor '{t2}' data types are supported!\033[0m")
-                sys.exit()
+            return self.bytesPerReadout, self.ROEtype
+   
+  
+       
+    def checkValidDataStream(self,IDs):
+
+        print('checking intrument IDs and data streams ... ',end='')
         
-            # Fatal: One is unknown
-            elif t1 not in global_accepted_types or t2 not in global_accepted_types:
-                known   = t1 if t1 in global_accepted_types else t2
-                unknown = t2 if t1 in global_accepted_types else t1
-                
-                if known == "BM":
-                    print(f"\n\033[1;33mWARNING: Detector config '{detType}' expects '{expected}' but found '{unknown}' (unknown) and 'BM'. Analysis continues.\033[0m")
-                elif known == expected:
-                    print(f"\n\033[1;33mWARNING: Detector config '{detType}' expects '{expected}' and found '{known}' but also '{unknown}' (unknown) in data! Analysis continues.\033[0m")
-                else:
-                    print(f"\n\033[1;31mERROR: Detector config '{detType}' expects '{expected}' but found '{known}' alongside '{unknown}'!\033[0m")
-                    sys.exit()
-        
-            # both are known      
-            elif t1 in global_accepted_types and t2 in global_accepted_types:
-                
-                # 1. Success: One is exactly what we expected (the other can be BM or another known type)
-                if t1 == expected or t2 == expected:
-                    # If the "other" one isn't BM, we can still throw a warning but keep going
-                    other = t2 if t1 == expected else t1
-                    if other != "BM":
-                        print(f"\n\033[1;33mWARNING: Detector config '{detType}' found expected '{expected}' but also found '{other}'. Analysis continues.\033[0m")
-                    else:
-                        pass # Perfect match: Expected + BM
-        
-                # 2. Case: Neither is the 'expected' type
-                else:
-                    # If at least one of them is BM, we allow it with a warning
-                    if t1 == "BM" or t2 == "BM":
-                        wrong_known = t2 if t1 == "BM" else t1
-                        print(f"\n\033[1;33mWARNING: Detector config '{detType}' expects '{expected}' but found only '{wrong_known}' (mismatch) and 'BM'. Analysis continues.\033[0m")
-                    
-                    # 3. Fatal: Both are known (e.g., R5560 and VMM) but neither matches 'expected' (e.g., for BIFROST)
-                    else:
-                        print(f"\n\033[1;31mERROR: Detector config '{detType}' expects '{expected}' but found '{t1}' and '{t2}'! Neither matches.\033[0m")
-                        sys.exit()
-          
-        elif num_types >= 3:
-            
-            # Standardize enumeration for the warning
-            types_list_str = ", ".join(types_to_check)
-            
-            # 1. Check if the expected type is present anywhere in the 3+ items
-            if expected in types_to_check:
-                # Create a list of the "other" types found alongside the expected one
-                others = [t for t in types_to_check if t != expected]
-                print(f"\n\033[1;33mWARNING: Detector config '{detType}' found expected '{expected}' but also found {len(others)} other types: [{', '.join(others)}]. Analysis continues.\033[0m")
-        
-            # 2. Expected is NOT found, check if at least one is BM
-            elif "BM" in types_to_check:
-                # Expected missing, but BM exists to save the analysis
-                print(f"\n\033[1;33mWARNING: Detector config '{detType}' expects '{expected}' but found only BM and other types: [{types_list_str}]. Analysis continues.\033[0m")
-        
-            # 3. Fatal: No expected type found AND no BM found
-            else:
-                print(f"\n\033[1;31mERROR: Detector config '{detType}' expects '{expected}' or 'BM', but none were found in: [{types_list_str}]!\033[0m")
-                sys.exit()
-                    
-            
-        
-        
+        temp = np.unique(IDs)
+        index  = temp < 0
+        instrIDs = temp[~index]
     
         
-#################################################             
- 
-class checkIfDataIsSupported():
-    def __init__(self, flagSupported):
-
-        if flagSupported == False:
-            print('\n\t\033[1;31m---> This data format is not supported yet, only reader, nor plotting or analysis ---> Exiting ... \n\033[1;37m') 
-            sys.exit()
+        if len(instrIDs) == 0:
+            print('\n---> no instr ID', end='')
+            
+        elif len(instrIDs) == 1: 
+    
+            target_id = instrIDs[0]    
+            info = checkInstrumentID()
+            info.getInfoFromID(target_id)
+            # print(f"found: {info.detName} | Type: {info.detType} | Readout: {info.ROEtype}")
+                 
+            if info.detName == "Unknown":
+                print(f"\n\033[1;31mERROR: found unknown data stream with ID {target_id}\033[0m",end='')
+                sys.exit()
+                
+            elif info.flagSupported is True and info.flagReadSupported is True:
+                print('---> OK.')
+                # pass
+            
+            elif info.flagSupported is False and info.flagReadSupported is True:
+                print(f"\n\033[1;33mWARNING: found '{info.detName}' data stream, analysis not supported, reader only! Analysis continues but questionable results are on the horizon.\033[0m")
+                
+            elif info.flagSupported is False and info.flagReadSupported is False:   
+                print(f"\n\033[1;31mERROR: found '{info.detName}' data stream, analysis nor reader supported! Exit.\033[0m")
+                sys.exit()
+                
+            elif info.flagSupported is True and info.flagReadSupported is False:
+                print(f"\n\033[1;31mERROR: found '{info.detName}' data stream, supported but flag Reader supported is False -> check class checkInstrumentID() in pcapreadre! Exit.\033[0m")
+                sys.exit()
+            
+        elif len(instrIDs) == 2: 
+            
+            all_streams = []
+            valid_for_analysis = []
+            valid_for_reading = []
+            has_BM = False
+            
+            for ids in instrIDs:
+                 info = checkInstrumentID()
+                 info.getInfoFromID(ids)
+                 # print(f"found: {info.detName} | Type: {info.detType} | Readout: {info.ROEtype}")
+                 
+                 if info.detName == "BM":
+                    has_BM = True
+                 
+                 all_streams.append(info.detName)
+                 if info.flagSupported is True and info.flagReadSupported is True:
+                    valid_for_analysis.append(info.detName)
+                 elif info.flagSupported is False and info.flagReadSupported is True:
+                    valid_for_reading.append(info.detName)
+           
+            valid_for_analysis = [n for n in valid_for_analysis if n != "BM"]
+            valid_for_reading  = [n for n in valid_for_reading if n != "BM"]
+            
+            # Case 1: Ideal Pair (1 Main Detector + 1 Beam Monitor)
+            if len(valid_for_analysis) == 1 and has_BM:
+                print(f"---> OK: Valid instrument ({valid_for_analysis[0]}) with Beam Monitor detected.")
+                
+            # Case 2: Two Main Detectors (Both valid for analysis)
+            elif len(valid_for_analysis) == 2:
+                print(f"\033[1;33m---> WARNING: Two valid analysis streams found ({', '.join(valid_for_analysis)}). "
+                      "Check RMM output queue config!\033[0m")
+    
+            # Case 3: One Analysis stream + One Unknown/Unsupported stream
+            elif len(valid_for_analysis) == 1:
+                other = [n for n in all_streams if n != valid_for_analysis[0]][0]
+                print(f"\033[1;33m---> WARNING: Found {valid_for_analysis[0]}, but the second stream ({other}) "
+                      "is not supported. Results might be affected.\033[0m")
+    
+            # Case 4: No Analysis streams, but Reader support exists (e.g., BM + SKADI)
+            elif len(valid_for_reading) == 1:
+                print(f"\033[1;33m---> WARNING: 2 data streams detected: ({', '.join(all_streams)}). "
+                f"\033[1;33mNo analysis-ready streams. Only reader support for: "
+                      f"({', '.join(valid_for_reading)}). Analysis continues but check config RMM.\033[0m")
+                
+            elif has_BM and len(valid_for_reading) == 0 and len(valid_for_analysis) == 0:
+                other = [n for n in all_streams if n != "BM"][0]
+                # print(f"\033[1;33m---> WARNING: 2 data streams detected: ({', '.join(all_streams)}). No analysis-ready streams nor reader found, but the second stream is BM"
+                #       "Results might be affected.\033[0m")
+                
+                print(f"\033[1;33m---> WARNING: 2 data streams detected: ({', '.join(all_streams)}). "
+                      f"No analysis-ready streams found. The non-BM stream ({other}) is unsupported. "
+                      "Results might be affected.\033[0m")
+                
+                
+            # Case 5: Total Failure
+            else:
+               print(f"\033[1;31m---> ERROR: 2 data streams detected: ({', '.join(all_streams)}). Neither of the 2 streams are valid for analysis or reading. Exit.\033[0m")
+               sys.exit() 
+            
+        elif len(instrIDs) >= 3: 
+            
+            all_streams = []
+            valid_for_analysis = []
+            valid_for_reading = []
+            
+            for ids in instrIDs:
+                 info = checkInstrumentID()
+                 info.getInfoFromID(ids)
+                 # print(f"found: {info.detName} | Type: {info.detType} | Readout: {info.ROEtype}")
+                 all_streams.append(info.detName)
+                 if info.flagSupported is True and info.flagReadSupported is True:
+                    valid_for_analysis.append(info.detName)
+                 elif info.flagSupported is False and info.flagReadSupported is True:
+                    valid_for_reading.append(info.detName)
+           
+            print(f'\n\033[1;33mWARNING: {len(instrIDs)} data streams detected: ({', '.join(all_streams)})\033[0m')         
+            # Final decision after checking all IDs
+            if valid_for_analysis:
+                print(f"\033[1;33m---> At least one valid stream found ({', '.join(valid_for_analysis)}). Analysis continues despite extra data. Data might be corrupted - check RMM output queue config! \033[0m")
+            elif valid_for_reading:
+                print(f"\033[1;33m---> WARNING: None of the {len(instrIDs)} ({', '.join(valid_for_reading)}) streams are valid for analysis but just reader. Analysis continues. Data might be corrupted - check RMM output queue config!\033[0m")
+            else:
+                print(f"\033[1;31m---> ERROR: None of the {len(instrIDs)} streams are valid for analysis nor just reader. Exit.\033[0m")
+                sys.exit()       
+                
+                    
+    def checkDetTypeExists(self, detType):
    
-        # else:
-        #     pass
+        flag  = False 
+        
+        existing_types = {info["type"] for info in self.instruments.values()}
+
+        if detType in existing_types:
+                # 2. Find the specific support status for this type
+                # We look for the first instrument that matches this detType
+                match = next((info for info in self.instruments.values() if info["type"] == detType), None)
+                
+                if match:
+                    
+                    flag  = True 
+                    is_supp = match["supported"]
+                    is_read_supp = match["readerSupported"]
+        
+                    # Logic for different warning messages
+                    if not is_supp and is_read_supp:
+                        print(f'\033[1;33mWARNING: detector type {detType} is supported only by the Reader, but not yet by the Main Analysis Pipeline.\033[0m')
+                    
+                    elif not is_supp and not is_read_supp:
+                        print(f'\033[1;31mWERROR: detector type {detType} is currently not supported.\033[0m')
+                        sys.exit()
+
+               
+        else:
+                print(f'\n\033[1;31mERROR: detector type {detType} in config file is not a possible type. Valid types: {', '.join(existing_types)}\033[0m')
+                sys.exit()
+                
+        return flag 
+            
+        
+    def matchDataStreamWithConfig(self, detType, IDs):  
+        
+        # print('checking intrument IDs and data streams ... ')
+        
+        temp = np.unique(IDs)
+        index  = temp < 0
+        instrIDs = temp[~index]
+    
+        if len(instrIDs) == 0:
+            print('\n---> no instr ID', end='')
+            
+        flagSupported = self.checkDetTypeExists(detType)
+
+        foundFlag = False 
+
+        all_streams  = []
+        all_types    = []
+
+        for ids in instrIDs:
+             info = checkInstrumentID()
+             info.getInfoFromID(ids)
+             all_streams.append(info.detName)
+             all_types.append(info.detType)
+             
+             # print(f"found: {info.detName} | Type: {info.detType} | Readout: {info.ROEtype}")
+             
+             if info.detType == detType:
+                 foundFlag = True 
+                 
+        # Remove duplicates from the stream list for a cleaner message
+        unique_types   = ", ".join(set(all_types))
+        unique_streams = ", ".join(set(all_streams))
+
+        if foundFlag:
+            # print(f"\nSuccess: Configuration match found for {detType}.")
+            # Proceed with reading the file...
+            pass
+            
+        # Check if we found a Beam Monitor (BM) in the file streams
+        elif "BM" in all_types:
+            # print(f"\n\033[1;36mNOTE: Beam Monitor (BM) stream detected.\033[0m")
+            # print(f"\033[1;36mSkipping standard mismatch warning. Ensure BM data is handled separately.\033[0m")
+            print(f"\n\033[1;33mWARNING: CONFIGURATION MISMATCH!\033[0m",end='')
+            print(f"\n\033[1;33mYou are trying to read a file containing only detector types: {unique_types} for data streams {unique_streams}\033[0m")
+            print(f"\033[1;33mBut in your config file, you have specified: {detType}\033[0m")
+            
+        else:
+
+            print(f"\n\033[1;33mWARNING: Configuration mismatch!\033[0m",end='')
+            print(f"\033[1;33mYou are trying to read a file containing these detector types: {unique_types} for data streams {unique_streams}\033[0m")
+            print(f"\033[1;33mBut in your config file, you have specified: {detType}\033[0m")    
+        
+     
         
 #################################################  
 
@@ -966,15 +1006,16 @@ class checkIfFileExistInFolder():
 class pcapng_reader():
     def __init__(self, filePathAndFileName, NSperClockTick=11.356860963629653, MONtype = 'RING' , MONring = 11, timeResolutionType = 'coarse', sortByTimeStampsONOFF = False, operationMode = 'normal', pcapLoadingMethod='allocate'):
         
-        self.flagSupported = True
+        # self.flagSupported = True
         # try:
             # print('PRE-ALLOC method to load data ...')
         pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONtype,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
         pcapng.allocateMemory(pcapLoadingMethod)
         pcapng.read()
         self.readouts = pcapng.readouts
+        checkInstrumentID().checkValidDataStream(self.readouts.instrIDUnique)
         
-        self.flagSupported = pcapng.flagSupported
+        # self.flagSupported = pcapng.flagSupported
 
         # except:
         #     # print('\n... PRE-ALLOC method failed, trying APPEND method to load data ...')
@@ -1054,7 +1095,7 @@ class pcapng_reader_PreAlloc():
         self.headerSize          = None  # self.mainHeaderSize+self.ESSheaderSize #bytes  (72 if mainHeaderSize = 42)
         self.singleReadoutSize   = 20  # bytes, dinamically recalcualted in extractfrombytes but used as a default to init kafka 
  
-        self.InstrType = None
+        self.ROEtype = None
     
        ##########################################################
         
@@ -1067,7 +1108,7 @@ class pcapng_reader_PreAlloc():
         self.overallDataIndex         = 0 
         self.preallocLength           = 0   
         
-        self.flagSupported = True
+        # self.flagSupported = True
         
         self.data = np.zeros((self.preallocLength,19), dtype='int64')
         
@@ -1128,48 +1169,7 @@ class pcapng_reader_PreAlloc():
                     self.calculateHeaderSize()
         except:
             pass
-     
-    def checkInstrIDsetReadoutSize(self,packetsInstrIDs):    
-        
-        packetsInstrIDs = np.atleast_1d(packetsInstrIDs)
-        print('checking intrument ID ... ',end='')
-        
-        # print(packetsInstrIDs)
-        try:
-                
-            packetsInstrIDsunique = np.unique(packetsInstrIDs)
-            
-            is_single_stream     = (len(packetsInstrIDsunique) == 1)
-            is_valid_dual_stream = (len(packetsInstrIDsunique) == 2 and (checkInstrumentID().BMID in packetsInstrIDsunique))
-            
-            #  there must be only 2 data streams, intrum and BM, if there is more then Warning! 
-            
-            if len(packetsInstrIDsunique) == 0:
-                print('\n---> no instr ID', end='')
-            
-            elif is_single_stream or is_valid_dual_stream:
- 
-                for ids in packetsInstrIDsunique:
-                    print('\n---> ', end='')
-                    checkInstrumentID().printInfoDataStream(ids)
-                
-                # Dynamically update readout size (using first packet as reference)
-                self.singleReadoutSize, _, _ = checkInstrumentID().setBytesPerReadout(packetsInstrIDs[0])
-            
-            else:
-                # Handle all Warning cases (3+ IDs, or 2 IDs without BM)
-                print('\n\033[1;31mWARNING ---> unexpected instrument ID versions found. Data might be corrupted - check RMM output queue config!\033[1;37m',end='')
-                
-                for ids in packetsInstrIDsunique:
-                    print('\n---> ', end='')
-                    checkInstrumentID().printInfoDataStream(ids)
-                    
-                self.singleReadoutSize, _, _ = checkInstrumentID().setBytesPerReadout(packetsInstrIDs[0])
- 
-        except: 
-             print('--> unable to verify data format version.')   
-             pass
-
+   
         
     def checkTimeSrc(self, timeSourceBytes):
  
@@ -1236,7 +1236,7 @@ class pcapng_reader_PreAlloc():
 
     def allocateMemory(self, pcapLoadingMethod='allocate'):  
         
-        # NOTE IMPORTANT: when load method is quick the check of FW version and data format 
+        # NOTE IMPORTANT: when load method is quick the check of FW version 
         # is done only on the first packet and not all of them !!!! 
         
         self.pcapLoadingMethod = pcapLoadingMethod
@@ -1250,7 +1250,7 @@ class pcapng_reader_PreAlloc():
             print('pcap loading method: allocate')
         elif self.pcapLoadingMethod == 'quick':
             endCounter = 2
-            print('pcap loading method: quick \033[1;33m---> WARNING: when load method is quick the check of FW version and data format is done only on the first packet and not all of them.\033[1;37m')    
+            print('pcap loading method: quick \033[1;33m---> WARNING: when load method is quick the check of FW version is done only on the first packet and not all of them.\033[1;37m')    
 
         
         print('allocating memory...',end='')
@@ -1260,7 +1260,7 @@ class pcapng_reader_PreAlloc():
         
         packetsSizes       = np.zeros((0),dtype='int64')
         packetsFWversion   = np.zeros((0),dtype='int64')
-        packetsInstrID     = np.zeros((0),dtype='int64')
+        # packetsInstrID     = np.zeros((0),dtype='int64')
         
         counter = 0
         
@@ -1288,7 +1288,7 @@ class pcapng_reader_PreAlloc():
                         if indexESS != -1:
                             
                            FWversionTemp = self.extractFWversion(packetData, indexESS)
-                           instrIDtemp   = self.extractInstrID(packetData, indexESS)
+                           # instrIDtemp   = self.extractInstrID(packetData, indexESS)
     
                     except:
                         self.dprint('--> other packet found No. {}'.format(self.counterPackets-self.counterCandidatePackets))
@@ -1298,7 +1298,7 @@ class pcapng_reader_PreAlloc():
                         packetsSizes     = np.append(packetsSizes,packetSize)
                         try:
                             packetsFWversion  = np.append(packetsFWversion,FWversionTemp)
-                            packetsInstrID    = np.append(packetsInstrID,instrIDtemp)
+                            # packetsInstrID    = np.append(packetsInstrID,instrIDtemp)
                         except:
                             # print('this data does not contain FW version')
                             pass
@@ -1310,7 +1310,6 @@ class pcapng_reader_PreAlloc():
       
         self.dprint('counterPackets {}, counterCandidatePackets {}'.format(self.counterPackets,self.counterCandidatePackets))    
         
-        # self.checkIfUniformFWversion(packetsFWversion)
         self.checkFWversionSetHeaders(packetsFWversion)
 
         self.checkTimeSrc(packetData[indexESS+7])
@@ -1318,7 +1317,6 @@ class pcapng_reader_PreAlloc():
         if self.kafkaStream is False:
              self.checkIP(packetData[indexESS-2-8-20:indexESS-2])
 
-        self.checkInstrIDsetReadoutSize(packetsInstrID)
 
         if self.debug:
             overallSize = np.sum(packetsSizes)
@@ -1350,7 +1348,7 @@ class pcapng_reader_PreAlloc():
         
         self.data                      = np.zeros((self.preallocLength,19), dtype='int64') 
         self.readouts.heartbeats       = np.zeros((self.counterCandidatePackets), dtype='int64')
-        self.readouts.instrType        = np.zeros((self.counterCandidatePackets), dtype='U10') 
+        self.readouts.instrID          = -1*np.ones((self.counterCandidatePackets), dtype='int64') 
         
         ff = open(self.filePathAndFileName, 'rb')
         scanner = pg.FileScanner(ff)
@@ -1389,10 +1387,8 @@ class pcapng_reader_PreAlloc():
                 self.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
                 indexPackets += 1
          
-        print('[100%]',end=' ') 
+        print('[100%]') 
         
-        self.readouts.calculateUniqueInstrType()
-
         self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.counterPackets , self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))
              
         #######################################################       
@@ -1448,6 +1444,13 @@ class pcapng_reader_PreAlloc():
         
         ff.close()
         
+        self.readouts.calculateUniqueInstrIDs()
+        for ids in self.readouts.instrIDUnique:
+                print('\n---> ', end='')
+                checkInstrumentID().printInfoDataStream(ids)
+        print('\n')
+        
+        
     def checkTimeSettings(self):
         
         if self.operationMode == 'normal' or self.operationMode == 'clustered':
@@ -1472,7 +1475,7 @@ class pcapng_reader_PreAlloc():
 
         # self.readouts.calculateTimeStamp(self.NSperClockTick)
         
-        if self.InstrType == 'VMM':
+        if self.ROEtype == 'VMM':
 
             if self.operationMode == 'normal':
                 if self.timeResolutionType == 'fine':
@@ -1587,7 +1590,9 @@ class pcapng_reader_PreAlloc():
            # if the packet is a good packet then...
            if ICMPflag == False:
                # dinamically change readoutsize 20 or 24 bytes 
-               self.singleReadoutSize, self.InstrType, self.flagSupported = checkInstrumentID().setBytesPerReadout(self.extractInstrID(packetData,indexESS))   
+               instrID = self.extractInstrID(packetData,indexESS)
+               self.singleReadoutSize, self.ROEtype = checkInstrumentID().getInfoFromID(instrID)   
+               # print(self.ROEtype)
                
                readoutsInPacket = (packetLength - indexDataStart) / self.singleReadoutSize
                # or alternatively
@@ -1640,7 +1645,7 @@ class pcapng_reader_PreAlloc():
                            # ring 11 reserved for MON
                            if vmm3.Ring < 11:
                                
-                               if self.InstrType == 'VMM':
+                               if self.ROEtype == 'VMM':
                                
                                     self.data[index, 0] = vmm3.Ring
                                     self.data[index, 1] = vmm3.Fen
@@ -1662,7 +1667,7 @@ class pcapng_reader_PreAlloc():
                                     self.data[index, 17] = vmm3.mult0
                                     self.data[index, 18] = vmm3.mult1
                                     
-                               elif  self.InstrType == 'R5560':
+                               elif  self.ROEtype == 'R5560':
                                    
                                     R5560data = R5560(packetData[indexStart:indexStop], self.NSperClockTick)
                                       
@@ -1686,7 +1691,7 @@ class pcapng_reader_PreAlloc():
                                     self.data[index, 17] = 1  #mult0 for R5560 always 1
                                     self.data[index, 18] = 1  #mult1 for R5560 always 1
                                  
-                               elif self.InstrType == 'SKADI':
+                               elif self.ROEtype == 'SKADI':
                                    
                                    SKADIdata = SKADI(packetData[indexStart:indexStop], self.NSperClockTick)
                                      
@@ -1712,7 +1717,7 @@ class pcapng_reader_PreAlloc():
                                    self.data[index, 17] = 1  #mult0 for SKADI always 1
                                    self.data[index, 18] = 1  #mult1 for SKADI always 1
  
-                               elif  self.InstrType == 'BM':
+                               elif  self.ROEtype == 'BM':
                                    
                                     if self.warnedBM == False : 
                                         print('\n \033[1;33mWARNING ---> BM data found in ring < 11, treated as a detector! \033[1;37m')
@@ -1786,8 +1791,8 @@ class pcapng_reader_PreAlloc():
                          ###########
 
                try:            
-                   self.readouts.heartbeats[indexPackets]     = PulseT
-                   self.readouts.instrType[indexPackets]      = self.InstrType
+                   self.readouts.heartbeats[indexPackets]   = PulseT
+                   self.readouts.instrID[indexPackets]      = instrID
                    
                except:
                    print('\033[1;31m        ---> probably rings are offline or data is corrupted \033[1;37m')
@@ -1843,9 +1848,11 @@ if __name__ == '__main__':
 
    confFile  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
    fileName  = "MIRACLES24.json"
-   # fileName  = "AMOR.json"
+   fileName  = "AMOR.json"
     # fileName  = "MGEMMA.json"
    # fileName  = "MIRACLES2bis.json"
+   
+   # fileName  = "CSPEC.json"
 
    config = maps.read_json_config(confFile+fileName)
     
@@ -1858,7 +1865,7 @@ if __name__ == '__main__':
    file = 'ESSmask2023_1000pkts.pcapng'
    # file = 'ESSmask2023.pcapng'
 
-   # file = 'skadiDataQ.pcapng'
+   # file = 'CSPEC1.pcapng'
 
 
    filePathAndFileName = filePath+file
@@ -1889,25 +1896,32 @@ if __name__ == '__main__':
    
    readouts.checkInvalidToFsInReadouts()
    
+   # print(readouts.instrIDUnique)
+   # print(parameters.config.DETparameters.type)
+   
+   checkInstrumentID().checkValidDataStream(readouts.instrIDUnique)
+   
+   checkInstrumentID().matchDataStreamWithConfig(config.DETparameters.type, readouts.instrIDUnique)
+   
    # pint =  readouts.packetsInstrID
 
-   checkIfDataIsSupported(pcap.flagSupported)
+   # checkIfDataIsSupported(pcap.flagSupported)
    
    
-   readouts.instrTypeUnique = np.append(readouts.instrTypeUnique, 'R5560')
+   # readouts.ROEtypeUnique = np.append(readouts.ROEtypeUnique, 'R5560')
    
    
-   instrType1 = np.zeros((4), dtype='U10') 
-   instrType1[0] = 'R5560'
-   instrType1[1] = 'VMM'
-   instrType1[2] = 'BM'
-   instrType1[3] = 'BM'
+   # instrType1 = np.zeros((4), dtype='U10') 
+   # instrType1[0] = 'R5560'
+   # instrType1[1] = 'VMeM'
+   # instrType1[2] = 'BM'
+   # instrType1[3] = 'BMe'
    
-   readouts.instrTypeUnique =  instrType1
+   # readouts.instrTypeUnique =  instrType1
    
    
    
-   checkInstrumentID().checkMatchConfigWithInstrType(config.DETparameters.type, readouts.instrTypeUnique)
+   # checkInstrumentID().checkMatchConfigWithInstrType(config.DETparameters.type, readouts.instrTypeUnique)
    
    
    

@@ -301,9 +301,9 @@ if __name__ == '__main__':
     path = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
 
     DetectorName = "MIRACLES2"
-    DetectorType = 'MIRACLES'
+    DetectorType = 'He3'
     operationMode = 'normal'
-    cassettes = 2
+    cassettes = 24
     orientation = 'vertical'
 
     # Call the function directly

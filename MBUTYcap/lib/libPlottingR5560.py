@@ -377,7 +377,8 @@ class plottingEvents():
                 _, _, hToF = hh.histog(self.outOfBounds).histXYZ(self.allAxis.axStrips.axis, self.events.positionS, self.allAxis.axStrips.axis, self.events.positionS, self.allAxis.axToF.axis, self.events.ToF/1e9)
         
                 for k, cass in enumerate(cassetteIDs):
-                    h1D = hh.histog(self.outOfBounds).hist1D(self.allAxis.axWires.axis, self.events.positionW)
+                    sele = self.events.Cassette == cass
+                    h1D = hh.histog(self.outOfBounds).hist1D(self.allAxis.axWires.axis, self.events.positionW[sele])
                     fig1D.axHandle[0][k].step(self.allAxis.axWires.axis,h1D,'k',where='mid')
                     fig1D.axHandle[0][k].set_xlabel('Position (a.u.)')
                     fig1D.axHandle[0][k].set_title('Tube ID '+str(cass))
@@ -431,7 +432,10 @@ class plottingEvents():
                 _, _, hToF = hh.histog(self.outOfBounds).histXYZ(self.allAxis.axStrips.axis, self.events.positionS, self.allAxis.axStrips.axis, self.events.positionS, self.allAxis.axToF.axis, self.events.ToF/1e9)
         
                 for k, cass in enumerate(cassetteIDs):
-                    h1D = hh.histog(self.outOfBounds).hist1D(self.allAxis.axWires_mm.axis, self.events.positionWmm)
+                    
+                    sele = self.events.Cassette == cass
+                    
+                    h1D = hh.histog(self.outOfBounds).hist1D(self.allAxis.axWires_mm.axis, self.events.positionWmm[sele])
                     fig1D.axHandle[0][k].step(self.allAxis.axWires_mm.axis,h1D,'k',where='mid')
                     fig1D.axHandle[0][k].set_xlabel('Position (mm)')
                     fig1D.axHandle[0][k].set_title('Tube ID '+str(cass))
@@ -485,7 +489,7 @@ class plottingEvents():
             
     def splitHistAccordingToDET(self):
           
-        # TO BE FINISHED 
+        # TO BE FINISHED .....
         
          detType = self.config.DETparameters.type
          
@@ -521,6 +525,7 @@ if __name__ == '__main__' :
     # fileName  = "AMOR.json"
     # fileName  = "MGEMMA.json"
     fileName  = "MIRACLES2bis.json"
+    fileName  = "CSPEC.json"
 
     config = maps.read_json_config(confFile+fileName)
     
@@ -666,12 +671,13 @@ if __name__ == '__main__' :
     filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
     # file = 'MG_2col_2clusters.pcapng'
     file = 'miracles_trig2.pcapng'
+    file = 'channel1.pcapng'
       
     # file = 'MG_2col_1cluster.pcapng'
     
     # file = 'miracles_source_mask_red.pcapng'
     
-    file = 'miracles_source_on_left_red.pcapng'
+    # file = 'miracles_source_on_left_red.pcapng'
 
     filePathAndFileName = filePath+file
     
@@ -679,7 +685,7 @@ if __name__ == '__main__' :
     
     pcapng = pcapr.pcapng_reader(filePathAndFileName)
     
-    pcapr.checkIfDataIsSupported(pcapng.flagSupported)
+    # pcapr.checkIfDataIsSupported(pcapng.flagSupported)
 
     readouts = pcapng.readouts
     readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
@@ -744,7 +750,7 @@ if __name__ == '__main__' :
 
     # plread.plotLambda(parameters.config.DETparameters.cassInConfig)
     
-    parameters.plotting.plotABSunits = True
+    parameters.plotting.plotABSunits = False
        
     parameters.config.DETparameters.orientation = 'vertical'
     # parameters.config.DETparameters.orientation = 'horizontal'

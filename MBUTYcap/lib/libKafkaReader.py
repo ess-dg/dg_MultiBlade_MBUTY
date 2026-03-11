@@ -43,14 +43,15 @@ except ImportError:
 class  kafka_reader():
     def __init__(self, NSperClockTick=11.356860963629653, nOfPackets = 1, broker = '127.0.0.1:9092', topic = 'freia_debug', MONtype = 'RING' , MONring = 11, timeResolutionType = 'coarse', sortByTimeStampsONOFF = False, operationMode = 'normal', testing = False):
         
-        self.flagSupported = True
+        # self.flagSupported = True
         
         kaf = kafka_reader_preAlloc(NSperClockTick, nOfPackets, broker, topic, MONtype, MONring, timeResolutionType,operationMode,testing)
         kaf.allocateMemory()
         kaf.read()
         self.readouts = kaf.readouts  
+        pcapr.checkInstrumentID().checkValidDataStream(self.readouts.instrIDUnique)
         
-        self.flagSupported = kaf.flagSupported
+        # self.flagSupported = kaf.flagSupported
              
         if sortByTimeStampsONOFF is True:
                   print('Readouts are sorted by TimeStamp')
@@ -77,7 +78,7 @@ class kafka_reader_preAlloc():
         self.timeResolutionType  = timeResolutionType
         self.operationMode       = operationMode
         
-        self.flagSupported = True
+        # self.flagSupported = True
 
         #############################
         
@@ -156,7 +157,7 @@ class kafka_reader_preAlloc():
         
         self.rea.readouts.heartbeats = np.zeros((self.rea.counterCandidatePackets,), dtype='int64') 
         
-        self.rea.readouts.instrType  = np.zeros((self.rea.counterCandidatePackets), dtype='U10') 
+        self.rea.readouts.instrID    = np.zeros((self.rea.counterCandidatePackets), dtype='int64') 
 
         self.rea.stepsForProgress = int(self.rea.counterCandidatePackets/20)+1  # 4 means 25%, 50%, 75% and 100%
         
@@ -219,7 +220,7 @@ class kafka_reader_preAlloc():
                            if npack == 0: 
                                self.rea.checkFWversionSetHeaders(packetsFWversion) 
                                self.rea.checkTimeSrc(packetData[indexESS+7])
-                               self.rea.checkInstrIDsetReadoutSize(packetsInstrID)
+                               # self.rea.checkInstrIDsetReadoutSize(packetsInstrID)
                                print('\n',end='')
                         
                         if self.debug == True:
@@ -234,12 +235,8 @@ class kafka_reader_preAlloc():
  
         if flagTopicFound == True: 
             
-            print('[100%]',end=' ') 
-            
-            self.rea.readouts.instrType = packetsInstrID
-            
-            self.rea.readouts.calculateUniqueInstrType()
-
+            print('[100%]') 
+  
             self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.rea.counterPackets , self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))
               
             #######################################################       
@@ -279,9 +276,16 @@ class kafka_reader_preAlloc():
             self.rea.removeOtherDataTypes(removeONOFF=self.removeremoveOtherDataTypesONOFF)
             
             self.readouts = self.rea.readouts
-            self.flagSupported = self.rea.flagSupported
+            # self.flagSupported = self.rea.flagSupported
             
             # print(self.readouts.Channel)
+            self.rea.readouts.instrID = packetsInstrID
+            
+            self.readouts.calculateUniqueInstrIDs()
+            for ids in self.rea.readouts.instrIDUnique:
+                    print('\n---> ', end='')
+                    pcapr.checkInstrumentID().printInfoDataStream(ids)
+            print('\n')
             
         if self.testing is False:
            consumer.close()

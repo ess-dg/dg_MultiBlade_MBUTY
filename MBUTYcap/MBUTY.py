@@ -44,9 +44,7 @@ from lib import libMapping as maps
 suffixes = {
     'MB': '', 
     'MG': 'MG', 
-    'MIRACLES': 'R5560', 
-    'BIFROST': 'R5560', 
-    'CSPEC':   'R5560'
+    'He3': 'R5560'
 }
 
 libs = {
@@ -158,7 +156,7 @@ class MBUTYmain():
             self.plo  = importlib.import_module(f"lib.{libs['plot']}")
             self.hh   = importlib.import_module(f"lib.{libs['hh']}")
         else:
-            print('\n \033[1;31m---> Error in config File: detector type {} not supported (MB or MG only) \033[1;37m'.format(det_type),end='')
+            print('\n \033[1;31m---> Error in config File: detector type {} not supported (MB, MG or He3 only) \033[1;37m'.format(det_type),end='')
             sys.exit()
             
         config = self.maps.read_json_config(os.path.join(self.parameters.fileManagement.configFilePath , self.parameters.fileManagement.configFileName))
@@ -226,6 +224,16 @@ class MBUTYmain():
                 
         elif self.parameters.acqMode == 'kafka':
             testing = True
+            
+            
+            
+            
+            
+            
+            # remove true after 
+            
+            
+            
             pcap = self.kaf.kafka_reader(NSperClockTick=self.parameters.clockTicks.NSperClockTick, nOfPackets = self.parameters.kafkaSettings.numOfPackets, \
             broker = self.parameters.kafkaSettings.broker, topic = self.parameters.kafkaSettings.topic, MONtype = self.parameters.config.MONmap.type , MONring = self.parameters.config.MONmap.RingID, \
             timeResolutionType =self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF=self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
@@ -239,9 +247,6 @@ class MBUTYmain():
         self.readouts.checkChopperFreq()
         
         self.readouts.checkInvalidToFsInReadouts()
-    
-        pcapr.checkIfDataIsSupported(pcap.flagSupported)
-        pcapr.checkInstrumentID().checkMatchConfigWithInstrType(self.parameters.config.DETparameters.type, self.readouts.instrTypeUnique)
         
         ####################    
         ### for debug, generate sample readouts
@@ -423,7 +428,10 @@ class MBUTYmain():
                     sav.save(self.events,self.eventsMON)
                 else:
                     sav.save(self.events)
-                    
+               
+        ###############################################################################
+        ###############################################################################           
+            pcapr.checkInstrumentID().matchDataStreamWithConfig(self.parameters.config.DETparameters.type, self.readouts.instrIDUnique) 
         ###############################################################################
         ###############################################################################            
                     
@@ -604,6 +612,7 @@ if __name__ == '__main__':
     # configFileName  = "ESTIA.json"
     
     # configFileName  = "MIRACLES24.json"
+    # configFileName  = "CSPEC.json"
     # configFileName  = "MIRACLES2.json"
 
     # configFileName  = "ESTIA_sect0.json"
@@ -883,7 +892,7 @@ if __name__ == '__main__':
     parameters.plotting.coincidenceWS_ONOFF = True
 
     ### ON/OFF, if  invalid ToFs Tofare included in the plots or removed from events 
-    parameters.plotting.removeInvalidToFs   = False
+    parameters.plotting.removeInvalidToFs   = True
 
     ### histogram outBounds param set as True as default (Events out of bounds stored in first and last bin)
     parameters.plotting.histogOutBounds = True
