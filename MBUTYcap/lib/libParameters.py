@@ -29,7 +29,7 @@ except ImportError:
 
 class checkPythonVersion():
         # check version
-        if sys.version_info < (3,20):
+        if sys.version_info < (3,8):
            print('\n \033[1;31mPython version too old, use at least Python 3.8! \033[1;37m\n')
            print(' ---> Exiting ... \n')
            print('------------------------------------------------------------- \n')
