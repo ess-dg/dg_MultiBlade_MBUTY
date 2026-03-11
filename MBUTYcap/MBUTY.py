@@ -223,17 +223,7 @@ class MBUTYmain():
                 self.readouts.append(pcap.readouts)
                 
         elif self.parameters.acqMode == 'kafka':
-            testing = True
-            
-            
-            
-            
-            
-            
-            # remove true after 
-            
-            
-            
+            testing = False          
             pcap = self.kaf.kafka_reader(NSperClockTick=self.parameters.clockTicks.NSperClockTick, nOfPackets = self.parameters.kafkaSettings.numOfPackets, \
             broker = self.parameters.kafkaSettings.broker, topic = self.parameters.kafkaSettings.topic, MONtype = self.parameters.config.MONmap.type , MONring = self.parameters.config.MONmap.RingID, \
             timeResolutionType =self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF=self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
