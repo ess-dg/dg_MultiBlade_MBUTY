@@ -91,7 +91,7 @@ class plottingReadouts():
                 self.ch    = cassette1ID
                 self.count = np.shape(self.readouts.Channel[sel])[0]
             elif self.config.DETparameters.operationMode == 'clustered':
-                print(f' --> other modes than normal are not supported for detector type {self.config.DETparameters.type}')
+                print(f" --> other modes than normal are not supported for detector type {self.config.DETparameters.type}")
   
         
     def plotChRaw(self,cassetteIDs): 
@@ -145,7 +145,7 @@ class plottingReadouts():
             if self.config.DETparameters.operationMode == 'normal':
                 self.timeStamp0 = self.readouts.timeStamp[sel]
             elif self.config.DETparameters.operationMode == 'clustered':
-                print(f' --> other modes than normal are not supported for detector type {self.config.DETparameters.type}')
+                print(f" --> other modes than normal are not supported for detector type {self.config.DETparameters.type}")
             
           
             
@@ -172,7 +172,7 @@ class plottingReadouts():
 
         
     def plotADCvsCh(self,cassetteIDs,logScale = False):
-        print(f'\n\t \033[1;33mWARNING: ADC vs Ch not supported for {self.config.DETparameters.type} -> SKIPPING PLOT (use raw hits for ADC VS ADC).\033[0m')
+        print(f"\n\t \033[1;33mWARNING: ADC vs Ch not supported for {self.config.DETparameters.type} -> SKIPPING PLOT (use raw hits for ADC VS ADC).\033[0m")
 
                    
                    
@@ -214,12 +214,12 @@ class plottingHits():
 
     def plotTimeStamps(self,cassetteIDs): 
         if self.flag is True:
-            print(f'\n\t \033[1;33mWARNING: Hits time stamp not supported for {self.config.DETparameters.type} -> SKIPPING PLOT (use raw readouts timestamp plots).\033[0m')
+            print(f"\n\t \033[1;33mWARNING: Hits time stamp not supported for {self.config.DETparameters.type} -> SKIPPING PLOT (use raw readouts timestamp plots).\033[0m")
 
     
     def plotTimeStampsVSCh(self,cassetteIDs): 
         if self.flag is True:
-            print(f'\n\t \033[1;33mWARNING: Hits time stamp VS Ch not supported for {self.config.DETparameters.type} -> SKIPPING PLOT (use raw readouts timestamp plots).\033[0m')
+            print(f"\n\t \033[1;33mWARNING: Hits time stamp VS Ch not supported for {self.config.DETparameters.type} -> SKIPPING PLOT (use raw readouts timestamp plots).\033[0m")
 
 
 
@@ -296,16 +296,16 @@ class plottingEvents():
                  
     def plotMultiplicity(self, cassettes):   
         if self.flag is True:
-            print(f'\n\t \033[1;33mWARNING: Multiplicity not supported for {self.config.DETparameters.type} -> SKIPPING PLOT.\033[0m')
+            print(f"\n\t \033[1;33mWARNING: Multiplicity not supported for {self.config.DETparameters.type} -> SKIPPING PLOT.\033[0m")
                
                  
     def plotPHScorrelation(self, cassetteIDs, logScale = False):
         if self.flag is True:
-             print(f'\t \033[1;33mWARNING: PHS correlation not supported for {self.config.DETparameters.type} -> SKIPPING PLOT (use raw hits for ADC VS ADC).\033[0m')
+             print(f"\t \033[1;33mWARNING: PHS correlation not supported for {self.config.DETparameters.type} -> SKIPPING PLOT (use raw hits for ADC VS ADC).\033[0m")
 
     def plotXLambda(self,logScale=False, absUnits = False): 
         if self.flag is True:
-             print(f'\t \033[1;33mWARNING: X VS Wavelength not supported for {self.config.DETparameters.type} -> SKIPPING PLOT.\033[0m')
+             print(f"\t \033[1;33mWARNING: X VS Wavelength not supported for {self.config.DETparameters.type} -> SKIPPING PLOT.\033[0m")
 
           
     def plotToF(self, cassetteIDs):

@@ -85,7 +85,7 @@ class read_json_calib():
         if self.config.DETparameters.type == 'MB' or self.config.DETparameters.type == 'MG' : 
             pass
         else: 
-            print(f'\t \033[1;33mWARNING: calibrations for detector type {self.config.DETparameters.type} are not supported -> switch OFF calibration and run again!\033[0m')
+            print(f"\t \033[1;33mWARNING: calibrations for detector type {self.config.DETparameters.type} are not supported -> switch OFF calibration and run again!\033[0m")
             sys.exit()
         
         self.calibrationMap = calibrationMap(self.config)

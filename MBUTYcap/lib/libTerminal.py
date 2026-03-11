@@ -154,9 +154,9 @@ class transferDataUtil:
                 # Check for termination signals (negative return codes on Unix-like)
                 # or if the process was directly stopped by the GUI (current_subprocess_handle becomes None)
                 if not self.IS_WINDOWS and status in (-signal.SIGTERM.value, -signal.SIGKILL.value):
-                     print(f'\n\033[1;31mERROR ... data sync interrupted (code: {status})\n\033[1;37m')
+                     print(f"\n\033[1;31mERROR ... data sync interrupted (code: {status})\n\033[1;37m")
                 elif current_subprocess_handle is None: # This indicates an external stop (e.g., from stop_back_end)
-                     print(f'\n\033[1;31mERROR ... data sync stopped by user (code: {status})\n\033[1;37m')
+                     print(f"\n\033[1;31mERROR ... data sync stopped by user (code: {status})\n\033[1;37m")
                 else:
                     print('\n \033[1;31mERROR ... connection refused or other sync error! \n\033[1;37m')
 
@@ -176,7 +176,7 @@ class transferDataUtil:
 
         except Exception as e:
             # Catch any other unexpected errors during subprocess execution
-            print(f'\n\033[1;31mERROR ... An unexpected error occurred: {e}\n\033[1;37m')
+            print(f"\n\033[1;31mERROR ... An unexpected error occurred: {e}\n\033[1;37m")
             status = 1 # Indicate failure
 
         finally:

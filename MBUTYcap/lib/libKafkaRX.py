@@ -59,7 +59,7 @@ def main(kafka_config, topic):
         npdatabytes = npdata.tobytes()
         oq = npdata[8]
         datalen = npdata[7] * 256 +  npdata[6]
-        print(f'OQ: {oq}, DataLen: {datalen}')
+        print(f"OQ: {oq}, DataLen: {datalen}")
         print(npdata)
         print()
 

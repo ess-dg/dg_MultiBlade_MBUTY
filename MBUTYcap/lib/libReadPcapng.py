@@ -409,7 +409,7 @@ class checkInstrumentID():
         # print('checking intrument ID ... ',end='')
         self.getInfoFromID(ID)
         if self.detName != "Unknown":
-            print(f'found {self.detName} data stream - {self.ROEtype}',end='')
+            print(f"found {self.detName} data stream - {self.ROEtype}",end='')
         
     def getIDFromName(self, name):
         for instrument_id, info in self.instruments.items():
@@ -558,7 +558,7 @@ class checkInstrumentID():
                  elif info.flagSupported is False and info.flagReadSupported is True:
                     valid_for_reading.append(info.detName)
            
-            print(f'\n\033[1;33mWARNING: {len(instrIDs)} data streams detected: ({', '.join(all_streams)})\033[0m')         
+            print(f"\n\033[1;33mWARNING: {len(instrIDs)} data streams detected: ({', '.join(all_streams)})\033[0m")         
             # Final decision after checking all IDs
             if valid_for_analysis:
                 print(f"\033[1;33m---> At least one valid stream found ({', '.join(valid_for_analysis)}). Analysis continues despite extra data. Data might be corrupted - check RMM output queue config! \033[0m")
@@ -588,15 +588,15 @@ class checkInstrumentID():
         
                     # Logic for different warning messages
                     if not is_supp and is_read_supp:
-                        print(f'\033[1;33mWARNING: detector type {detType} is supported only by the Reader, but not yet by the Main Analysis Pipeline.\033[0m')
+                        print(f"\033[1;33mWARNING: detector type {detType} is supported only by the Reader, but not yet by the Main Analysis Pipeline.\033[0m")
                     
                     elif not is_supp and not is_read_supp:
-                        print(f'\033[1;31mWERROR: detector type {detType} is currently not supported.\033[0m')
+                        print(f"\033[1;31mWERROR: detector type {detType} is currently not supported.\033[0m")
                         sys.exit()
 
                
         else:
-                print(f'\n\033[1;31mERROR: detector type {detType} in config file is not a possible type. Valid types: {', '.join(existing_types)}\033[0m')
+                print(f"\n\033[1;31mERROR: detector type {detType} in config file is not a possible type. Valid types: {', '.join(existing_types)}\033[0m")
                 sys.exit()
                 
         return flag 
@@ -1079,7 +1079,7 @@ class pcapng_reader_PreAlloc():
             fileName = temp2[1]
             
             self.fileSize   = os.path.getsize(self.filePathAndFileName) #bytes
-            print(f'{fileName} is {self.fileSize/1000000:.4f} Mbytes')
+            print(f"{fileName} is {self.fileSize/1000000:.4f} Mbytes")
             
             self.mainHeaderSize  = 42  #bytes only if pcap file otherise from kafka this is 0 
             

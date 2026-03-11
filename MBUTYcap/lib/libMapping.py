@@ -823,8 +823,8 @@ class mapMonitor():
         # CASE 1: The specific selection exists in the data
         if np.any(selection):
             if num_found_pairs > 1:
-                print(f'\t \033[1;33mWARNING: Found {num_found_pairs} monitor sources in data. MBUTY supports only one Monitor.'
-                      f'Mapping according to config file, but data contains (Ring, Channel): {found_mon_pairs}\033[1;37m')
+                print(f"\t \033[1;33mWARNING: Found {num_found_pairs} monitor sources in data. MBUTY supports only one Monitor."
+                      f"Mapping according to config file, but data contains (Ring, Channel): {found_mon_pairs}\033[1;37m")
             
             self._map_data(selection)
             self.flagMONfound = True
@@ -832,8 +832,8 @@ class mapMonitor():
         # CASE 2: Selection is empty, but exactly ONE other monitor-valid pair exists
         elif num_found_pairs == 1:
             wrong_ring, wrong_ch = found_mon_pairs[0]
-            print(f'\t \033[1;33mWARNING: mismatch -> One monitor candidate found, but it is NOT the selected one in config file.'
-                  f' Data contains Ring {wrong_ring} and Channel {wrong_ch}.\033[1;37m')
+            print(f"\t \033[1;33mWARNING: mismatch -> One monitor candidate found, but it is NOT the selected one in config file."
+                  f" Data contains Ring {wrong_ring} and Channel {wrong_ch}.\033[1;37m")
             self.flagMONfound = False
 
         # CASE 3: No monitor data (Ring >= 11) found at all
