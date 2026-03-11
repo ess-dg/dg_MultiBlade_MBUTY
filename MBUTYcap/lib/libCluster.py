@@ -704,8 +704,11 @@ class checkCassIDs():
               time.sleep(3)
               sys.exit()
  
-    def checkIfPresentInHits(hits,cassette1ID):
-  
+    def checkIfPresentInHits(hits,cassette1ID, text=''):
+        
+         if not text:
+                text = 'Cassette'
+        
          presentCassettes = np.unique(hits.Cassette[~np.isnan(hits.Cassette)])
          
          dimen = np.shape(presentCassettes)[0]
@@ -718,7 +721,7 @@ class checkCassIDs():
             
                  if np.any(presentCassettes<=-1):
                  # there is unmapped data in hits, might be MON
-                     print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits only contains Cassettes IDs:', end=' ')
+                     print(f"\n \t \033[1;33mWARNING: {text} ID {str(cassette1ID)} not found! Skipped! These hits only contains {text} IDs:", end=' ')
                      presentCassettes = presentCassettes[presentCassettes>=0]
                      for cc in presentCassettes:
                          print(int(cc),end=' ')
@@ -726,13 +729,14 @@ class checkCassIDs():
                     
                  else:
                      # there is NO unmapped data in hits
-                     print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits only contains Cassettes IDs:', end=' ')
+                     print(f"\n \t \033[1;33mWARNING: {text} ID {str(cassette1ID)} not found! Skipped! These hits only contains {text} IDs:", end=' ')
                      for cc in presentCassettes:
                          print(int(cc),end=' ')
                      print('\033[1;37m',end=' ')
                      
              else:
-                   print('\n \t \033[1;33mWARNING: Cassette ID ',str(cassette1ID),' not found! Skipped! These hits are empty!\033[1;37m', end=' ')
+                 print(f"\n \t \033[1;33mWARNING: {text} ID {str(cassette1ID)} not found! Skipped! These hits hits are empty!", end=' ')
+      
              
          else: 
              flag = True

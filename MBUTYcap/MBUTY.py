@@ -693,7 +693,7 @@ if __name__ == '__main__':
     # parameters.fileManagement.fileName = ['miracles_trig2.pcapng']
     # parameters.fileManagement.fileName = ['MG_2EMMAprototypes.pcapng']
     # parameters.fileManagement.fileName = ['miracles_source_mask.pcapng']
-    # parameters.fileManagement.fileName = ['skadiDataQ.pcapng']
+    # parameters.fileManagement.fileName = ['CSPEC1.pcapng']
     
 
     parameters.fileManagement.fileSerials = [6,2,4,9]

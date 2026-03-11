@@ -43,7 +43,7 @@ class clusterHits():
          
      def clusterize1cassette(self, cassette1ID, timeWindow):
          
-         present = checkCassIDs.checkIfPresentInHits(self.hits,cassette1ID)
+         present = checkCassIDs.checkIfPresentInHits(self.hits,cassette1ID,text='Tube')
          
          # init an empty event obj
          self.events1Cass  = libCluster.events()

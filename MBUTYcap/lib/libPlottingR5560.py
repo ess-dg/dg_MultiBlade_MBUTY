@@ -398,7 +398,8 @@ class plottingEvents():
                 if orientation == 'vertical':
                     
                     pos1  = ax1.imshow(np.rot90(h2D,1),aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axStrips.start-0.5,self.allAxis.axStrips.stop+0.5,self.allAxis.axWires.stop,self.allAxis.axWires.start], origin='upper',cmap='viridis')
-                    
+                    ax1.set_xticks(self.allAxis.axStrips.axis)
+                    ax1.set_xticklabels(self.allAxis.axStrips.axis.astype(int))
                     #  temporary fix because LogNorm crashes tihe imShow when Log 
                     try:
                         fig2D.colorbar(pos1, ax=ax1, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
@@ -414,7 +415,8 @@ class plottingEvents():
                 elif orientation == 'horizontal':  
                     
                     pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires.start,self.allAxis.axWires.stop,self.allAxis.axStrips.stop+0.5,self.allAxis.axStrips.start-0.5], origin='upper',cmap='viridis')
-                    
+                    ax1.set_yticks(self.allAxis.axStrips.axis)
+                    ax1.set_yticklabels(self.allAxis.axStrips.axis.astype(int))
                     try:
                         fig2D.colorbar(pos1, ax=ax1, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
                     except:
@@ -455,7 +457,8 @@ class plottingEvents():
                 if orientation == 'vertical':
                     
                     pos1  = ax1.imshow(np.rot90(h2D,1),aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axStrips.start-0.5,self.allAxis.axStrips.stop+0.5,self.allAxis.axWires_mm.stop,self.allAxis.axWires_mm.start], origin='upper',cmap='viridis')
-                    
+                    ax1.set_xticks(self.allAxis.axStrips.axis)
+                    ax1.set_xticklabels(self.allAxis.axStrips.axis.astype(int))
                     #  temporary fix because LogNorm crashes tihe imShow when Log 
                     try:
                         fig2D.colorbar(pos1, ax=ax1, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
@@ -471,7 +474,8 @@ class plottingEvents():
                 elif orientation == 'horizontal':  
                     
                     pos1  = ax1.imshow(h2D,aspect='auto',norm=normColors,interpolation='none',extent=[self.allAxis.axWires_mm.start,self.allAxis.axWires_mm.stop,self.allAxis.axStrips.stop+0.5,self.allAxis.axStrips.start-0.5], origin='upper',cmap='viridis')
-                    
+                    ax1.set_yticks(self.allAxis.axStrips.axis)
+                    ax1.set_yticklabels(self.allAxis.axStrips.axis.astype(int))
                     try:
                         fig2D.colorbar(pos1, ax=ax1, orientation="vertical",fraction=0.07,anchor=(1.0,0.0))
                     except:

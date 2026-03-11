@@ -19,6 +19,16 @@ For installing the GUI with a desktop ICON in Linux/Mac OS or Windows execute in
 >> python install_gui.py
 
 --------------------------------------------------
+TO RECORD PCAPS TSHARK is needed! 
+NOTE: sometimes even if Wireshark is installed shark is not, so run:
+
+sudo apt update
+sudo apt install tshark
+
+it should go in /usr/bin/ or usr/sbin/
+
+--------------------------------------------------
+
 PACKAGES NEEDED:
 
 Install placing package in anaconda 
