@@ -895,7 +895,7 @@ class MBUTY_GUI_App:
             f"Authors: {author}\n"
             f"mail: francesco.piscitelli@ess.eu\n\n"
             f"Created: June 13, 2021\n"
-            f"Description: Utility Tool for Analysis. Supports readers for all data formats: VMM, BM, R5560 and SKADI. Supports MB, MG, CSPEC, BIFROST and MIRACLES detectors for analysis. "
+            f"Description: Utility Tool for Analysis. Supports readers for all data formats: VMM, BM, R5560 and SKADI. Supports detectors MB (TBL, ESTIA, FREIA), MG (TREX), He3 tubes (TBL, CSPEC, BIFROST, MIRACLES and VESPA)."
         )
         messagebox.showinfo("About MBUTY", about_text)    
 

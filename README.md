@@ -3,7 +3,8 @@ MBUTY is for reading / recording / analyzing the VMM3A, CAEN R5560 and SKADI dat
 --------------------------------------------------
 
 libReader for CAEN R5560, SKADI and VMM
-Plots and analysis for VMM MG and MB detectors and for MIRACLES, CSPEC and BIFROST  
+Plots and analysis for VMM MG (TREX) and MB (ESTIA, FREIA, TBL) detectors and for He3 tubes (TBL, MIRACLES, CSPEC, BIFROST  and VESPA)
+Beam Monitors are also included. 
 
 --------------------------------------------------
 
@@ -15,7 +16,7 @@ MBUTY_GUI.py is the GUI and can be started from terminal as: >> pyhton MBUTY_GUI
 For installing the GUI with a desktop ICON in Linux/Mac OS or Windows execute in a terminal:
 >> python install_gui.py
 
-Details about installation see intallationNotes file in the repository. 
+Details about installation see intallationNotes.txt file in the repository. 
 
 --------------------------------------------------
 <<<<<<< HEAD
