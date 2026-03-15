@@ -41,9 +41,9 @@ class clusterHits():
         return libCluster.clusterHits.__init__(self, hits, showStat) 
          
          
-     def clusterize1cassette(self, cassette1ID, timeWindow):
+     def clusterize1cassette(self, cassette1ID, timeWindow, text = 'Tube'):
          
-         present = checkCassIDs.checkIfPresentInHits(self.hits,cassette1ID,text='Tube')
+         present = checkCassIDs.checkIfPresentInHits(self.hits,cassette1ID,text=text)
          
          # init an empty event obj
          self.events1Cass  = libCluster.events()
@@ -185,7 +185,7 @@ class clusterHits():
                 
 
 
-     def clusterizeManyCassettes(self, cassettesIDs, timeWindow):
+     def clusterizeManyCassettes(self, cassettesIDs, timeWindow, detType='He3'):
             
              checkCassIDs.checkIfRepeatedIDs(cassettesIDs)
              
@@ -193,7 +193,7 @@ class clusterHits():
 
              for cc in cassettesIDs:
                  
-                 self.clusterize1cassette(cc, timeWindow)
+                 self.clusterize1cassette(cc, timeWindow, text='Tube')
 
                  self.deltaTimeClusterWSall = np.concatenate((self.deltaTimeClusterWSall,self.deltaTimeClusterWS),axis=0)
 

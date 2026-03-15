@@ -1358,6 +1358,11 @@ class pcapng_reader_PreAlloc():
         
         print('\n',end='')
         
+        outOfPositionCounter = 0
+        ICMPcounter          = 0 
+        otherCounter         = 0 
+
+        
         self.data                      = np.zeros((self.preallocLength,19), dtype='int64') 
         self.readouts.heartbeats       = np.zeros((self.counterCandidatePackets), dtype='int64')
         self.readouts.instrID          = -1*np.ones((self.counterCandidatePackets), dtype='int64') 
@@ -1396,10 +1401,16 @@ class pcapng_reader_PreAlloc():
                 self.dprint('--> other packet found')
                 
             else:
-                self.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
+                outOfPositionCounterTemp, ICMPcounterTemp, otherCounterTemp = self.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
                 indexPackets += 1
+                
+                outOfPositionCounter = outOfPositionCounter + outOfPositionCounterTemp
+                ICMPcounter          = ICMPcounter          + ICMPcounterTemp
+                otherCounter         = otherCounter         + otherCounterTemp
          
         print('[100%]') 
+
+        self.printDataWarnings(outOfPositionCounter,ICMPcounter,otherCounter)
         
         self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.counterPackets , self.counterCandidatePackets,self.counterValidESSpackets ,self.counterEmptyESSpackets,self.counterNonESSpackets))
              
@@ -1463,7 +1474,21 @@ class pcapng_reader_PreAlloc():
                 checkInstrumentID().printInfoDataStream(ids)
         print('\n')
         
+    def printDataWarnings(self,outOfPositionCounter,ICMPcounter,otherCounter):
         
+
+
+        if outOfPositionCounter != 0 :
+           #   give a warning if not 72 or 74,  check that ESS cookie is always in the same place-> warning at the end of function 
+           print(f"\n\033[1;33mWARNING ---> ESS cookie was found {outOfPositionCounter} times not in position! Data does not start at byte 72 or 74 or 42 or 44! ... \033[1;37m")
+           
+           if ICMPcounter ==  outOfPositionCounter:
+              # this is the case where the packet is sent instead of UDP but as a ping from RMM ICMP message -> need to skip this package 
+                print(f" \033[1;33m    ... ---> but it was an ICMP packet {ICMPcounter} times -> skipping those packets. \033[1;37m")
+           else:
+                print(f" \033[1;31m    ... ---> found {ICMPcounter} ICMP packets that can be skipped and {otherCounter} times not an ICMP packet, BUT DATA MIGHT BE CORRUPTED. \033[1;37m")
+
+   
     def checkTimeSettings(self):
         
         if self.operationMode == 'normal' or self.operationMode == 'clustered':
@@ -1560,8 +1585,11 @@ class pcapng_reader_PreAlloc():
         
         # ICMP packet has ESS data in it but must be discarded 
         # the ICMP protocal adds 28 bytes 
-        ICMPbyteExtraLength = 28 
-        ICMPflag            = False 
+        ICMPbyteExtraLength  = 28 
+        ICMPflag             = False 
+        ICMPcounter          = 0
+        outOfPositionCounter = 0
+        otherCounter         = 0
         
         indexESS = packetData.find(b'ESS') # index of(cookie) ESS = 0x 45 53 53 it is always 44 with pcap 
         
@@ -1590,17 +1618,15 @@ class pcapng_reader_PreAlloc():
 
            # print('data starts at: '+str(indexDataStart))
 
-           #   give a warning if not 72 or 74,  check that ESS cookie is always in the same place
+           #   give a warning if not 72 or 74,  check that ESS cookie is always in the same place-> warning at the end of function 
            if indexDataStart != self.headerSize:
-               print('\n \033[1;33mWARNING ---> ESS cookie is not in position! Data does not start at byte 72 or 74 or 42 or 44! ... \033[1;37m')
-               
+               outOfPositionCounter += 1 
                if (indexDataStart == self.headerSize + ICMPbyteExtraLength):
                    # this is the case where the packet is sent instead of UDP but as a ping from RMM ICMP message -> need to skip this package 
-                   print(' \033[1;33m    ... ---> but it is an ICMP packet -> skipping packet. \033[1;37m')
-                   ICMPflag = True
+                  ICMPcounter += 1
+                  ICMPflag     = True
                else:
-                   print(' \033[1;31m    ... ---> this packet is not an ICMP packet that can be skipped, DATA MIGHT BE CORRUPTED. \033[1;37m')
-                   time.sleep(2)
+                   otherCounter += 1 
            
            # if the packet is a good packet then...
            if ICMPflag == False:
@@ -1806,6 +1832,8 @@ class pcapng_reader_PreAlloc():
            
                  
                          ###########
+                         
+                         
 
                try:            
                    self.readouts.heartbeats[indexPackets]   = PulseT
@@ -1824,8 +1852,10 @@ class pcapng_reader_PreAlloc():
                
             # pb.progressBar(self.counterValidESSpackets,self.counterCandidatePackets)
            
-           
-        
+        return outOfPositionCounter, ICMPcounter, otherCounter
+
+
+            
         
 class checkIfDataHasZeros():
      def __init__(self, data):
@@ -1882,6 +1912,8 @@ if __name__ == '__main__':
    file = 'miracles_trig2.pcapng'
    file = 'ESSmask2023_1000pkts.pcapng'
    # file = 'ESSmask2023.pcapng'
+   
+   file = 'miracles_source_on_left_red.pcapng'
 
    # file = 'CSPEC1.pcapng'
 

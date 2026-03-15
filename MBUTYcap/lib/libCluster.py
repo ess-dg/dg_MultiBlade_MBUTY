@@ -346,7 +346,10 @@ class clusterHits():
          self.deltaTimeClusterWS    = np.zeros((0,3),dtype='int64')
          
          
-     def clusterize1cassette(self, cassette1ID, timeWindow):
+     def clusterize1cassette(self, cassette1ID, timeWindow, text=''):
+         
+         if not text:
+             text = 'Cassette'
          
          present = checkCassIDs.checkIfPresentInHits(self.hits,cassette1ID)
          
@@ -357,7 +360,7 @@ class clusterHits():
          
          if present:
  
-            print('\n \t clustering ... Cassette ID ',str(cassette1ID),' ',end='')
+            print('\n \t clustering ... ',text,' ID ',str(cassette1ID),' ',end='')
             
             # this is a trick to accept also the clusters very close in time otherwise rejected
             # Timewindowrec = np.ceil(timeWindow*1e6/3)/1e6+0.01e-6
@@ -664,7 +667,14 @@ class clusterHits():
                 
 
 
-     def clusterizeManyCassettes(self, cassettesIDs, timeWindow):
+     def clusterizeManyCassettes(self, cassettesIDs, timeWindow, detType):
+         
+             if detType == 'MG':
+                 text = 'MG column'  
+             elif detType == 'He3':
+                 text = 'Tube'
+             else:
+                 text = 'Cassette'
             
              checkCassIDs.checkIfRepeatedIDs(cassettesIDs)
              
@@ -672,7 +682,7 @@ class clusterHits():
 
              for cc in cassettesIDs:
                  
-                 self.clusterize1cassette(cc, timeWindow)
+                 self.clusterize1cassette(cc, timeWindow, text=text)
                  
                  # print(self.deltaTimeClusterWS)
                  

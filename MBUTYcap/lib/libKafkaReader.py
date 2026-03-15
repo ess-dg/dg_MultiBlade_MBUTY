@@ -127,6 +127,10 @@ class kafka_reader_preAlloc():
             
         # print('\n',end='')
         
+        outOfPositionCounter = 0
+        ICMPcounter          = 0 
+        otherCounter         = 0 
+        
         if self.testing is False:
 
             kafka_config = krx.generate_config(self.broker, True)
@@ -229,15 +233,19 @@ class kafka_reader_preAlloc():
                             print('\npacket no. {} of {} received'.format(npack+1,self.nOfPackets),end='')
                             
                         if flagTopicFound == True:    
-                            self.rea.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
+                            outOfPositionCounterTemp, ICMPcounterTemp, otherCounterTemp =  self.rea.extractFromBytes(packetData,packetLength,indexPackets,debugMode = self.debug)
                             indexPackets += 1
                             
-                        
-  
+                            outOfPositionCounter = outOfPositionCounter + outOfPositionCounterTemp
+                            ICMPcounter          = ICMPcounter          + ICMPcounterTemp
+                            otherCounter         = otherCounter         + otherCounterTemp
+
  
         if flagTopicFound == True: 
             
             print('[100%]') 
+                        
+            self.rea.printDataWarnings(outOfPositionCounter,ICMPcounter,otherCounter)
   
             self.dprint('\n All Packets {}, Candidates for Data {} --> Valid ESS {} (empty {}), NonESS  {} '.format(self.rea.counterPackets , self.rea.counterCandidatePackets,self.rea.counterValidESSpackets ,self.rea.counterEmptyESSpackets,self.rea.counterNonESSpackets))
               

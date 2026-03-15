@@ -338,7 +338,7 @@ class MBUTYmain():
                 ###############################################################################
                 ### clusterize
                 cc = self.clu.clusterHits(self.hits,self.parameters.plotting.showStat)
-                cc.clusterizeManyCassettes(self.parameters.config.DETparameters.cassInConfig, self.parameters.dataReduction.timeWindow)
+                cc.clusterizeManyCassettes(self.parameters.config.DETparameters.cassInConfig, self.parameters.dataReduction.timeWindow, self.parameters.config.DETparameters.type)
                 self.events = cc.events
                 self.deltaTimeWS = cc.deltaTimeClusterWSall
                 
