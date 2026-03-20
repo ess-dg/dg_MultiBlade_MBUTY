@@ -305,37 +305,54 @@ class readouts():
     
     def checkChopperFreq(self):  
         
-        try:
-            # this extract timing from non-empty packets 
-            deltaTime         = np.diff(self.PulseT - self.PulseT[0])
-            indexesIsNotZero  = np.argwhere(deltaTime>0)
-            deltaTimeNoTZero  = deltaTime[indexesIsNotZero]
-            meanDelta         = np.mean(deltaTimeNoTZero)/1e9
-            varianceDelta     = np.var(deltaTimeNoTZero)/1e9
-            meanFreq          = 1/meanDelta
+        try:    
+            
+            try:        
+                # this extracts timing from all packets, also empty -> heartbeats 
+                indexesIsNotZero2  = np.argwhere(self.heartbeats>0)
+                heartbeats2        = self.heartbeats[indexesIsNotZero2]
+                heartbeatsUnique   = np.unique(heartbeats2)
                 
-            # this extracts timing from all packets, also empty -> heartbeats 
-            indexesIsNotZero2  = np.argwhere(self.heartbeats>0)
-            heartbeats2        = self.heartbeats[indexesIsNotZero2]
-            heartbeatsUnique   = np.unique(heartbeats2)
+                deltaTime2         = np.diff(heartbeatsUnique - heartbeatsUnique[0])
+                indexesIsNotZero3  = np.argwhere(deltaTime2>0)
+                deltaTimeNoTZero3  = deltaTime2[indexesIsNotZero3]
+                meanDelta2         = np.mean(deltaTimeNoTZero3)/1e9
+                varianceDelta2     = np.var(deltaTimeNoTZero3)/1e9
+                meanFreq2          = 1/meanDelta2
             
-            deltaTime2         = np.diff(heartbeatsUnique - heartbeatsUnique[0])
-            indexesIsNotZero3  = np.argwhere(deltaTime2>0)
-            deltaTimeNoTZero3  = deltaTime2[indexesIsNotZero3]
-            meanDelta2         = np.mean(deltaTimeNoTZero3)/1e9
-            varianceDelta2     = np.var(deltaTimeNoTZero3)/1e9
-            meanFreq2          = 1/meanDelta2
-            
-            if np.isnan(meanDelta):
-                print('\nNo Chopper found or all data is in one single Pulse Time')
-            else:
-                print('\nHeartbeats Period     (all unique packets: %d)       is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((len(deltaTimeNoTZero3)+1,meanDelta2,varianceDelta2,meanFreq2)))
-                print('Timing/Chopper Period (not empty unique packets: %d) is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((len(deltaTimeNoTZero)+1,meanDelta,varianceDelta,meanFreq)))
-                       
+                if np.isnan(meanDelta2):
+                    print('\nNo Chopper found or all data is in one single Pulse Time')
+                else:
+                    print('\nHeartbeats Period     (all unique packets: %d)       is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((len(deltaTimeNoTZero3)+1,meanDelta2,varianceDelta2,meanFreq2)))
+           
+            except:
+                    print('\t \033[1;33mWARNING: Unable to calculate timing/chopper frequency from all packets!\033[1;37m')
+                    time.sleep(2)   
+
+        
+            try:
+                # this extract timing from non-empty packets 
+                deltaTime         = np.diff(self.PulseT - self.PulseT[0])
+                indexesIsNotZero  = np.argwhere(deltaTime>0)
+                deltaTimeNoTZero  = deltaTime[indexesIsNotZero]
+                meanDelta         = np.mean(deltaTimeNoTZero)/1e9
+                varianceDelta     = np.var(deltaTimeNoTZero)/1e9
+                meanFreq          = 1/meanDelta
+                
+              
+                if np.isnan(meanDelta):
+                    print('\nNo Chopper found or all data is in one single Pulse Time')
+                else:
+                   print('Timing/Chopper Period (not empty unique packets: %d) is %.6f s (variance %.6f s) --> frequency %.3f Hz' % ((len(deltaTimeNoTZero)+1,meanDelta,varianceDelta,meanFreq)))
+            except:
+                    print('\t \033[1;33mWARNING: Unable to calculate timing/chopper frequency from not empty packets! Packets might be all empty! \033[1;37m')
+                    time.sleep(2)   
+
         except:
-    
-            print('\t \033[1;33mWARNING: Unable to calculate timing/chopper frequency! \033[1;37m')
-            time.sleep(2)
+            
+            print('\t \033[1;33mWARNING: Unable to calculate timing/chopper frequency!\033[1;37m')
+            time.sleep(2)   
+
     
     def removeNonESSpacketsHeartbeats(self,heartbeats):
         indexesIsNotZero  = np.argwhere(heartbeats>0)

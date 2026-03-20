@@ -1,0 +1,33 @@
+{
+    "DetectorName": "MIRACLES1415",
+    "DetectorType": "He3",
+    "operationMode": "normal",
+    "cassettes": 2,
+    "orientation": "vertical",
+    "Cassette2ElectronicsConfig": [
+        {
+            "ID": 14,
+            "Ring": 1,
+            "Fen": 0,
+            "Tube": 2
+        },
+        {
+            "ID": 15,
+            "Ring": 1,
+            "Fen": 0,
+            "Tube": 3
+        }
+    ],
+    "positionBins": 256,
+    "tubesPerRow": 8,
+    "tubeLength": 300,
+    "tubeSpacing": 10,
+    "Monitor": [
+        {
+            "ID": 99,
+            "type": "RING",
+            "Ring": 11,
+            "Channel": 0
+        }
+    ]
+}
