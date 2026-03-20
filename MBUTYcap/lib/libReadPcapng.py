@@ -1236,7 +1236,9 @@ class pcapng_reader_PreAlloc():
           # return tsrc
       
         
-    def checkIP(self, IPBytes):
+    def extractIP(self, packetData, indexESS):
+        
+                IPBytes = packetData[indexESS-2-8-20:indexESS-2]
 
                 IPlen   = 20
                 # portLen = 8
@@ -1255,9 +1257,27 @@ class pcapng_reader_PreAlloc():
                 portSource  = int.from_bytes(IPBytes[indexUDPstart:indexUDPstart+2], byteorder='big') 
                 portDest    = int.from_bytes(IPBytes[indexUDPstart+2:indexUDPstart+4], byteorder='big') 
                 
-           
-                print("checking IP (ports)  --> source: {} ({}), dest: {} ({})".format(IPSource,portSource,IPDest,portDest))    
-
+                return IPSource, portSource, IPDest, portDest
+       
+    def checkIP(self,packetsIPs):
+    
+            print("checking IPs:ports ...")
+            
+            # 1. Convert the object array to a string array so NumPy can process it
+            # this turns IPv4Address objects into '192.168.1.200' strings
+            packets_str = packetsIPs.astype(str)
+            
+            # 2. Now unique with axis=0 will work!
+            unique_conns, counts = np.unique(packets_str, axis=0, return_counts=True)
+            
+            # 3. Loop through and print
+            for kk in range(len(unique_conns)):
+                conn = unique_conns[kk]
+                num  = counts[kk]
+                # conn[0] is SrcIP, conn[1] is SrcPort, etc.
+                print(f"\tConnection {kk} found ({num} pkts) --> "
+                      f"Source: {conn[0]}:{conn[1]} | Dest: {conn[2]}:{conn[3]}")
+                
     def dprint(self, msg):
         if self.debug:
             print("{}".format(msg))
@@ -1278,7 +1298,7 @@ class pcapng_reader_PreAlloc():
             print('pcap loading method: allocate')
         elif self.pcapLoadingMethod == 'quick':
             endCounter = 2
-            print('pcap loading method: quick \033[1;33m---> WARNING: when load method is quick the check of FW version is done only on the first packet and not all of them.\033[1;37m')    
+            print('pcap loading method: quick \033[1;33m---> WARNING: when load method is quick the check of FW version and IP is done only on the first packet and not all of them.\033[1;37m')    
 
         
         print('allocating memory...',end='')
@@ -1288,6 +1308,7 @@ class pcapng_reader_PreAlloc():
         
         packetsSizes       = np.zeros((0),dtype='int64')
         packetsFWversion   = np.zeros((0),dtype='int64')
+        packetsIPs         = np.zeros((0,4),dtype='int64')
         # packetsInstrID     = np.zeros((0),dtype='int64')
         
         counter = 0
@@ -1316,6 +1337,7 @@ class pcapng_reader_PreAlloc():
                         if indexESS != -1:
                             
                            FWversionTemp = self.extractFWversion(packetData, indexESS)
+                           IPsTemp       = self.extractIP(packetData, indexESS)
                            # instrIDtemp   = self.extractInstrID(packetData, indexESS)
     
                     except:
@@ -1327,6 +1349,7 @@ class pcapng_reader_PreAlloc():
                         try:
                             packetsFWversion  = np.append(packetsFWversion,FWversionTemp)
                             # packetsInstrID    = np.append(packetsInstrID,instrIDtemp)
+                            packetsIPs  = np.append(packetsIPs,[IPsTemp], axis=0)
                         except:
                             # print('this data does not contain FW version')
                             pass
@@ -1343,8 +1366,10 @@ class pcapng_reader_PreAlloc():
 
         self.checkTimeSrc(packetData[indexESS+7])
         
+        # print(packetsIPs)
+        
         if self.kafkaStream is False:
-             self.checkIP(packetData[indexESS-2-8-20:indexESS-2])
+             self.checkIP(packetsIPs)
 
 
         if self.debug:
