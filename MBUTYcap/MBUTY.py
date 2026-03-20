@@ -672,7 +672,7 @@ if __name__ == '__main__':
     # parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
     parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/dataVMM/"
     
-    parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/"
+    # parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/"
     
     
     # parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/"
@@ -683,7 +683,7 @@ if __name__ == '__main__':
 
     # relevant for acqMode =  off, pcap-sync and pcap-local
 
-    # parameters.fileManagement.filePath = currentPath+'data/'
+    parameters.fileManagement.filePath = currentPath+'data/'
 
     # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/transfer/'
 
@@ -700,7 +700,7 @@ if __name__ == '__main__':
     # parameters.fileManagement.fileName = ['miracles_source_mask.pcapng']
     # parameters.fileManagement.fileName = ['CSPEC1.pcapng']
     
-    parameters.fileManagement.fileName = ['testData.pcapng']
+    # parameters.fileManagement.fileName = ['testData.pcapng']
     
 
     parameters.fileManagement.fileSerials = [6,2,4,9]
