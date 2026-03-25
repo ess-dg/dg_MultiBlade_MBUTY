@@ -894,7 +894,7 @@ if __name__ == '__main__':
     ### histogram outBounds param set as True as default (Events out of bounds stored in first and last bin)
     parameters.plotting.histogOutBounds = True
 
-    ##############################      
+    ###########################      
     ### PHS
 
     ### ON/OFF PHS per channel and global
