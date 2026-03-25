@@ -142,11 +142,17 @@ class kafka_reader_preAlloc():
             print('---> connection to kafka successful!')
 
             if self.topic not in metadata.topics:
+                # Print the error message in Red
+                print('\033[1;31mERROR: --> Topic "{}" does not exist in topics list.\033[0m'.format(self.topic))
                 
-                print('\033[1;31mERROR: --> Topic {} does not exist in topics list --> exiting...\n\033[1;37m'.format(self.topic),end='')
+                # Print the available topics in White/Bold
+                print('Available topics are:')
+                for t in metadata.topics:
+                    print(f' - {t}')
+                    
+                print('\nExiting...')
                 time.sleep(2)
-                sys.exit()
-                # raise Exception("Topic {} does not exist in topics list".format(self.topic))
+                sys.exit() 
             
             if self.debug == True:
                 print(metadata.topics) 
