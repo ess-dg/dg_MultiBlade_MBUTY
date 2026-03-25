@@ -160,8 +160,8 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
                 "bladesInclination_deg": 5.1,
                 "offset1stWires_mm": 10.5,
                 "Monitor": [
-                    # {"ID": 99, "type": "RING", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
-                    {"ID": 99, "type": "RING", "Ring": 11, "Channel": 0}
+                    # {"ID": 99, "hardwareType": "GENERIC", "connectionType": "RING", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
+                    {"ID": 99, "hardwareType": "GENERIC", "connectionType": "RING", "Ring": 11, "Channel": 0}
                 ]
             }
         
@@ -188,8 +188,8 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
             	"angularOffset_deg" : 10,
             	"linearOffset1stWires_mm" : 80,
             "Monitor": [
-                # {"ID": 99, "type": "RING", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
-                {"ID": 99, "type": "RING", "Ring": 11, "Channel": 0}
+                # {"ID": 99, "hardwareType": "GENERIC", "connectionType": "RING", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
+                {"ID": 99, "hardwareType": "GENERIC", "connectionType": "RING", "Ring": 11, "Channel": 0}
             ]
         }
     
@@ -213,8 +213,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
             	"PitchY_mm" : 4,
             	"tilesPerRow" : 20,
             "Monitor": [
-                # {"ID": 99, "type": "RING", "Ring": 11, "Fen": 0, "Hybrid": 0, "ASIC": 0, "Channel": 1}
-                {"ID": 99, "type": "RING", "Ring": 11, "Channel": 0}
+                {"ID": 99, "hardwareType": "GENERIC", "connectionType": "RING", "Ring": 11, "Channel": 0}
             ]
         }
     
@@ -240,7 +239,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
             "tubeLength" : 300,
             "tubeSpacing" : 10,
             "Monitor": [
-                {"ID": 99, "type": "RING", "Ring": 11, "Channel": 0}
+                {"ID": 99, "hardwareType": "GENERIC", "connectionType": "RING", "Ring": 11, "Channel": 0}
             ]
         }
     

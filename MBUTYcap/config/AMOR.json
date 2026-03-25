@@ -1,5 +1,5 @@
 {
-    "DetectorName": "MB.AMOR",
+    "DetectorName": "AMOR",
     "DetectorType": "MB",
     "operationMode": "normal",
     "cassettes": 14,
@@ -100,12 +100,13 @@
     "strips": 64,
     "wirePitch_mm": 4,
     "stripPitch_mm": 4,
-    "bladesInclination_deg": 5,
-    "offset1stWires_mm": 11,
+    "bladesInclination_deg": 5.1,
+    "offset1stWires_mm": 10.5,
     "Monitor": [
         {
             "ID": 99,
-            "type": "RING",
+            "hardwareType": "GENERIC",
+            "connectionType": "RING",
             "Ring": 11,
             "Channel": 1
         }

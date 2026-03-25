@@ -25,8 +25,14 @@
 	"angularOffset_deg" : 10,
 	"linearOffset1stWires_mm" : 80,
 
-	"Monitor" : [
-		{"ID" : 99,  "type" : "RING", "Ring" : 11, "Channel" : 1}
-	] 
+    "Monitor": [
+        {
+            "ID": 99,
+            "hardwareType": "GENERIC",
+            "connectionType": "RING",
+            "Ring": 11,
+            "Channel": 0
+        }
+    ]
 
 }

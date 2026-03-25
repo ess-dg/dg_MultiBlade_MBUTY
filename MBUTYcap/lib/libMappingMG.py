@@ -30,6 +30,7 @@ except ImportError:
 """ Acts as a pointer/wrapper for the central library """
 mapMonitor           = libMapping.mapMonitor
 extractPartialConfig = libMapping.extractPartialConfig
+checkBMsettings      = libMapping.checkBMsettings
 
 # OR 
 
@@ -144,6 +145,10 @@ class read_json_config():
     def get_MONmap(self):
         """ Acts as a pointer/wrapper for the central library """
         return libMapping.read_json_config.get_MONmap(self)
+    
+    # def checkBMsettings(self,hardwareType,connectionType,RingID):
+    #     """ Acts as a pointer/wrapper for the central library """
+    #     return libMapping.read_json_config.checkBMsettings(self,hardwareType,connectionType,RingID)
 
         
     def checkOpModeMG(self):

@@ -157,7 +157,8 @@ class MONmap():
   
         self.ID       = None
         self.RingID   = None
-        self.type     = None
+        self.hardwareType   = None
+        self.connectionType = None
         self.channel  = None
         
 class DETmap():
@@ -236,6 +237,7 @@ class read_json_config():
             
         try:
             
+                
                 # Process parameters
                 self.get_allParameters()
                 
@@ -473,46 +475,51 @@ class read_json_config():
                  
                   cc = mapm[0]
             
-                  self.MONmap.ID      = cc.get("ID")
-   
-                  # TTLtypeTemp = (cc.get("TTLtype"))
-                  # TTLtypeBool = (TTLtypeTemp == "True") or (TTLtypeTemp == "true") or (TTLtypeTemp == "t") or (TTLtypeTemp == "T") or (TTLtypeTemp == "yes") or (TTLtypeTemp == "1")
+                  self.MONmap.ID             = cc.get("ID")               
+                  self.MONmap.hardwareType   = cc.get("hardwareType")
+                  self.MONmap.connectionType = cc.get("connectionType")
+                  self.MONmap.RingID         = cc.get("Ring")
+                  self.MONmap.channel        = cc.get("Channel")
+                                    
                  
-                  # # if TTLtypeBool is True:
-                  # #        print("is true")
-                  # # else:
-                  # #        print("is false")
+                  checkBMsettings(self.MONmap.hardwareType, self.MONmap.connectionType,self.MONmap.RingID) 
+                
+              
+###############################################################################
 
 
-                  # self.MONmap.TTLtype = TTLtypeBool
-                  
-                  self.MONmap.type    = cc.get("type")
-                  self.MONmap.RingID  = cc.get("Ring")
-                  # self.MONmap.FenID   = cc.get("Fen")
-                  # self.MONmap.hybridID      = cc.get("Hybrid")
-                  # self.MONmap.hybridSerial  = cc.get("HybridSerial")
-                  # self.MONmap.ASICID     = cc.get("ASIC")
-                  self.MONmap.channel    = cc.get("Channel")
+def checkBMsettings(hardwareType,connectionType,RingID):
+             
+             if hardwareType == "GENERIC" or hardwareType == "IBM" : 
+                 pass
+             else:
+                 print('\n\t\033[1;31mERROR: MON hardware (found {}) can only be either GENERIC or IBM  -> check config file! ---> Exiting ... \n\033[1;37m'.format(hardwareType),end='') 
+                 time.sleep(2)
+                 sys.exit()
+                 
+                 
+             if connectionType == "LEMO" or connectionType == "RING" : 
+                 pass
+             else:
+                 print('\n\t\033[1;31mERROR: MON connection type (found {}) can only be either LEMO or RING  -> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType),end='') 
+                 time.sleep(2)
+                 sys.exit()    
 
-                  if self.MONmap.type == "LEMO" :
-                      if self.MONmap.RingID < 11:
-                          print('\n\t\033[1;31mERROR: MON mode {} selected with RING < 11 (can be any ring 11 - inf, but not < 11)-> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONmap.type),end='') 
-                          time.sleep(2)
-                          sys.exit()
-                  
-                  if self.MONmap.type == "RING" : 
-                      if self.MONmap.RingID != 11:
-                          print('\n\t\033[1;31mERROR: MON mode {} selected with RING != 11 (must be ring 11) -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONmap.type),end='') 
-                          time.sleep(2)
-                          sys.exit()
 
-                  if self.MONmap.type == "LEMO" or self.MONmap.type == "RING" : 
-                      pass
-                  else:
-                      print('\n\t\033[1;31mERROR: MON mode (found {}) can only be either LEMO or RING  -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONmap.type),end='') 
-                      time.sleep(2)
-                      sys.exit()
-      
+             if connectionType == "LEMO" :
+                 if RingID < 11:
+                     print('\n\t\033[1;31mERROR: MON mode {} selected with RING < 11 (can be any ring 11 - inf, but not < 11)-> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType),end='') 
+                     time.sleep(2)
+                     sys.exit()
+             
+             if connectionType == "RING" : 
+                 if RingID != 11:
+                     print('\n\t\033[1;31mERROR: MON mode {} selected with RING != 11 (must be ring 11) -> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType),end='') 
+                     time.sleep(2)
+                     sys.exit()
+
+             
+           
         
 ###############################################################################
 ###############################################################################     
@@ -886,7 +893,7 @@ class mapMonitor():
 
 if __name__ == '__main__':
 
-   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"CSPEC.json"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"AMOR.json"
    # filePathD = './'+"VMM3a_Freia.pcapng"
 
    config1 = read_json_config(filePath)

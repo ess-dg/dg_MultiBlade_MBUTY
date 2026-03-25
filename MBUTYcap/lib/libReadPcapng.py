@@ -830,6 +830,34 @@ class MONdata():
  
 #################################################
 
+class IBM_MONdata():
+    def __init__(self, buffer, NSperClockTick):
+          
+       # decode into little endian integers
+       PhysicalRing = int.from_bytes(buffer[0:1], byteorder='little')
+       self.Fen     = int.from_bytes(buffer[1:2], byteorder='little')
+       self.Length  = int.from_bytes(buffer[2:4], byteorder='little')
+       timeHI       = int.from_bytes(buffer[4:8], byteorder='little')
+       timeLO       = int.from_bytes(buffer[8:12], byteorder='little')
+       self.Type    = int.from_bytes(buffer[12:13], byteorder='little')
+       self.Channel = int.from_bytes(buffer[13:14], byteorder='little')
+       self.UNSdebug  = int.from_bytes(buffer[14:16], byteorder='little')
+       self.ADC     = int.from_bytes(buffer[16:19], byteorder='little')
+       self.MCAsum  = int.from_bytes(buffer[19:20], byteorder='little')
+       
+       #######################
+       #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
+       self.Ring = int(np.floor(PhysicalRing/2))
+       # self.Ring = PhysicalRing
+       #######################
+
+       timeHIns = int(round(timeHI * 1000000000))
+       timeLOns = int(round(timeLO * NSperClockTick))
+       
+       self.timeCoarse  = timeHIns + timeLOns 
+ 
+#################################################
+
 class VMM3A_modes():
     def __init__(self, buffer):
         
@@ -1034,12 +1062,12 @@ class checkIfFileExistInFolder():
 ################################################## 
 
 class pcapng_reader():
-    def __init__(self, filePathAndFileName, NSperClockTick=11.356860963629653, MONtype = 'RING' , MONring = 11, timeResolutionType = 'coarse', sortByTimeStampsONOFF = False, operationMode = 'normal', pcapLoadingMethod='allocate'):
+    def __init__(self, filePathAndFileName, NSperClockTick=11.356860963629653, MONhw = 'GENERIC', MONconn = 'RING' , MONring = 11, timeResolutionType = 'coarse', sortByTimeStampsONOFF = False, operationMode = 'normal', pcapLoadingMethod='allocate'):
         
         # self.flagSupported = True
         # try:
             # print('PRE-ALLOC method to load data ...')
-        pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONtype,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
+        pcapng = pcapng_reader_PreAlloc(NSperClockTick,MONhw,MONconn,MONring,filePathAndFileName,timeResolutionType,operationMode, kafkaStream = False)
         pcapng.allocateMemory(pcapLoadingMethod)
         pcapng.read()
         self.readouts = pcapng.readouts
@@ -1071,13 +1099,14 @@ class pcapng_reader():
 ##################################################  
 
 class pcapng_reader_PreAlloc():
-    def __init__(self, NSperClockTick, MONtype, MONring, filePathAndFileName = '', timeResolutionType = 'fine', operationMode = 'normal', kafkaStream = False):
+    def __init__(self, NSperClockTick, MONhw = 'GENERIC', MONconn = 'RING', MONring = 11, filePathAndFileName = '', timeResolutionType = 'fine', operationMode = 'normal', kafkaStream = False):
         
         # self.timeResolution = 11.25e-9  #s per tick for 88.888888 MHz
         # self.timeResolution = 11.356860963629653e-9  #s per tick ESS for 88.0525 MHz
         
         self.NSperClockTick      = NSperClockTick 
-        self.MONtype             = MONtype
+        self.MONhw               = MONhw
+        self.MONconn             = MONconn
         self.MONring             = MONring
         self.timeResolutionType  = timeResolutionType
         self.kafkaStream         = kafkaStream
@@ -1143,26 +1172,9 @@ class pcapng_reader_PreAlloc():
         self.data = np.zeros((self.preallocLength,19), dtype='int64')
         
         ##########################################################
-        
-        if self.MONtype == "LEMO" :
-            if self.MONring < 11:
-                print('\n\t\033[1;31mERROR: MON mode {} selected with RING < 11 (can be any ring 11 - inf, but not < 11)-> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONtype),end='') 
-                time.sleep(2)
-                sys.exit()
-        
-        if self.MONtype == "RING" : 
-            if self.MONring != 11:
-                print('\n\t\033[1;31mERROR: MON mode {} selected with RING != 11 (must be ring 11) -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONtype),end='') 
-                time.sleep(2)
-                sys.exit()
 
-        if self.MONtype == "LEMO" or self.MONtype == "RING" : 
-            pass
-        else:
-            print('\n\t\033[1;31mERROR: MON mode (found {}) can only be either LEMO or RING  -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.MONtype),end='') 
-            time.sleep(2)
-            sys.exit()
-        ##########################################################
+        maps.checkBMsettings(self.MONhw,  self.MONconn, self.MONring)
+   
         
     def calculateHeaderSize(self):
         self.headerSize  = self.mainHeaderSize+self.ESSheaderSize #bytes  (72 if mainHeaderSize = 42 and 74 if version 1)
@@ -1809,7 +1821,7 @@ class pcapng_reader_PreAlloc():
                                elif  self.ROEtype == 'BM':
                                    
                                     if self.warnedBM == False : 
-                                        print('\n \033[1;33mWARNING ---> BM data found in ring < 11, treated as a detector! \033[1;37m')
+                                        print('\n \033[1;33mWARNING ---> BM data found in ring < 11, treated as a detector and HW generic (not IBM)! \033[1;37m')
                                         self.warnedBM = True
 
                                     # this will read the BM data it comes from rings below 11 as a detector with hybrid 0
@@ -1843,32 +1855,61 @@ class pcapng_reader_PreAlloc():
                                      # sys.exit() 
                            
                            # overwrite if MONITOR 
-                           is_lemo_mode = (self.MONtype == 'LEMO' and vmm3.Ring >= 11)
-                           is_ring_mode = (self.MONtype == 'RING' and vmm3.Ring == 11 and vmm3.Ring == self.MONring)
+                           is_lemo_mode = (self.MONconn == 'LEMO' and vmm3.Ring >= 11)
+                           is_ring_mode = (self.MONconn == 'RING' and vmm3.Ring == 11 and vmm3.Ring == self.MONring)
 
                            if is_lemo_mode or is_ring_mode:
                                
-                               mondata = MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
-                              
-                               self.data[index, 0] = mondata.Ring
-                               self.data[index, 1] = mondata.Fen
-                               self.data[index, 2] = 0   # VMM for MON always 0
-                               self.data[index, 3] = 0   # hybrid for MON always 0
-                               self.data[index, 4] = 0   # ASIC for MON always 0
-                               self.data[index, 5] = mondata.Channel
-                               self.data[index, 6] = mondata.ADC
-                               self.data[index, 7] = mondata.posX
-                               self.data[index, 8] = mondata.posY
-                               self.data[index, 9] = 0     # TDC for MON always 0
-                               self.data[index, 10] = mondata.Type
-                               self.data[index, 11] = mondata.timeCoarse
-                               self.data[index, 12] = PulseT
-                               self.data[index, 13] = PrevPT
-                               self.data[index, 14] = 0  # if 1 is calibration
-                               self.data[index, 15] = -1
-                               self.data[index, 16] = -1
-                               self.data[index, 17] = -1
-                               self.data[index, 18] = -1
+                               if self.MONhw == 'GENERIC':
+                               
+                                   mondata = MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
+                                  
+                                   self.data[index, 0] = mondata.Ring
+                                   self.data[index, 1] = mondata.Fen
+                                   self.data[index, 2] = 0   # VMM for MON always 0
+                                   self.data[index, 3] = 0   # hybrid for MON always 0
+                                   self.data[index, 4] = 0   # ASIC for MON always 0
+                                   self.data[index, 5] = mondata.Channel
+                                   self.data[index, 6] = mondata.ADC
+                                   self.data[index, 7] = mondata.posX
+                                   self.data[index, 8] = mondata.posY
+                                   self.data[index, 9] = 0     # TDC for MON always 0
+                                   self.data[index, 10] = mondata.Type
+                                   self.data[index, 11] = mondata.timeCoarse
+                                   self.data[index, 12] = PulseT
+                                   self.data[index, 13] = PrevPT
+                                   self.data[index, 14] = 0  # if 1 is calibration
+                                   self.data[index, 15] = -1
+                                   self.data[index, 16] = -1
+                                   self.data[index, 17] = -1
+                                   self.data[index, 18] = -1
+                                
+                               elif  self.MONhw == 'IBM':  
+                                   
+                                   mondata = IBM_MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
+                                  
+                                   self.data[index, 0] = mondata.Ring
+                                   self.data[index, 1] = mondata.Fen
+                                   self.data[index, 2] = 0   # VMM for MON always 0
+                                   self.data[index, 3] = 0   # hybrid for MON always 0
+                                   self.data[index, 4] = 0   # ASIC for MON always 0
+                                   self.data[index, 5] = mondata.Channel
+                                   self.data[index, 6] = mondata.ADC
+                                   self.data[index, 7] = mondata.MCAsum
+                                   self.data[index, 8] = 0
+                                   self.data[index, 9] = 0     # TDC for MON always 0
+                                   self.data[index, 10] = mondata.Type
+                                   self.data[index, 11] = mondata.timeCoarse
+                                   self.data[index, 12] = PulseT
+                                   self.data[index, 13] = PrevPT
+                                   self.data[index, 14] = 0  # if 1 is calibration
+                                   self.data[index, 15] = -1
+                                   self.data[index, 16] = -1
+                                   self.data[index, 17] = -1
+                                   self.data[index, 18] = -1
+                                   
+                               else:
+                                    print('\n\t\033[1;31mERROR: BM Data format not supported ---> Exiting ... \n\033[1;37m',end='') 
                             
   
                         # valid for normal mode 
@@ -1943,7 +1984,7 @@ if __name__ == '__main__':
 
    confFile  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
    fileName  = "MIRACLES24.json"
-   # fileName  = "AMOR.json"
+   fileName  = "AMOR.json"
     # fileName  = "MGEMMA.json"
    # fileName  = "MIRACLES2bis.json"
    
@@ -1960,9 +2001,9 @@ if __name__ == '__main__':
    file = 'ESSmask2023_1000pkts.pcapng'
    # file = 'ESSmask2023.pcapng'
    
-   file = 'miracles_source_on_left_red.pcapng'
+   # file = 'miracles_source_on_left_red.pcapng'
 
-   file = 'CSPEC1.pcapng'
+   # file = 'CSPEC1.pcapng'
 
 
    filePathAndFileName = filePath+file
@@ -1972,7 +2013,7 @@ if __name__ == '__main__':
    # typeOfLoading = 'quick'
    
 
-   pcap = pcapng_reader(filePathAndFileName,NSperClockTick=11.356860963629653, MONtype='LEMO', MONring=11, timeResolutionType='coarse', sortByTimeStampsONOFF=False, operationMode='normal',pcapLoadingMethod=typeOfLoading)
+   pcap = pcapng_reader(filePathAndFileName,NSperClockTick=11.356860963629653, MONhw=config.MONmap.hardwareType, MONconn=config.MONmap.connectionType, MONring=11, timeResolutionType='coarse', sortByTimeStampsONOFF=False, operationMode='normal',pcapLoadingMethod=typeOfLoading)
 
    readouts = pcap.readouts
    

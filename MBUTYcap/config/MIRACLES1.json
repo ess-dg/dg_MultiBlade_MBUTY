@@ -19,7 +19,8 @@
     "Monitor": [
         {
             "ID": 99,
-            "type": "RING",
+            "hardwareType": "GENERIC",
+            "connectionType": "RING",
             "Ring": 11,
             "Channel": 0
         }

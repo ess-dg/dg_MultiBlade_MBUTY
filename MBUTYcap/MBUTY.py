@@ -218,15 +218,17 @@ class MBUTYmain():
                 ### check which Ring, Fen and Hybrid is present in the selected File
                 # pcapr.checkWhich_RingFenHybrid_InFile(fileDialogue.filePath+fileName,self.parameters.clockTicks.NSperClockTick).check()
                 ### load data
-                pcap = pcapr.pcapng_reader(os.path.join(fileDialogue.filePath,fileName), NSperClockTick=self.parameters.clockTicks.NSperClockTick, MONtype = self.parameters.config.MONmap.type, MONring = self.parameters.config.MONmap.RingID, \
+                pcap = pcapr.pcapng_reader(os.path.join(fileDialogue.filePath,fileName), NSperClockTick=self.parameters.clockTicks.NSperClockTick, \
+                MONhw = self.parameters.config.MONmap.hardwareType, MONconn = self.parameters.config.MONmap.connectionType, MONring = self.parameters.config.MONmap.RingID, \
                 timeResolutionType = self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF = self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
                 operationMode = self.parameters.config.DETparameters.operationMode, pcapLoadingMethod=self.parameters.fileManagement.pcapLoadingMethod)
                 self.readouts.append(pcap.readouts)
                 
         elif self.parameters.acqMode == 'kafka':
-            testing = False          
+            testing = True          
             pcap = self.kaf.kafka_reader(NSperClockTick=self.parameters.clockTicks.NSperClockTick, nOfPackets = self.parameters.kafkaSettings.numOfPackets, \
-            broker = self.parameters.kafkaSettings.broker, topic = self.parameters.kafkaSettings.topic, MONtype = self.parameters.config.MONmap.type , MONring = self.parameters.config.MONmap.RingID, \
+            broker = self.parameters.kafkaSettings.broker, topic = self.parameters.kafkaSettings.topic,\
+            MONhw = self.parameters.config.MONmap.hardwareType, MONconn = self.parameters.config.MONmap.connectionType, MONring = self.parameters.config.MONmap.RingID, \
             timeResolutionType =self.parameters.VMMsettings.timeResolutionType, sortByTimeStampsONOFF=self.parameters.VMMsettings.sortReadoutsByTimeStampsONOFF, \
             operationMode=self.parameters.config.DETparameters.operationMode, testing=testing)
             self.readouts.append(pcap.readouts)
