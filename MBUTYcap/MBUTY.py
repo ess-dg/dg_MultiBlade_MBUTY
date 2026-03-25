@@ -422,7 +422,7 @@ class MBUTYmain():
                
         ###############################################################################
         ###############################################################################           
-            pcapr.checkInstrumentID().matchDataStreamWithConfig(self.parameters.config.DETparameters.type, self.readouts.instrIDUnique) 
+            pcapr.checkInstrumentID().matchDataStreamWithConfig(self.parameters.config.DETparameters.name, self.parameters.config.DETparameters.type, self.readouts.instrIDUnique) 
         ###############################################################################
         ###############################################################################            
                     
@@ -697,7 +697,7 @@ if __name__ == '__main__':
     # parameters.fileManagement.fileName = ['ESSmask2023_1000pkts.pcapng']
     # parameters.fileManagement.fileName = ['miracles_trig2.pcapng']
     # parameters.fileManagement.fileName = ['MG_2EMMAprototypes.pcapng']
-    # parameters.fileManagement.fileName = ['miracles_source_mask.pcapng']
+    # parameters.fileManagement.fileName = ['miracles_source_mask_red.pcapng']
     # parameters.fileManagement.fileName = ['CSPEC1.pcapng']
     
     # parameters.fileManagement.fileName = ['testData.pcapng']

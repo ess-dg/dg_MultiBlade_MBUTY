@@ -626,7 +626,7 @@ class checkInstrumentID():
         return flag 
             
         
-    def matchDataStreamWithConfig(self, detType, IDs):  
+    def matchDataStreamWithConfig(self, detNameFromConf, detType, IDs):  
         
         # print('checking intrument IDs and data streams ... ')
         
@@ -658,25 +658,30 @@ class checkInstrumentID():
         # Remove duplicates from the stream list for a cleaner message
         unique_types   = ", ".join(set(all_types))
         unique_streams = ", ".join(set(all_streams))
+        
+        # print(unique_types)
+        # print(unique_streams)
 
         if foundFlag:
+            print(f"\n\033[1;33mFile containing detector types: {unique_types} for data streams {unique_streams}\033[0m")
+            print(f"\033[1;33manalyzed for detector: {detNameFromConf}, type: {detType}\033[0m")
             # print(f"\nSuccess: Configuration match found for {detType}.")
-            # Proceed with reading the file...
-            pass
+
+            # pass
             
         # Check if we found a Beam Monitor (BM) in the file streams
         elif "BM" in all_types:
             # print(f"\n\033[1;36mNOTE: Beam Monitor (BM) stream detected.\033[0m")
             # print(f"\033[1;36mSkipping standard mismatch warning. Ensure BM data is handled separately.\033[0m")
-            print(f"\n\033[1;33mWARNING: CONFIGURATION MISMATCH!\033[0m",end='')
-            print(f"\n\033[1;33mYou are trying to read a file containing only detector types: {unique_types} for data streams {unique_streams}\033[0m")
-            print(f"\033[1;33mBut in your config file, you have specified: {detType}\033[0m")
+            print(f"\n\033[1;31mWARNING: CONFIGURATION MISMATCH!\033[0m",end='')
+            print(f"\n\033[1;31mYou are trying to read a file containing only detector types: {unique_types} for data streams {unique_streams}\033[0m")
+            print(f"\033[1;31mBut in your config file, you have specified: {detNameFromConf}, type: {detType}\033[0m")
             
         else:
 
-            print(f"\n\033[1;33mWARNING: Configuration mismatch!\033[0m",end='')
-            print(f"\033[1;33mYou are trying to read a file containing these detector types: {unique_types} for data streams {unique_streams}\033[0m")
-            print(f"\033[1;33mBut in your config file, you have specified: {detType}\033[0m")    
+            print(f"\n\033[1;31mWARNING: Configuration mismatch!\033[0m",end='')
+            print(f"\033[1;31mYou are trying to read a file containing these detector types: {unique_types} for data streams {unique_streams}\033[0m")
+            print(f"\033[1;31mBut in your config file, you have specified: {detNameFromConf}, type: {detType}\033[0m")    
         
      
         
@@ -1938,7 +1943,7 @@ if __name__ == '__main__':
 
    confFile  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
    fileName  = "MIRACLES24.json"
-   fileName  = "AMOR.json"
+   # fileName  = "AMOR.json"
     # fileName  = "MGEMMA.json"
    # fileName  = "MIRACLES2bis.json"
    
@@ -1957,7 +1962,7 @@ if __name__ == '__main__':
    
    file = 'miracles_source_on_left_red.pcapng'
 
-   # file = 'CSPEC1.pcapng'
+   file = 'CSPEC1.pcapng'
 
 
    filePathAndFileName = filePath+file
@@ -1993,7 +1998,7 @@ if __name__ == '__main__':
    
    checkInstrumentID().checkValidDataStream(readouts.instrIDUnique)
    
-   checkInstrumentID().matchDataStreamWithConfig(config.DETparameters.type, readouts.instrIDUnique)
+   checkInstrumentID().matchDataStreamWithConfig(config.DETparameters.name, config.DETparameters.type, readouts.instrIDUnique)
    
    # pint =  readouts.packetsInstrID
 
