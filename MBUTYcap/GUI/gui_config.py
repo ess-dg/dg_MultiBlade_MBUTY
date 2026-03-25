@@ -193,6 +193,8 @@ config = {
         "parameters.dumpSettings.interface": {
             "label": "Network Interface",
             "type": "entry",
+            # "default": "ens1f0np0",
+            # "default": "ens2",
             "default": "ens2np0",
             "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite"]),
             "info": "Used for acqMode = pcap-local, pcap-local-overwrite, or kafka",
@@ -236,7 +238,7 @@ config = {
         "parameters.kafkaSettings.topic": {
             "label": "Kafka Topic",
             "type": "entry",
-            "default": "freia_debug",
+            "default": "estia_detector_samples",
             "dependsOn": ("parameters.acqMode", "kafka"),
             "set": lambda val: setattr(parameters.kafkaSettings, 'topic', val)
         },
