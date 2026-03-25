@@ -107,7 +107,7 @@
             "ID": 99,
             "type": "RING",
             "Ring": 11,
-            "Channel": 0
+            "Channel": 1
         }
     ]
 }

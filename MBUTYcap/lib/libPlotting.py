@@ -53,7 +53,7 @@ class checkReadoutsClass():
              
              self.flag  = False
              
-             print(self.flag)
+             # print(self.flag)
              
              print('\t \033[1;33mWARNING: Readouts array is empty -> skipping plots')
                    
