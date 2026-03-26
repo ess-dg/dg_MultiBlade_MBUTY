@@ -240,7 +240,7 @@ class MBUTYmain():
         self.readouts.checkChopperFreq()
         
         self.readouts.checkInvalidToFsInReadouts()
-        
+     
         ####################    
         ### for debug, generate sample readouts
         # aa = sdat.sampleReadouts_2()
@@ -425,6 +425,7 @@ class MBUTYmain():
         ###############################################################################
         ###############################################################################           
             pcapr.checkInstrumentID().matchDataStreamWithConfig(self.parameters.config.DETparameters.instrument, self.parameters.config.DETparameters.type, self.readouts.instrIDUnique) 
+            pcapr.checkBMtype(self.readouts.instrIDpkt, self.readouts.GEO, self.parameters.config.MONmap.hardwareType)
         ###############################################################################
         ###############################################################################            
                     

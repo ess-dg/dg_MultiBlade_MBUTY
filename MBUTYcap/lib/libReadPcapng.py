@@ -59,6 +59,7 @@ class readouts():
         self.mult1     = np.zeros((0), dtype = datype)
         self.heartbeats = np.zeros((0), dtype = datype)
         self.instrID    = np.zeros((0), dtype = datype)
+        self.instrIDpkt = np.zeros((0), dtype = datype)
         self.instrIDUnique = np.zeros((0), dtype = datype)
                       
     
@@ -93,6 +94,7 @@ class readouts():
         self.ADC1       = data[:,16]
         self.mult0      = data[:,17]
         self.mult1      = data[:,18]
+        self.instrIDpkt = data[:,19]
 
     # def list(self):
     #     print("Rings {}".format(self.Ring))
@@ -122,7 +124,8 @@ class readouts():
         self.mult0     = np.concatenate((self.mult0, reado.mult0), axis=0)
         self.mult1     = np.concatenate((self.mult1, reado.mult1), axis=0)
         self.heartbeats = np.concatenate((self.heartbeats, reado.heartbeats), axis=0)
-        self.instrID  = np.concatenate((self.instrID , reado.instrID), axis=0)
+        self.instrID    = np.concatenate((self.instrID , reado.instrID), axis=0)
+        self.instrIDpkt    = np.concatenate((self.instrIDpkt , reado.instrIDpkt), axis=0)
         self.instrIDUnique = np.concatenate((self.instrIDUnique , reado.instrIDUnique), axis=0)
         
     def concatenateReadoutsInArrayForDebug(self):
@@ -130,7 +133,7 @@ class readouts():
         leng = len(self.timeStamp)
         
         if leng >= 1:
-            readoutsArray = np.zeros((leng,19),dtype = 'int64')
+            readoutsArray = np.zeros((leng,20),dtype = 'int64')
             
             readoutsArray[:,0] = self.Ring
             readoutsArray[:,1] = self.Fen
@@ -151,6 +154,7 @@ class readouts():
             readoutsArray[:,16] = self.ADC1     # for clustered mode 
             readoutsArray[:,17] = self.mult0    # for clustered mode 
             readoutsArray[:,18] = self.mult1    # for clustered mode 
+            readoutsArray[:,19] = self.instrIDpkt    
         
         else:
             
@@ -182,6 +186,7 @@ class readouts():
         self.G0        =  self.G0[indexes]
         self.mult0     =  self.mult0[indexes]
         self.mult1     =  self.mult1[indexes]
+        self.instrIDpkt     =  self.instrIDpkt[indexes]
         
     def calculateDuration(self):
          
@@ -300,6 +305,8 @@ class readouts():
         self.PrevPT  = self.PrevPT[~toBeRemoved]
         self.mult0   = self.mult0[~toBeRemoved]
         self.mult1   = self.mult1[~toBeRemoved]
+        self.instrIDpkt   = self.instrIDpkt[~toBeRemoved]
+   
         
     ###############
     
@@ -389,9 +396,7 @@ class readouts():
         validPrevP = invalidToFsCounter1 - invalidToFsCounter2 
            
         print('\n \033[1;33m\t Readouts %d: %d ToFs valid (%d valid, %d PrevPulse corrected) - invalid %d \033[1;37m' % (NumReadouts,validToFs,validValid,validPrevP,invalidToFsCounter2))
- 
-
-        
+  
         
 ###############################################################################
 ###############################################################################
@@ -487,7 +492,8 @@ class checkInstrumentID():
                 sys.exit()
                 
             elif self.flagSupported is True and self.flagReadSupported is True:
-                print('---> OK.')
+                # print('---> OK.')
+                print(f"---> OK: Valid instrument ({self.instrName}).")
                 # pass
             
             elif self.flagSupported is False and self.flagReadSupported is True:
@@ -662,8 +668,8 @@ class checkInstrumentID():
         # print(all_streams)
 
         if foundFlag:
-            print(f"\n\033[1;33mFile containing data streams {unique_streams} for detector types {unique_types}\033[0m")
-            print(f"\033[1;33manalyzed for instrument {instrNameFromConf} and type {detType}\033[0m")
+            print(f"\n\t\033[1;33mFile containing data streams {unique_streams} for detector types {unique_types}\033[0m")
+            print(f"\t\033[1;33manalyzed for instrument {instrNameFromConf} and type {detType}\033[0m")
             # print(f"\nSuccess: Configuration match found for {detType}.")
 
             # pass
@@ -672,19 +678,55 @@ class checkInstrumentID():
         elif "BM" in all_types:
             # print(f"\n\033[1;36mNOTE: Beam Monitor (BM) stream detected.\033[0m")
             # print(f"\033[1;36mSkipping standard mismatch warning. Ensure BM data is handled separately.\033[0m")
-            print(f"\n\033[1;31mWARNING: CONFIGURATION MISMATCH!\033[0m",end='')
-            print(f"\n\033[1;31mYou are trying to read a file containing data streams {unique_streams} for detector types {unique_types}\033[0m")
-            print(f"\033[1;31mBut in your config file you have specified instrument {instrNameFromConf} and type {detType}\033[0m")
+            print(f"\n\t\033[1;31mWARNING: CONFIGURATION MISMATCH!\033[0m",end='')
+            print(f"\n\t\033[1;31mYou are trying to read a file containing data streams {unique_streams} for detector types {unique_types}\033[0m")
+            print(f"\t\033[1;31mBut in your config file you have specified instrument {instrNameFromConf} and type {detType}\033[0m")
             
         else:
 
-            print(f"\n\033[1;31mWARNING: CONFIGURATION MISMATCH!\033[0m",end='')
-            print(f"\n\033[1;31mYou are trying to read a file containing data streams {unique_streams} for detector types {unique_types}\033[0m")
-            print(f"\033[1;31mBut in your config file you have specified instrument {instrNameFromConf} and type {detType}\033[0m")
+            print(f"\n\t\033[1;31mWARNING: CONFIGURATION MISMATCH!\033[0m",end='')
+            print(f"\n\t\033[1;31mYou are trying to read a file containing data streams {unique_streams} for detector types {unique_types}\033[0m")
+            print(f"\t\033[1;31mBut in your config file you have specified instrument {instrNameFromConf} and type {detType}\033[0m")
         
-     
         
-#################################################  
+
+###############################################################################
+###############################################################################
+
+class checkBMtype():
+    def __init__(self, instrIDspkt, GEO, BMhw):
+           
+         ID = checkInstrumentID().getIDFromName("BM")
+         
+         selectBM = (instrIDspkt == ID)
+         
+         if np.any(selectBM):
+             
+             actual_geos = np.unique(GEO[selectBM])
+         
+             for geo_val in actual_geos:
+                    # Case 1: GEO 0 is the "GENERIC" standard
+                    if geo_val == 0:
+                        if BMhw == "IBM":
+                            print(f"\n\t\033[1;33mWARNING: BM data has type 0 (GENERIC) but config says {BMhw}!")  
+                            print("\tThe BM data may be parsed incorrectly.\033[0m")
+                    # Case 2: GEO 3 is the "IBM" standard
+                    elif geo_val == 3:
+                        if BMhw == "GENERIC":
+                            print(f"\n\t\033[1;33mWARNING: BM data has type 3 (IBM) but config says {BMhw}!")
+                            print("\tThe BM data may be parsed incorrectly.\033[0m")
+  
+                    # Case 3: Unexpected GEO code for a Beam Monitor
+                    else:
+                        print(f"\n\t\033[1;31mWARNING: BM data found with unexpected type: {geo_val}.\033[0m")
+                        print(f"\tValid BM types are usually only type 0 (GENERIC) or 3 (IBM).\033[0m")
+
+        
+
+###############################################################################
+###############################################################################
+
+
 
 class  checkWhich_RingFenHybrid_InFile():
     def __init__(self, filePathAndFileName, NSperClockTick):
@@ -1170,7 +1212,7 @@ class pcapng_reader_PreAlloc():
         
         # self.flagSupported = True
         
-        self.data = np.zeros((self.preallocLength,19), dtype='int64')
+        self.data = np.zeros((self.preallocLength,20), dtype='int64')
         
         ##########################################################
 
@@ -1423,7 +1465,7 @@ class pcapng_reader_PreAlloc():
         otherCounter         = 0 
 
         
-        self.data                      = np.zeros((self.preallocLength,19), dtype='int64') 
+        self.data                      = np.zeros((self.preallocLength,20), dtype='int64') 
         self.readouts.heartbeats       = np.zeros((self.counterCandidatePackets), dtype='int64')
         self.readouts.instrID          = -1*np.ones((self.counterCandidatePackets), dtype='int64') 
         
@@ -1534,10 +1576,9 @@ class pcapng_reader_PreAlloc():
                 checkInstrumentID().printInfoDataStream(ids)
         print('\n')
         
+        
     def printDataWarnings(self,outOfPositionCounter,ICMPcounter,otherCounter):
         
-
-
         if outOfPositionCounter != 0 :
            #   give a warning if not 72 or 74,  check that ESS cookie is always in the same place-> warning at the end of function 
            print(f"\n\033[1;33mWARNING ---> ESS cookie was found {outOfPositionCounter} times not in position! Data does not start at byte 72 or 74 or 42 or 44! ... \033[1;37m")
@@ -1747,6 +1788,8 @@ class pcapng_reader_PreAlloc():
                            # ring 11 reserved for MON
                            if vmm3.Ring < 11:
                                
+                               self.data[index, 19] = instrID
+                               
                                if self.ROEtype == 'VMM':
                                
                                     self.data[index, 0] = vmm3.Ring
@@ -1768,6 +1811,7 @@ class pcapng_reader_PreAlloc():
                                     self.data[index, 16] = vmm3.ADC1
                                     self.data[index, 17] = vmm3.mult0
                                     self.data[index, 18] = vmm3.mult1
+                                    
                                     
                                elif  self.ROEtype == 'R5560':
                                    
@@ -1855,11 +1899,15 @@ class pcapng_reader_PreAlloc():
                                      # time.sleep(2)
                                      # sys.exit() 
                            
+                           
+                        
                            # overwrite if MONITOR 
                            is_lemo_mode = (self.MONconn == 'LEMO' and vmm3.Ring >= 11)
                            is_ring_mode = (self.MONconn == 'RING' and vmm3.Ring == 11 and vmm3.Ring == self.MONring)
 
                            if is_lemo_mode or is_ring_mode:
+                               
+                               self.data[index, 19] = instrID
                                
                                if self.MONhw == 'GENERIC':
                                
@@ -1985,11 +2033,11 @@ if __name__ == '__main__':
 
    confFile  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
    fileName  = "MIRACLES24.json"
-   # fileName  = "AMOR.json"
+   fileName  = "AMOR2026.json"
     # fileName  = "MGEMMA.json"
    # fileName  = "MIRACLES2bis.json"
    
-   fileName  = "CSPEC.json"
+   # fileName  = "CSPEC.json"
 
    config = maps.read_json_config(confFile+fileName)
     
@@ -2002,9 +2050,11 @@ if __name__ == '__main__':
    # file = 'ESSmask2023_1000pkts.pcapng'
    # file = 'ESSmask2023.pcapng'
    
+   file = 'testData.pcapng'
+   
    # file = 'miracles_source_on_left_red.pcapng'
 
-   file = 'CSPEC1.pcapng'
+   # file = 'CSPEC1.pcapng'
 
 
    filePathAndFileName = filePath+file

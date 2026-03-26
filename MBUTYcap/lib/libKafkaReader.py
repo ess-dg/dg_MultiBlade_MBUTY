@@ -165,7 +165,7 @@ class kafka_reader_preAlloc():
  
             
         self.rea.overallDataIndex = 0 
-        self.rea.data             = np.zeros((self.rea.preallocLength,19), dtype='int64') 
+        self.rea.data             = np.zeros((self.rea.preallocLength,20), dtype='int64') 
         
         self.rea.readouts.heartbeats = np.zeros((self.rea.counterCandidatePackets,), dtype='int64') 
         
