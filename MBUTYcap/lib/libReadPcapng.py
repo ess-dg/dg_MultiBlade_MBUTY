@@ -705,18 +705,34 @@ class checkBMtype():
              actual_geos = np.unique(GEO[selectBM])
          
              for geo_val in actual_geos:
-                    # Case 1: GEO 0 is the "GENERIC" standard
-                    if geo_val == 0:
+                    # Case 1: 0D event and GENERIC hw
+                    if geo_val == 1:
+                        
                         if BMhw == "IBM":
-                            print(f"\n\t\033[1;33mWARNING: BM data has type 0 (GENERIC) but config says {BMhw}!")  
+                            print(f"\n\t\033[1;33mWARNING: found BM data type 1 (GENERIC - 0D) but config says {BMhw}!")  
                             print("\tThe BM data may be parsed incorrectly.\033[0m")
-                    # Case 2: GEO 3 is the "IBM" standard
+                        else:
+                            print(f"\n\tBM data is type 1 (GENERIC - 0D)")  
+                            
+                    # Case 2: GEO 2 is 1D or 2D events and GENERIC hw
+                    elif geo_val == 2:
+                        
+                        if BMhw == "IBM":
+                            print(f"\n\t\033[1;33mWARNING: found BM data type 2 (GENERIC - 1D or 2D) but config says {BMhw}!")  
+                            print("\tThe BM data may be parsed incorrectly.\033[0m")
+                        else:
+                            print(f"\n\tBM data is type 2 (GENERIC - 1D or 2D)") 
+          
+                    # Case 3: GEO 3 is the "IBM" 
                     elif geo_val == 3:
+                        
                         if BMhw == "GENERIC":
-                            print(f"\n\t\033[1;33mWARNING: BM data has type 3 (IBM) but config says {BMhw}!")
+                            print(f"\n\t\033[1;33mWARNING: found BM data type 3 (IBM) but config says {BMhw}!")
                             print("\tThe BM data may be parsed incorrectly.\033[0m")
-  
-                    # Case 3: Unexpected GEO code for a Beam Monitor
+                        else:
+                            print(f"\n\tBM data is type 3 (IBM)") 
+                            
+                    # Case 4: Unexpected GEO code for a Beam Monitor
                     else:
                         print(f"\n\t\033[1;31mWARNING: BM data found with unexpected type: {geo_val}.\033[0m")
                         print(f"\tValid BM types are usually only type 0 (GENERIC) or 3 (IBM).\033[0m")
@@ -2090,6 +2106,12 @@ if __name__ == '__main__':
    checkInstrumentID().checkValidDataStream(readouts.instrIDUnique)
    
    checkInstrumentID().matchDataStreamWithConfig(config.DETparameters.instrument, config.DETparameters.type, readouts.instrIDUnique)
+   
+   
+   # parameters.config.MONmap.hardwareType = 'GENERIC'
+    
+   checkBMtype(readouts.instrIDpkt, readouts.GEO, parameters.config.MONmap.hardwareType)
+   
    
    # pint =  readouts.packetsInstrID
 
