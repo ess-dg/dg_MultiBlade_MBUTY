@@ -425,7 +425,8 @@ class MBUTYmain():
         ###############################################################################
         ###############################################################################           
             pcapr.checkInstrumentID().matchDataStreamWithConfig(self.parameters.config.DETparameters.instrument, self.parameters.config.DETparameters.type, self.readouts.instrIDUnique) 
-            pcapr.checkBMtype(self.readouts.instrIDpkt, self.readouts.GEO, self.parameters.config.MONmap.hardwareType)
+            if self.parameters.MONitor.MONOnOff is True and self.MON.flagMONfound is True:
+                pcapr.checkBMtype(self.readouts.instrIDpkt, self.readouts.GEO, self.parameters.config.MONmap.hardwareType)
         ###############################################################################
         ###############################################################################            
                     

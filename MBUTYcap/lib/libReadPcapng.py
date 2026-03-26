@@ -902,7 +902,12 @@ class IBM_MONdata():
        temp         = int.from_bytes(buffer[16:19], byteorder='little')
        self.MCAsum  = int.from_bytes(buffer[19:20], byteorder='little')
        
-       self.ADC = int(temp/self.MCAsum)
+       
+       if self.MCAsum > 0:
+          self.ADC = int(temp / self.MCAsum)
+       else:
+          self.ADC = 0 
+    
        
        #######################
        #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 
