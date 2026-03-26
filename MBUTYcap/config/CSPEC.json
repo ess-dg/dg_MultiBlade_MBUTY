@@ -1,6 +1,7 @@
 {
     "DetectorName": "CSPEC",
     "DetectorType": "He3",
+    "InstrumentName" : "CSPEC",
     "operationMode": "normal",
     "cassettes": 4,
     "orientation": "vertical",

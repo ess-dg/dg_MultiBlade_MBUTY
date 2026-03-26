@@ -1,7 +1,9 @@
 {
 	"DetectorName": "MB.FREIA",
 	
-	"DetectorType": "MB",	
+	"DetectorType": "MB",
+	
+	"InstrumentName" : "FREIA",	
 	
     "operationMode" : "normal",
 

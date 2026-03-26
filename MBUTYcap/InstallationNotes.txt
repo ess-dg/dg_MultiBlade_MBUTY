@@ -1,14 +1,14 @@
 
 INSTALLATION NOTES and PACKAGES 
 
-MBUTY 7.2 
+MBUTY 7.3 
 --------------------------------------------------
 What is in this version:
 
 libReader for CAEN R5560, SKADI and VMM
 
 Plots and analysis for VMM MG (TREX) and MB (ESTIA, FREIA, TBL) detectors and for He3 tubes (TBL, MIRACLES, CSPEC, BIFROST  and VESPA)
-Beam Monitors are also included. 
+Beam Monitors are also included, both generic and IBMs.
  
 
 --------------------------------------------------

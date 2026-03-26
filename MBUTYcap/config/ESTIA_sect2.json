@@ -3,6 +3,8 @@
 	
 	"DetectorType": "MB",
 	
+	"InstrumentName" : "ESTIA",
+	
 	"operationMode" : "normal",
 
 	"cassettes" : 8,

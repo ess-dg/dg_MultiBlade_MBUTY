@@ -115,7 +115,7 @@ def _generateCassette2ElectronicsConfigMIRACLES(num_cassettes):
 ###############################################################################
 
 # The main function to generate the config file
-def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orientation='horizontal', operationMode="normal", overwrite=False):
+def generateDefaultDetConfig(path, DetectorName, DetectorType, InstrumentName, cassettes, orientation='horizontal', operationMode="normal", overwrite=False):
     """
     Generates a default detector configuration JSON file based on provided parameters.
 
@@ -146,6 +146,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
             data = {
                 "DetectorName": DetectorName,
                 "DetectorType": DetectorType,
+                "Instrument"  : InstrumentName,
                 "operationMode": operationMode,
                 "cassettes": cassettes,
                 "orientation": orientation,
@@ -175,6 +176,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
         data = {
             "DetectorName": DetectorName,
             "DetectorType": DetectorType,
+            "Instrument"  : InstrumentName,
             "operationMode": operationMode,
             "cassettes": cassettes,
             "orientation": orientation,
@@ -203,6 +205,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
         data = {
             "DetectorName": DetectorName,
             "DetectorType": DetectorType,
+            "Instrument"  : InstrumentName,
             "operationMode": operationMode,
             "cassettes": cassettes,
             "orientation": orientation,
@@ -228,6 +231,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orient
         data = {
             "DetectorName": DetectorName,
             "DetectorType": DetectorType,
+            "InstrumentName"  : InstrumentName,
             "operationMode": operationMode,
             "cassettes": cassettes,
             "orientation": orientation,
@@ -304,12 +308,13 @@ if __name__ == '__main__':
 
     DetectorName = "MIRACLES2"
     DetectorType = 'He3'
+    InstrumentName = 'MIRACLES'
     operationMode = 'normal'
     cassettes = 24
     orientation = 'vertical'
 
     # Call the function directly
-    generated_file = generateDefaultDetConfig(path, DetectorName, DetectorType, cassettes, orientation, operationMode, overwrite=True) # add overwrite=True to overwrite a file
+    generated_file = generateDefaultDetConfig(path, DetectorName, DetectorType, InstrumentName, cassettes, orientation, operationMode, overwrite=True) # add overwrite=True to overwrite a file
     print(f"Generated file path: {generated_file}")
 
     if generated_file and os.path.exists(generated_file):

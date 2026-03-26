@@ -33,7 +33,7 @@ except ImportError:
 """ Acts as a pointer/wrapper for the central library """
 mapMonitor           = libMapping.mapMonitor
 extractPartialConfig = libMapping.extractPartialConfig
-checkBMsettings      = libMapping.checkBMsettings
+# checkBMsettings      = libMapping.checkBMsettings
 
 ###############################################################################
 ###############################################################################   
@@ -53,6 +53,8 @@ class DETparameters():
         self.name     = None
         
         self.type     = None
+        
+        self.instrument     = None
         
         self.operationMode = 'empty'
         
@@ -78,9 +80,9 @@ class read_json_config():
         """ Acts as a pointer/wrapper for the central library """
         return libMapping.read_json_config.__init__(self, configFile_PathAndFileName, printFlag) 
 
-    def openFile(self):
+    def openFile(self,configFile_PathAndFileName):
         """ Acts as a pointer/wrapper for the central library """
-        return libMapping.read_json_config.openFile(self)    
+        return libMapping.read_json_config.openFile(self,configFile_PathAndFileName)    
 
     def __del__(self):
         """ Acts as a pointer/wrapper for the central library """
@@ -110,6 +112,10 @@ class read_json_config():
         """ Acts as a pointer/wrapper for the central library """
         return libMapping.read_json_config.get_DETtype(self)
     
+    def get_instrumName(self):
+        """ Acts as a pointer/wrapper for the central library """
+        return libMapping.read_json_config.get_instrumName(self)
+    
     def get_DETmap(self):  
         """ Acts as a pointer/wrapper for the central library """
         return libMapping.read_json_config.get_DETmap(self)
@@ -126,14 +132,19 @@ class read_json_config():
         """ Acts as a pointer/wrapper for the central library """
         return libMapping.read_json_config.get_MONmap(self)
     
-    # def checkBMsettings(self,hardwareType,connectionType,RingID):
-    #     """ Acts as a pointer/wrapper for the central library """
-    #     return libMapping.read_json_config.checkBMsettings(self,hardwareType,connectionType,RingID)
+    def checkBMsettings(self,hardwareType,connectionType,RingID):
+        """ Acts as a pointer/wrapper for the central library """
+        return libMapping.read_json_config.checkBMsettings(self,hardwareType,connectionType,RingID)
+    
+    def verifyTypeWithInstrument(self,instr,detType):
+        """ Acts as a pointer/wrapper for the central library """
+        return libMapping.read_json_config.verifyTypeWithInstrument(self,instr,detType)
+
 
         
-    def checkOpModeMIRACLES(self):
-        if self.DETparameters.type == 'MIRACLES' and self.DETparameters.operationMode != "normal":
-            print('\n\t\033[1;31mERROR: Operation mode (found {}) not supported yet for MIRACLES, only normal mode -> check config file! \n\033[1;37m'.format(self.DETparameters.operationMode),end='') 
+    def checkOpModeHe3(self):
+        if self.DETparameters.type == 'He3' and self.DETparameters.operationMode != "normal":
+            print('\n\t\033[1;31mERROR: Operation mode (found {}) not supported yet for He3 type detectors, only normal mode -> check config file! \n\033[1;37m'.format(self.DETparameters.operationMode),end='') 
             time.sleep(2)
             sys.exit()
  
@@ -152,11 +163,13 @@ class read_json_config():
     def get_allParameters(self):
         self.get_DETname()
         self.get_DETtype()
+        self.get_instrumName()
+        self.verifyTypeWithInstrument(self.DETparameters.instrument,self.DETparameters.type)
         self.get_DETparameters()
         self.get_DETmap()
         self.get_DETcassettesInConfig()
         self.get_MONmap()
-        self.checkOpModeMIRACLES()
+        self.checkOpModeHe3()
         
     def get_DETparameters(self):
         self.DETparameters.numOfCassettes = self.conf.get('cassettes')

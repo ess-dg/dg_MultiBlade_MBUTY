@@ -2,6 +2,7 @@
 	"DetectorName": "MB.ESTIA.sect0and1",
 	
 	"DetectorType": "MB",
+	"InstrumentName" : "ESTIA",
 	
 	"operationMode" : "normal",
 

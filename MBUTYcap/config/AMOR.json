@@ -1,6 +1,7 @@
 {
     "DetectorName": "AMOR",
     "DetectorType": "MB",
+    "InstrumentName" : "AMOR",
     "operationMode": "normal",
     "cassettes": 14,
     "orientation": "horizontal",

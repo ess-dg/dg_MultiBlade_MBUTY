@@ -1,6 +1,7 @@
 {
     "DetectorName": "MIRACLES1",
     "DetectorType": "He3",
+    "InstrumentName" : "MIRACLES",
     "operationMode": "normal",
     "cassettes": 1,
     "orientation": "vertical",

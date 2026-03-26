@@ -2,6 +2,8 @@
 	"DetectorName": "MG.EMMA",
 	
     "DetectorType": "MG",
+    
+    "InstrumentName" : "TREX",
 	
 	"operationMode" : "normal",
 

@@ -77,7 +77,14 @@ ui_config = {
             "type": "bool",
             "options": ["MB", "MG", "He3"],
             "default": "MB",
-            "info": "Select the type of the detector: MB, MG or He3 (MIRA,CSPEC,BIFRO)."
+            "info": "Select the type of the detector: MB, MG or He3 (MIRA,CSPEC,BIFRO,VESPA)."
+        },
+        "InstrumentName": {
+            "label": "Instrument Name",
+            "type": "dropdown",
+            "options": ["TBL", "AMOR", "ESTIA", "FREIA", "TREX", "MIRACLES", "CSPEC", "BIFROST", "VESPA"],
+            "default": "ESTIA",
+            "info": "Select the intrument according to the type of detector."
         },
         "cassettes": {
             "label": "Number of Units",

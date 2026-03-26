@@ -491,22 +491,22 @@ class plottingEvents():
             
             
             
-    def splitHistAccordingToDET(self):
+    def splitHistAccordingToInstr(self):
           
         # TO BE FINISHED .....
         
-         detType = self.config.DETparameters.type
+         instrument = self.config.DETparameters.intrument
          
-         if detType == 'CSPEC':
+         if instrument == 'CSPEC':
              pass
          
-         elif detType == 'BIFROST':
+         elif instrument == 'BIFROST':
              print('\n --> \033[1;33mWARNING: Not yet supported to split plots\033[1;37m',end='')
              
              select  = self.events.positionW <= 0.33
              select2 = self.events.positionW > 0.66
              
-         elif detType == 'MIRACLES':
+         elif instrument == 'MIRACLES':
              
               select = self.events.positionW <= 0.5
           
@@ -675,7 +675,7 @@ if __name__ == '__main__' :
     filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
     # file = 'MG_2col_2clusters.pcapng'
     file = 'miracles_trig2.pcapng'
-    file = 'channel1.pcapng'
+    # file = 'channel1.pcapng'
       
     # file = 'MG_2col_1cluster.pcapng'
     

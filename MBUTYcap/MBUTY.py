@@ -3,7 +3,7 @@
 
 ###############################################################################
 ###############################################################################
-########    V7.2 2026/03/09     francescopiscitelli     ######################
+########    V7.3 2026/03/26    francescopiscitelli     ######################
 ###############################################################################
 ###############################################################################
 #  includes streaming from kafka 
@@ -102,7 +102,7 @@ class MBUTYmain():
         
         user_name = os.environ.get('USER', os.environ.get('USERNAME', 'User'))
         print('----------------------------------------------------------------------')
-        print('\033[1;32mCiao '+user_name+'! Welcome to MBUTY 7.2\033[1;37m')
+        print('\033[1;32mCiao '+user_name+'! Welcome to MBUTY 7.3\033[1;37m')
         print('----------------------------------------------------------------------')
         plt.close("all")
         ### check version ###
@@ -424,7 +424,7 @@ class MBUTYmain():
                
         ###############################################################################
         ###############################################################################           
-            pcapr.checkInstrumentID().matchDataStreamWithConfig(self.parameters.config.DETparameters.name, self.parameters.config.DETparameters.type, self.readouts.instrIDUnique) 
+            pcapr.checkInstrumentID().matchDataStreamWithConfig(self.parameters.config.DETparameters.instrument, self.parameters.config.DETparameters.type, self.readouts.instrIDUnique) 
         ###############################################################################
         ###############################################################################            
                     

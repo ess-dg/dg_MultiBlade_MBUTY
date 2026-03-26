@@ -188,6 +188,8 @@ class DETparameters():
         
         self.type     = None
         
+        self.instrument     = None
+        
         self.operationMode = 'empty'
         
         self.orientation = 'vertical'
@@ -219,9 +221,8 @@ class read_json_config():
     def __init__(self, configFile_PathAndFileName, printFlag = True):
         
         self.configFile_PathAndFileName = configFile_PathAndFileName
-        temp = os.path.split(configFile_PathAndFileName)
-        self.configFilePath = temp[0] + os.sep
-        self.configFileName = temp[1]
+    
+        self.openFile(self.configFile_PathAndFileName)
         
         # Initialize other attributes
         self.MONmap        = MONmap()
@@ -231,13 +232,10 @@ class read_json_config():
         self.channelMap    = channelMap()
         
         self.debug = False
-        
-        self.openFile()
 
             
         try:
             
-                
                 # Process parameters
                 self.get_allParameters()
                 
@@ -251,10 +249,17 @@ class read_json_config():
 
         
         except Exception as e:
+                self.get_DETname()
                 self.get_DETtype()
+                self.get_instrumName()
                 
        
-    def openFile(self):   
+    def openFile(self,configFile_PathAndFileName):  
+        
+        temp = os.path.split(configFile_PathAndFileName)
+        self.configFilePath = temp[0] + os.sep
+        self.configFileName = temp[1]
+        
         # Open the file
         path = Path(self.configFileName)
         if len(path.suffixes) > 1 and path.suffixes[-1] == path.suffixes[-2]:
@@ -264,7 +269,7 @@ class read_json_config():
         
         
         try:
-            self.ff   = open(self.configFile_PathAndFileName,'r') 
+            self.ff   = open(configFile_PathAndFileName,'r') 
         except:
             print('\n \033[1;31m---> Config File: ' + self.configFileName + ' not found \033[1;37m')
             print('\n ---> in folder: ' + self.configFilePath + ' \n -> exiting.')
@@ -328,6 +333,8 @@ class read_json_config():
     def get_allParameters(self):
         self.get_DETname()
         self.get_DETtype()
+        self.get_instrumName()
+        self.verifyTypeWithInstrument(self.DETparameters.instrument,self.DETparameters.type)
         self.get_DETparameters()
         self.get_DETmap()
         self.get_DETcassettesInConfig()
@@ -336,7 +343,7 @@ class read_json_config():
 
             
     def print_DETname(self):
-        print('\033[1;36mConfiguration for {} Detector: {}\033[1;37m'.format(self.DETparameters.type,self.DETparameters.name))
+        print('\033[1;36mConfiguration for Detector {}, type {}, instrument {}\033[1;37m'.format(self.DETparameters.name,self.DETparameters.type,self.DETparameters.instrument))
         
     def print_check_operationMode(self):
         
@@ -365,7 +372,57 @@ class read_json_config():
     
     def get_DETtype(self):
         self.DETparameters.type = self.conf.get('DetectorType')
+        
+        if self.DETparameters.type != 'MB' and self.DETparameters.type != 'MG' and self.DETparameters.type != 'He3':
+            print('\n\t\033[1;31mERROR: Detector type (found {}) can only be either MB, MG or He3 -> check config file! ---> Exiting ... \n\033[1;37m'.format(self.DETparameters.type),end='') 
+            time.sleep(2)
+            sys.exit()
+        
         return self.DETparameters.type
+    
+    def get_instrumName(self):
+        self.DETparameters.instrument = self.conf.get('InstrumentName')
+        
+        instruments = ["TBL", "AMOR", "ESTIA", "FREIA", "TREX", "MIRACLES", "CSPEC", "BIFROST", "VESPA"]
+        
+        if self.DETparameters.instrument not in instruments: 
+            print("\n\t\033[1;31mERROR: Instrument name {} is invalid. Must be one of: {} \n\033[1;37m".format(self.DETparameters.instrument, ", ".join(instruments)))
+            time.sleep(2)
+            sys.exit()
+ 
+        return self.DETparameters.instrument
+    
+    def verifyTypeWithInstrument(self,instr,detType):
+            
+        valid_mapping = {
+            "TBL":      ["He3", "MB"],
+            "CSPEC":    ["He3"],
+            "MIRACLES": ["He3"],
+            "VESPA":    ["He3"],
+            "BIFROST":  ["He3"],
+            "ESTIA":    ["MB"],
+            "FREIA":    ["MB"],
+            "AMOR":     ["MB"],
+            "TREX":     ["MG"]
+        }
+
+        # instr    = self.DETparameters.instrument
+        # det_type = self.DETparameters.type
+    
+        # 2. Perform the check
+        allowed_types = valid_mapping.get(instr, [])
+    
+        if detType not in allowed_types:
+            # Construct a clear warning message
+            expected = " or ".join(allowed_types)
+            print(f"\n\t\033[1;33mWARNING: Potential configuration mismatch!")
+            print(f"\tInstrument '{instr}' usually uses type: {expected}.")
+            print(f"\tCurrent config has: '{detType}'.")
+            print(f"\tAnalysis will proceed, but please verify your JSON settings.\033[1;37m\n")
+            
+            # Optional: slight pause so the user sees the warning
+            time.sleep(1)
+        
     
     def get_DETparameters(self):
         self.DETparameters.numOfWires  = self.conf.get('wires')
@@ -482,13 +539,13 @@ class read_json_config():
                   self.MONmap.channel        = cc.get("Channel")
                                     
                  
-                  checkBMsettings(self.MONmap.hardwareType, self.MONmap.connectionType,self.MONmap.RingID) 
+                  self.checkBMsettings(self.MONmap.hardwareType, self.MONmap.connectionType,self.MONmap.RingID) 
                 
               
 ###############################################################################
 
 
-def checkBMsettings(hardwareType,connectionType,RingID):
+    def checkBMsettings(self,hardwareType,connectionType,RingID):
              
              if hardwareType == "GENERIC" or hardwareType == "IBM" : 
                  pass

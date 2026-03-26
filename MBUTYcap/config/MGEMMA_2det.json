@@ -1,6 +1,7 @@
 {
     "DetectorName": "MG.EMMA_2det",
     "DetectorType": "MG",
+    "InstrumentName" : "TREX",
     "operationMode": "normal",
     "cassettes": 2,
     "orientation": "vertical",

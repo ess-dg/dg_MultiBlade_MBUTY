@@ -764,7 +764,7 @@ class MBUTY_GUI_App:
         user_name = os.environ.get('USER', os.environ.get('USERNAME', 'User'))
         self.main_app_title_label = tk.Label(
             header,
-            text=f"Ciao {user_name}! Welcome to MBUTY 7.2",
+            text=f"Ciao {user_name}! Welcome to MBUTY 7.3",
             font=(const.gui_font, const.param_font_size+8, "bold"), # Initial font
             fg="#228B22", # Foreground color (Forest Green)
         )
@@ -885,7 +885,7 @@ class MBUTY_GUI_App:
     def show_about_dialog(self):
         """Displays software version and author information."""
         # Assuming these are defined in your library/constants
-        version = "7.2 (Mar 9, 2026)" 
+        version = "7.3 (Mar 26, 2026)" 
         author = "Francesco Piscitelli, Sheila Monera Cabarique"
         
         about_text = (

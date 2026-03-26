@@ -412,6 +412,7 @@ class checkInstrumentID():
             60:  {"name": "CSPEC",    "hex": "0x3c", "type": "He3",   "hw": "R5560",    "bytes": 24, "supported": True, "readerSupported": True},
             52:  {"name": "BIFROST",  "hex": "0x34", "type": "He3",   "hw": "R5560",    "bytes": 24, "supported": True, "readerSupported": True},
             56:  {"name": "MIRACLES", "hex": "0x38", "type": "He3",   "hw": "R5560",    "bytes": 24, "supported": True, "readerSupported": True},
+            00:  {"name": "VESPA",    "hex": "0x00", "type": "He3",   "hw": "R5560",    "bytes": 24, "supported": True, "readerSupported": True},
             
             48:  {"name": "LOKI",     "hex": "0x30", "type": "straw", "hw": "R5560bis", "bytes": 24, "supported": False, "readerSupported": False},
             16:  {"name": "BM",       "hex": "0x10", "type": "BM",    "hw": "BM",       "bytes": 20, "supported": True, "readerSupported": True},
@@ -425,8 +426,8 @@ class checkInstrumentID():
         
         # print('checking intrument ID ... ',end='')
         self.getInfoFromID(ID)
-        if self.detName != "Unknown":
-            print(f"found {self.detName} data stream - {self.ROEtype}",end='')
+        if self.instrName != "Unknown":
+            print(f"found {self.instrName} data stream - {self.ROEtype}",end='')
         
     def getIDFromName(self, name):
         for instrument_id, info in self.instruments.items():
@@ -439,7 +440,7 @@ class checkInstrumentID():
             data = self.instruments.get(ID)
         
             if data:
-                self.detName             = data["name"]
+                self.instrName           = data["name"]
                 self.detType             = data["type"]
                 self.ROEtype             = data["hw"] 
                 self.bytesPerReadout     = data["bytes"]
@@ -448,7 +449,7 @@ class checkInstrumentID():
                 
             else:
                 # Defaults if ID is unknown
-                self.detName             = "Unknown"
+                self.InstrName           = "Unknown"
                 self.detType             = "N/A"
                 self.ROEtype             = None
                 self.bytesPerReadout     = 20
@@ -476,29 +477,29 @@ class checkInstrumentID():
         elif len(instrIDs) == 1: 
     
             target_id = instrIDs[0]    
-            info = checkInstrumentID()
-            info.getInfoFromID(target_id)
-            # print(f"found: {info.detName} | Type: {info.detType} | Readout: {info.ROEtype}")
+            self.getInfoFromID(target_id)
+            # info
+            # print(f"found: {info.instrName} | Type: {info.detType} | Readout: {info.ROEtype}")
                  
-            if info.detName == "Unknown":
+            if self.instrName == "Unknown":
                 print(f"\n\033[1;31mERROR: found unknown data stream with ID {target_id}\033[0m",end='')
                 time.sleep(2)
                 sys.exit()
                 
-            elif info.flagSupported is True and info.flagReadSupported is True:
+            elif self.flagSupported is True and self.flagReadSupported is True:
                 print('---> OK.')
                 # pass
             
-            elif info.flagSupported is False and info.flagReadSupported is True:
-                print(f"\n\033[1;33mWARNING: found '{info.detName}' data stream, analysis not supported, reader only! Analysis continues but questionable results are on the horizon.\033[0m")
+            elif self.flagSupported is False and self.flagReadSupported is True:
+                print(f"\n\033[1;33mWARNING: found '{self.instrName}' data stream, analysis not supported, reader only! Analysis continues but questionable results are on the horizon.\033[0m")
                 
-            elif info.flagSupported is False and info.flagReadSupported is False:   
-                print(f"\n\033[1;31mERROR: found '{info.detName}' data stream, analysis nor reader supported! Exit.\033[0m")
+            elif self.flagSupported is False and self.flagReadSupported is False:   
+                print(f"\n\033[1;31mERROR: found '{self.instrName}' data stream, analysis nor reader supported! Exit.\033[0m")
                 time.sleep(2)
                 sys.exit()
                 
-            elif info.flagSupported is True and info.flagReadSupported is False:
-                print(f"\n\033[1;31mERROR: found '{info.detName}' data stream, supported but flag Reader supported is False -> check class checkInstrumentID() in pcapreadre! Exit.\033[0m")
+            elif self.flagSupported is True and self.flagReadSupported is False:
+                print(f"\n\033[1;31mERROR: found '{self.instrName}' data stream, supported but flag Reader supported is False -> check class checkInstrumentID() in pcapreader! Exit.\033[0m")
                 time.sleep(2)
                 sys.exit()
             
@@ -510,18 +511,18 @@ class checkInstrumentID():
             has_BM = False
             
             for ids in instrIDs:
-                 info = checkInstrumentID()
-                 info.getInfoFromID(ids)
-                 # print(f"found: {info.detName} | Type: {info.detType} | Readout: {info.ROEtype}")
+                 self.getInfoFromID(ids)
+
+                 # print(f"found: {info.instrName} | Type: {info.detType} | Readout: {info.ROEtype}")
                  
-                 if info.detName == "BM":
+                 if self.detType == "BM":
                     has_BM = True
                  
-                 all_streams.append(info.detName)
-                 if info.flagSupported is True and info.flagReadSupported is True:
-                    valid_for_analysis.append(info.detName)
-                 elif info.flagSupported is False and info.flagReadSupported is True:
-                    valid_for_reading.append(info.detName)
+                 all_streams.append(self.instrName)
+                 if self.flagSupported is True and self.flagReadSupported is True:
+                    valid_for_analysis.append(self.instrName)
+                 elif self.flagSupported is False and self.flagReadSupported is True:
+                    valid_for_reading.append(self.instrName)
            
             valid_for_analysis = [n for n in valid_for_analysis if n != "BM"]
             valid_for_reading  = [n for n in valid_for_reading if n != "BM"]
@@ -570,14 +571,13 @@ class checkInstrumentID():
             valid_for_reading = []
             
             for ids in instrIDs:
-                 info = checkInstrumentID()
-                 info.getInfoFromID(ids)
-                 # print(f"found: {info.detName} | Type: {info.detType} | Readout: {info.ROEtype}")
-                 all_streams.append(info.detName)
-                 if info.flagSupported is True and info.flagReadSupported is True:
-                    valid_for_analysis.append(info.detName)
-                 elif info.flagSupported is False and info.flagReadSupported is True:
-                    valid_for_reading.append(info.detName)
+                 self.getInfoFromID(ids)
+                 # print(f"found: {info.instrName} | Type: {info.detType} | Readout: {info.ROEtype}")
+                 all_streams.append(self.instrName)
+                 if self.flagSupported is True and self.flagReadSupported is True:
+                    valid_for_analysis.append(self.instrName)
+                 elif self.flagSupported is False and self.flagReadSupported is True:
+                    valid_for_reading.append(self.instrName)
            
             print(f"\n\033[1;33mWARNING: {len(instrIDs)} data streams detected: ({', '.join(all_streams)})\033[0m")         
             # Final decision after checking all IDs
@@ -626,7 +626,7 @@ class checkInstrumentID():
         return flag 
             
         
-    def matchDataStreamWithConfig(self, detNameFromConf, detType, IDs):  
+    def matchDataStreamWithConfig(self, instrNameFromConf, detType, IDs):  
         
         # print('checking intrument IDs and data streams ... ')
         
@@ -645,26 +645,25 @@ class checkInstrumentID():
         all_types    = []
 
         for ids in instrIDs:
-             info = checkInstrumentID()
-             info.getInfoFromID(ids)
-             all_streams.append(info.detName)
-             all_types.append(info.detType)
+             self.getInfoFromID(ids)
+             all_streams.append(self.instrName)
+             all_types.append(self.detType)
              
-             # print(f"found: {info.detName} | Type: {info.detType} | Readout: {info.ROEtype}")
+             # print(f"found: {self.instrName} | Type: {self.detType} | Readout: {self.ROEtype}")
              
-             if info.detType == detType:
+             if self.detType == detType:
                  foundFlag = True 
                  
         # Remove duplicates from the stream list for a cleaner message
-        unique_types   = ", ".join(set(all_types))
-        unique_streams = ", ".join(set(all_streams))
+        unique_types   = ", ".join((all_types))
+        unique_streams = ", ".join((all_streams))
         
-        # print(unique_types)
-        # print(unique_streams)
+        # print(all_types)
+        # print(all_streams)
 
         if foundFlag:
-            print(f"\n\033[1;33mFile containing detector types: {unique_types} for data streams {unique_streams}\033[0m")
-            print(f"\033[1;33manalyzed for detector: {detNameFromConf}, type: {detType}\033[0m")
+            print(f"\n\033[1;33mFile containing data streams {unique_streams} for detector types {unique_types}\033[0m")
+            print(f"\033[1;33manalyzed for instrument {instrNameFromConf} and type {detType}\033[0m")
             # print(f"\nSuccess: Configuration match found for {detType}.")
 
             # pass
@@ -674,14 +673,14 @@ class checkInstrumentID():
             # print(f"\n\033[1;36mNOTE: Beam Monitor (BM) stream detected.\033[0m")
             # print(f"\033[1;36mSkipping standard mismatch warning. Ensure BM data is handled separately.\033[0m")
             print(f"\n\033[1;31mWARNING: CONFIGURATION MISMATCH!\033[0m",end='')
-            print(f"\n\033[1;31mYou are trying to read a file containing only detector types: {unique_types} for data streams {unique_streams}\033[0m")
-            print(f"\033[1;31mBut in your config file, you have specified: {detNameFromConf}, type: {detType}\033[0m")
+            print(f"\n\033[1;31mYou are trying to read a file containing data streams {unique_streams} for detector types {unique_types}\033[0m")
+            print(f"\033[1;31mBut in your config file you have specified instrument {instrNameFromConf} and type {detType}\033[0m")
             
         else:
 
-            print(f"\n\033[1;31mWARNING: Configuration mismatch!\033[0m",end='')
-            print(f"\033[1;31mYou are trying to read a file containing these detector types: {unique_types} for data streams {unique_streams}\033[0m")
-            print(f"\033[1;31mBut in your config file, you have specified: {detNameFromConf}, type: {detType}\033[0m")    
+            print(f"\n\033[1;31mWARNING: CONFIGURATION MISMATCH!\033[0m",end='')
+            print(f"\n\033[1;31mYou are trying to read a file containing data streams {unique_streams} for detector types {unique_types}\033[0m")
+            print(f"\033[1;31mBut in your config file you have specified instrument {instrNameFromConf} and type {detType}\033[0m")
         
      
         
@@ -1173,7 +1172,7 @@ class pcapng_reader_PreAlloc():
         
         ##########################################################
 
-        maps.checkBMsettings(self.MONhw,  self.MONconn, self.MONring)
+        # maps.checkBMsettings(self.MONhw,  self.MONconn, self.MONring)
    
         
     def calculateHeaderSize(self):
@@ -1984,11 +1983,11 @@ if __name__ == '__main__':
 
    confFile  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
    fileName  = "MIRACLES24.json"
-   fileName  = "AMOR.json"
+   # fileName  = "AMOR.json"
     # fileName  = "MGEMMA.json"
    # fileName  = "MIRACLES2bis.json"
    
-   # fileName  = "CSPEC.json"
+   fileName  = "CSPEC.json"
 
    config = maps.read_json_config(confFile+fileName)
     
@@ -1998,12 +1997,12 @@ if __name__ == '__main__':
     
    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    file = 'miracles_trig2.pcapng'
-   file = 'ESSmask2023_1000pkts.pcapng'
+   # file = 'ESSmask2023_1000pkts.pcapng'
    # file = 'ESSmask2023.pcapng'
    
    # file = 'miracles_source_on_left_red.pcapng'
 
-   # file = 'CSPEC1.pcapng'
+   file = 'CSPEC1.pcapng'
 
 
    filePathAndFileName = filePath+file
@@ -2035,11 +2034,10 @@ if __name__ == '__main__':
    readouts.checkInvalidToFsInReadouts()
    
    # print(readouts.instrIDUnique)
-   # print(parameters.config.DETparameters.type)
    
    checkInstrumentID().checkValidDataStream(readouts.instrIDUnique)
    
-   checkInstrumentID().matchDataStreamWithConfig(config.DETparameters.name, config.DETparameters.type, readouts.instrIDUnique)
+   checkInstrumentID().matchDataStreamWithConfig(config.DETparameters.instrument, config.DETparameters.type, readouts.instrIDUnique)
    
    # pint =  readouts.packetsInstrID
 

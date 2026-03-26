@@ -30,7 +30,7 @@ except ImportError:
 """ Acts as a pointer/wrapper for the central library """
 mapMonitor           = libMapping.mapMonitor
 extractPartialConfig = libMapping.extractPartialConfig
-checkBMsettings      = libMapping.checkBMsettings
+# checkBMsettings      = libMapping.checkBMsettings
 
 # OR 
 
@@ -61,6 +61,8 @@ class DETparameters():
         self.name     = None
         
         self.type     = None
+        
+        self.instrument     = None
         
         self.operationMode = 'empty'
         
@@ -94,9 +96,9 @@ class read_json_config():
         """ Acts as a pointer/wrapper for the central library """
         return libMapping.read_json_config.__init__(self, configFile_PathAndFileName, printFlag) 
 
-    def openFile(self):
+    def openFile(self,configFile_PathAndFileName):
         """ Acts as a pointer/wrapper for the central library """
-        return libMapping.read_json_config.openFile(self)    
+        return libMapping.read_json_config.openFile(self,configFile_PathAndFileName)    
 
     def __del__(self):
         """ Acts as a pointer/wrapper for the central library """
@@ -130,6 +132,10 @@ class read_json_config():
         """ Acts as a pointer/wrapper for the central library """
         return libMapping.read_json_config.get_DETmap(self)
     
+    def get_instrumName(self):
+        """ Acts as a pointer/wrapper for the central library """
+        return libMapping.read_json_config.get_instrumName(self)
+    
     def get_DETcassettesInConfig(self):
         """ Acts as a pointer/wrapper for the central library """
         return libMapping.read_json_config.get_DETcassettesInConfig(self)
@@ -146,9 +152,13 @@ class read_json_config():
         """ Acts as a pointer/wrapper for the central library """
         return libMapping.read_json_config.get_MONmap(self)
     
-    # def checkBMsettings(self,hardwareType,connectionType,RingID):
-    #     """ Acts as a pointer/wrapper for the central library """
-    #     return libMapping.read_json_config.checkBMsettings(self,hardwareType,connectionType,RingID)
+    def checkBMsettings(self,hardwareType,connectionType,RingID):
+        """ Acts as a pointer/wrapper for the central library """
+        return libMapping.read_json_config.checkBMsettings(self,hardwareType,connectionType,RingID)
+    
+    def verifyTypeWithInstrument(self,instr,detType):
+        """ Acts as a pointer/wrapper for the central library """
+        return libMapping.read_json_config.verifyTypeWithInstrument(self,instr,detType)
 
         
     def checkOpModeMG(self):
@@ -160,11 +170,12 @@ class read_json_config():
         
         self.get_DETname()
         self.get_DETtype()
+        self.get_instrumName()
+        self.verifyTypeWithInstrument(self.DETparameters.instrument,self.DETparameters.type)
         self.get_DETparameters()
         self.get_DETmap()
         self.get_DETcassettesInConfig()
         self.get_MONmap()
-        
         self.checkOpModeMG()
         
     def get_DETparameters(self):
@@ -378,7 +389,7 @@ class mapDetector():
 
 if __name__ == '__main__':
 
-   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcapMG/config/'+"MG.json"
+   filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MG1column.json"
    # filePathD = './'+"VMM3a_Freia.pcapng"
 
    config = read_json_config(filePath)

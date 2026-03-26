@@ -1,6 +1,7 @@
 {
     "DetectorName": "MB.ESTIA",
     "DetectorType": "MB",
+    "InstrumentName" : "ESTIA",
     "operationMode": "normal",
     "cassettes": 48,
     "orientation": "vertical",
