@@ -841,8 +841,10 @@ class IBM_MONdata():
        self.Type    = int.from_bytes(buffer[12:13], byteorder='little')
        self.Channel = int.from_bytes(buffer[13:14], byteorder='little')
        self.UNSdebug  = int.from_bytes(buffer[14:16], byteorder='little')
-       self.ADC     = int.from_bytes(buffer[16:19], byteorder='little')
+       temp         = int.from_bytes(buffer[16:19], byteorder='little')
        self.MCAsum  = int.from_bytes(buffer[19:20], byteorder='little')
+       
+       self.ADC = int(temp/self.MCAsum)
        
        #######################
        #  IMPORTANT NOTE: phys ring is 0 and 1 for logical ring 0 etc. Always 12 logical rings 

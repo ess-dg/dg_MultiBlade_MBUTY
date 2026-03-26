@@ -225,7 +225,7 @@ class MBUTYmain():
                 self.readouts.append(pcap.readouts)
                 
         elif self.parameters.acqMode == 'kafka':
-            testing = True          
+            testing = False          
             pcap = self.kaf.kafka_reader(NSperClockTick=self.parameters.clockTicks.NSperClockTick, nOfPackets = self.parameters.kafkaSettings.numOfPackets, \
             broker = self.parameters.kafkaSettings.broker, topic = self.parameters.kafkaSettings.topic,\
             MONhw = self.parameters.config.MONmap.hardwareType, MONconn = self.parameters.config.MONmap.connectionType, MONring = self.parameters.config.MONmap.RingID, \
