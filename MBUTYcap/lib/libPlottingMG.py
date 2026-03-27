@@ -414,7 +414,7 @@ class plottingEvents():
                     
                 elif orientation == 'horizontal':  
                     
-                    print('\n --> \033[1;33mWARNING: horizontal is not supported for MG for now, change in config file\033[1;37m',end='')
+                    print('\n --> \033[1;33mWARNING: horizontal is not supported yet for MG for now, change in config file\033[1;37m',end='')
                    
                            
                 

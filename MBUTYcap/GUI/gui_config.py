@@ -190,14 +190,21 @@ config = {
             "set": lambda val: setattr(parameters, 'acqMode', val)
 
         },
-        "parameters.dumpSettings.interface": {
+        "parameters.dumpSettings.interface_selection": {
             "label": "Network Interface",
-            "type": "entry",
-            # "default": "ens1f0np0",
-            # "default": "ens2",
+            "type": "radio",
+            "options": ["ens2np0", "ens2", "ens1f0np0","custom"],
             "default": "ens2np0",
             "dependsOn": ("parameters.acqMode", ["pcap-local", "pcap-local-overwrite"]),
-            "info": "Used for acqMode = pcap-local, pcap-local-overwrite, or kafka",
+            "info": "Used for acqMode = pcap-local, pcap-local-overwrite",
+            "set": lambda val: setattr(parameters.dumpSettings, 'interface', val)
+        },
+        "parameters.dumpSettings.interface_custom": {
+            "label": "Custom Network Interface",
+            "type": "entry",
+            "default": "ens...",
+            "dependsOn": ("parameters.dumpSettings.interface_selection", ["custom"]),
+            "info": "Used for acqMode = pcap-local, pcap-local-overwrite",
             "set": lambda val: setattr(parameters.dumpSettings, 'interface', val)
         },
         "parameters.dumpSettings.typeOfCapture": {
