@@ -89,7 +89,7 @@ ui_config = {
         "cassettes": {
             "label": "Number of Units",
             "type": "entry",
-            "default": "14",
+            "default": "2",
             "inputValidation": "int",
             "info": "Number of units, must be an integer"
         },

@@ -146,7 +146,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, InstrumentName, c
             data = {
                 "DetectorName": DetectorName,
                 "DetectorType": DetectorType,
-                "Instrument"  : InstrumentName,
+                "InstrumentName"  : InstrumentName,
                 "operationMode": operationMode,
                 "cassettes": cassettes,
                 "orientation": orientation,
@@ -176,7 +176,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, InstrumentName, c
         data = {
             "DetectorName": DetectorName,
             "DetectorType": DetectorType,
-            "Instrument"  : InstrumentName,
+            "InstrumentName"  : InstrumentName,
             "operationMode": operationMode,
             "cassettes": cassettes,
             "orientation": orientation,
@@ -205,7 +205,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, InstrumentName, c
         data = {
             "DetectorName": DetectorName,
             "DetectorType": DetectorType,
-            "Instrument"  : InstrumentName,
+            "InstrumentName"  : InstrumentName,
             "operationMode": operationMode,
             "cassettes": cassettes,
             "orientation": orientation,
