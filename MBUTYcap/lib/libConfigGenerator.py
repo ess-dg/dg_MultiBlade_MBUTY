@@ -89,9 +89,9 @@ def _generateCassette2ElectronicsConfigSKADI(num_cassettes):
     return cassette_config
 
 
-# FOR MIRACLES
+# FOR He3
 # The helper function (renamed from a method)
-def _generateCassette2ElectronicsConfigMIRACLES(num_cassettes):
+def _generateCassette2ElectronicsConfigHe3(num_cassettes):
     cassette_config = []
     ring    = 0
     tube    = 0
@@ -226,7 +226,7 @@ def generateDefaultDetConfig(path, DetectorName, DetectorType, InstrumentName, c
     elif  DetectorType == 'He3':  
         
         # Call the helper function
-        cassette2electronics_config = _generateCassette2ElectronicsConfigMIRACLES(cassettes)
+        cassette2electronics_config = _generateCassette2ElectronicsConfigHe3(cassettes)
     
         data = {
             "DetectorName": DetectorName,
