@@ -16,10 +16,12 @@ import copy
 try:
 ####### if you run default
     from lib import libMapping 
+    from lib import libReadPcapng as pcapr
 
 except ImportError:
     ####### if you run in lib 
     import libMapping 
+    import libReadPcapng as pcapr
     
 
 # NOTE: THIS SUPPORTS ONLY 1 MONITOR
@@ -237,6 +239,11 @@ class mapDetector():
         
     def mapp1cass(self, cassette1ID):
         
+        #########################################
+        #  activate to use interface PCB otherwise standard mapping 
+        swapIT = False 
+        #########################################
+        
         if self.debug:
             print(cassette1ID)
         
@@ -261,85 +268,139 @@ class mapDetector():
             flag = False
             # print('\t \033[1;33m No data found for Cassette ID ',str(cassette1ID),'\033[1;37m')
 
+        ####################################################################################
+        ####################################################################################
         #########################################
         # MAPPING CHANNELS HERE : 
-        
-        ########################################## 
-        # WIRES
-        selectionWires  =  np.logical_and(selectionCol, HyWLoc)
-        
-        # tempW_1 = (63 - self.readouts.Channel[selectionWires] + 64*(1-self.readouts.ASIC[selectionWires]))
-        
-        # tempW_2 = (self.config.DETparameters.wiresPerRow-1) - np.mod( tempW_1 , self.config.DETparameters.wiresPerRow )
-        
-        # tempW_3 = np.floor_divide( tempW_1 , self.config.DETparameters.wiresPerRow )
-        
-        # tempW_4 = tempW_2 + tempW_3*self.config.DETparameters.wiresPerRow
-        
-        # is_even = np.mod(tempW_4 , 2 ) == 0
-        
-        # tempW  = np.copy(tempW_4)
-        
-        
-        
-        # tempW[is_even]  = tempW_4[is_even]  + 1
-        # tempW[~is_even] = tempW_4[~is_even] - 1
-        
-        tempW = self.readouts.Channel[selectionWires] + 64*self.readouts.ASIC[selectionWires]
 
-        # tempW    = (self.readouts.Channel[selectionWires] + 64*self.readouts.ASIC[selectionWires]) 
-        # after mapping wires are 0 and strips 1 
-        self.hits.WorS[selectionWires] = 0 
-        temp1 = self.hits.WorS[selectionWires] 
-        
-        acceptW  =  tempW < self.config.DETparameters.numOfWires
+        if swapIT is False:
+            
+            ########################################## 
+            # WIRES
+            ###########
+            selectionWires  =  np.logical_and(selectionCol, HyWLoc)
+            
+            tempW = self.readouts.Channel[selectionWires] + 64*self.readouts.ASIC[selectionWires]
+    
+            # after mapping wires are 0 and strips 1 
+            self.hits.WorS[selectionWires] = 0 
+            temp1 = self.hits.WorS[selectionWires] 
+            
+            acceptW  =  tempW < self.config.DETparameters.numOfWires
+    
+            if np.any(~acceptW):
+                 print('Warning: found Wires above {} in MG column {}'.format(self.config.DETparameters.numOfWires-1,cassette1ID))
+           
+                 
+            tempW[~acceptW] = -1
+            temp1[~acceptW] = -1
+            
+            self.hits.WiresStrips[selectionWires] = tempW
+            self.hits.WorS[selectionWires]        = temp1
+            
+            ############################################################### 
+            # GRIDS
+            ###########
+            
+            selectionStrips = np.logical_and(selectionCol , HySLoc)
 
-        if np.any(~acceptW):
-             print('Warning: found Wires above {} in MG column {}'.format(self.config.DETparameters.numOfWires-1,cassette1ID))
-       
-             
-        tempW[~acceptW] = -1
-        temp1[~acceptW] = -1
-        
-        self.hits.WiresStrips[selectionWires] = tempW
-        self.hits.WorS[selectionWires]        = temp1
-        
-        ############################################################### 
-        # GRIDS
- 
-        selectionStrips = np.logical_and(selectionCol , HySLoc)
-        
-        # tempS_1 = self.readouts.Channel[selectionStrips] + 64*self.readouts.ASIC[selectionStrips]
-        
-        # tempS_2 = 11 - tempS_1
-        
-        # is_evenS = np.mod(tempS_2 , 2 ) == 0
-        
-        # tempS  = np.copy(tempS_2)
-        
-        # tempS[is_evenS]  = tempS_2[is_evenS]  + 1
-        # tempS[~is_evenS] = tempS_2[~is_evenS] - 1
-        
-        tempS = self.readouts.Channel[selectionStrips] + 64*self.readouts.ASIC[selectionStrips]
-        
-        
-        # after mapping wires are 0 and strips 1 
-        self.hits.WorS[selectionStrips] = 1 
-        temp2 = self.hits.WorS[selectionStrips] 
-        
-        acceptS  =  tempS < self.config.DETparameters.numOfStrips
+            tempS = self.readouts.Channel[selectionStrips] + 64*self.readouts.ASIC[selectionStrips]
 
-        if np.any(~acceptS):
-              print('Warning: found Grids above {} in MG column {}'.format(self.config.DETparameters.numOfStrips-1,cassette1ID))
-        
-        tempS[~acceptS] = -1
-        temp2[~acceptS] = -1
+            # after mapping wires are 0 and strips 1 
+            self.hits.WorS[selectionStrips] = 1 
+            temp2 = self.hits.WorS[selectionStrips] 
+            
+            acceptS  =  tempS < self.config.DETparameters.numOfStrips
+    
+            if np.any(~acceptS):
+                  print('Warning: found Grids above {} in MG column {}'.format(self.config.DETparameters.numOfStrips-1,cassette1ID))
+            
+            tempS[~acceptS] = -1
+            temp2[~acceptS] = -1
+    
+            self.hits.WiresStrips[selectionStrips] = tempS
+            self.hits.WorS[selectionStrips]        = temp2
+            
+            ########################################## 
+            ###########
+            
+        elif swapIT is True:
+                
+                print('\033[1;33m----> WARNING: USING TEMPORARY INTERFACE PCB MAPPING!!!\033[1;37m')
+                
+                ########################################## 
+                # WIRES
+                ###########
+                selectionWires  =  np.logical_and(selectionCol, HyWLoc)
 
-        self.hits.WiresStrips[selectionStrips] = tempS
-        self.hits.WorS[selectionStrips]        = temp2
-        
-        ########################################## 
-        
+                 # 1. Get the base data for the selected wires
+                ch = self.readouts.Channel[selectionWires]
+                asic = self.readouts.ASIC[selectionWires]
+                
+                # 2. Define your 4 selection conditions
+                conditions = [
+                    (ch >= 16) & (ch <= 55) & (asic == 1),  # selection1
+                    (ch >= 40) & (ch <= 63) & (asic == 0),  # selection2
+                    (ch >= 0)  & (ch <= 16) & (asic == 1),  # selection3
+                    (ch >= 0)  & (ch <= 39) & (asic == 0)   # selection4
+                ]
+                
+                # 3. Define the operations for each condition
+                choices = [
+                    ch - 16,  # Map for selection1
+                    ch,       # Map for selection2
+                    ch + 64,  # Map for selection3
+                    ch + 80   # Map for selection4
+                ]
+                
+                # 4. Apply the mapping and update the main array
+                # Note: We use np.select to generate the values, then assign them back
+                # to the specific indices defined by selectionWires.
+                self.hits.WiresStrips[selectionWires] = np.select(conditions, choices, default=-1)
+                
+                # Set the flag identifying these as 'wires' (0)
+                self.hits.WorS[selectionWires] = 0
+    
+                
+                ############################################################### 
+                # GRIDS
+                ###########
+                
+                selectionStrips = np.logical_and(selectionCol , HySLoc)
+                
+                # 1. Get the data for the selected strips
+                ch   = self.readouts.Channel[selectionStrips]
+                asic = self.readouts.ASIC[selectionStrips]
+                
+                # 2. Define the selection conditions
+                conditions = [
+                    (ch >= 0)  & (ch <= 43) & (asic == 0),  # selection1
+                    (ch >= 0)  & (ch <= 23) & (asic == 1),  # selection2
+                    (ch >= 44) & (ch <= 63) & (asic == 0)   # selection3
+                ]
+                
+                # 3. Define the mathematical mapping for each condition
+                choices = [
+                    43 - ch,   # Map for selection1
+                    67 - ch,   # Map for selection2
+                    131 - ch   # Map for selection3
+                ]
+                
+                # 4. Apply the mapping to the main WiresStrips array
+                # np.select handles the logic; we assign it back using the selectionStrips mask.
+                self.hits.WiresStrips[selectionStrips] = np.select(conditions, choices, default=-1)
+                
+                # Identify these hits as strips (1)
+                self.hits.WorS[selectionStrips] = 1
+                
+               
+                ########################################## 
+                ###########
+                
+                
+                
+        ####################################################################################
+        ####################################################################################
         return flag    
             
     
@@ -404,7 +465,7 @@ if __name__ == '__main__':
    
    NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
    
-   pcapng = pcapr.pcapng_reader(filePathAndFileName, NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode)
+   pcapng = pcapr.pcapng_reader(filePathAndFileName, NSperClockTick)
 
    readouts = pcapng.readouts
    readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
