@@ -430,7 +430,7 @@ class plottingEvents():
                     
                     # add magenta lines to plot IMG
                     for k in np.arange(0,self.config.DETparameters.numOfCassettes*self.config.DETparameters.numOfWires,self.config.DETparameters.wiresPerRow):
-                        ax22[0][0].plot([k-0.5,k-0.5],[-0.5,11.5],'r',linewidth=1)
+                        ax22[0][0].plot([k-0.5,k-0.5],[-0.5,self.config.DETparameters.numOfStrips-0.5],'r',linewidth=1)
                         
                     # add red lines to plot IMG
                     for k in range(1,self.config.DETparameters.numOfCassettes):
