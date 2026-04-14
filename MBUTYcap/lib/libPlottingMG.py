@@ -16,11 +16,17 @@ try:
 ####### if you run default
     from lib import libPlotting
     from lib import libHistogramsMG as hh
+    from lib import libParameters as para
+    from lib import libMappingMG as maps
+    from lib import libReadPcapng as pcapr
 
 except ImportError:
     ####### if you run in lib 
     import libPlotting
     import libHistogramsMG as hh
+    import libParameters as para
+    import libMappingMG as maps
+    import libReadPcapng as pcapr
 
 ###############################################################################
 ############################################################################### 
@@ -247,9 +253,9 @@ class plottingHits():
         """ Acts as a pointer/wrapper for the central library """
         return libPlotting.plottingHits.__init__(self,  hits, parameters, allAxis, outOfBounds)   
     
-    def plotChRaw(self,cassetteIDs): 
-     """ Acts as a pointer/wrapper for the central library """
-     return libPlotting.plottingHits.plotChRaw(self,cassetteIDs)
+    # def plotChRaw(self,cassetteIDs): 
+    #  """ Acts as a pointer/wrapper for the central library """
+    #  return libPlotting.plottingHits.plotChRaw(self,cassetteIDs)
 
 
     def plotTimeStamps(self,cassetteIDs): 
@@ -260,7 +266,27 @@ class plottingHits():
         """ Acts as a pointer/wrapper for the central library """
         return libPlotting.plottingHits.plotTimeStampsVSCh(self,cassetteIDs)
 
-        
+
+    def plotChRaw(self,cassetteIDs):     
+
+      if self.flag is True:
+          
+          self.wbins = np.linspace(0,self.config.DETparameters.numOfWires-1,self.config.DETparameters.numOfWires)
+          self.gbins = np.linspace(0,self.config.DETparameters.numOfStrips-1,self.config.DETparameters.numOfStrips)
+      
+          self.ploth = preparePlotMatrix(1003, 2, len(cassetteIDs))
+          
+          self.ploth.figHandle.suptitle('Hits - mapped channels')
+    
+          for k, cc in enumerate(cassetteIDs):
+              
+              self.histChRaw1Cass(cc)  
+    
+              self.ploth.axHandle[0][k].bar(self.wbins,self.histow,0.8,color='r') 
+              self.ploth.axHandle[1][k].bar(self.gbins,self.histos,0.8,color='b')
+              self.ploth.axHandle[0][k].set_xlabel('hit wire ch no.')
+              self.ploth.axHandle[1][k].set_xlabel('hit grid ch no.')
+              self.ploth.axHandle[0][k].set_title('ID '+str(cc))   
 
 
     def histChRaw1Cass(self,cassette1ID):
@@ -270,9 +296,9 @@ class plottingHits():
             if self.config.DETparameters.operationMode == 'normal':
                 wires  = self.hits.WorS == 0
                 strips = self.hits.WorS == 1
-                wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.config.DETparameters.numOfWires)
-                self.histow = hh.histog(self.outOfBounds).hist1D(self.xbins, wireCh0to31)
-                self.histos = hh.histog(self.outOfBounds).hist1D(self.xbins, self.hits.WiresStrips[cass & strips])
+                # wireCh0to31 = np.mod(self.hits.WiresStrips[cass & wires],self.config.DETparameters.numOfWires)
+                self.histow = hh.histog(self.outOfBounds).hist1D(self.wbins, self.hits.WiresStrips[cass & wires])
+                self.histos = hh.histog(self.outOfBounds).hist1D(self.gbins, self.hits.WiresStrips[cass & strips])
                 
             else:
                 
@@ -516,31 +542,43 @@ if __name__ == '__main__' :
     
     parameters  = para.parameters('./')
     
-    filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_MGdevel/config/'+"MG.json"
+    filePath  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'+"MGtestVessels.json"
 
     config = maps.read_json_config(filePath)
     
-    parameters.loadConfigAndSetParameters(config)
+    parameters.loadConfigAndUpdate(config)
     
-    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_MGdevel/data/'
-    file = 'MG_2col_2clusters.pcapng'
+    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
+    file = 'testData.pcapng'
+    
+    allAxis = hh.allAxis()
+    allAxis.createAllAxis(parameters)
     
     
     filePathAndFileName = filePath+file
     
     NSperClockTick = 11.356860963629653  #ns per tick ESS for 88.0525 MHz
     
-    pcapng = pcapr.pcapng_reader(filePathAndFileName, NSperClockTick, config.MONmap.TTLtype, config.MONmap.RingID,  timeResolutionType='fine', sortByTimeStampsONOFF = False, operationMode=config.DETparameters.operationMode)
+    pcapng = pcapr.pcapng_reader(filePathAndFileName)
 
     readouts = pcapng.readouts
     readoutsArray = readouts.concatenateReadoutsInArrayForDebug()
+    
+    md  = maps.mapDetector(readouts, parameters.config)
+    md.mappAllCassAndChannelsGlob()
+    hits = md.hits
+    
+    hitsArray = hits.concatenateHitsInArrayForDebug()
  
-    plread = plottingReadouts(readouts, config)
+    plread = plottingReadouts(readouts, parameters, allAxis)
     plread.plotChRaw(parameters.config.DETparameters.cassInConfig)
     
-    # allAxis = hh.allAxis()
-    # allAxis.createAllAxis(parameters)
     
+    
+    pl1 = plottingHits( hits, parameters, allAxis)
+    pl1.plotChRaw(parameters.config.DETparameters.cassInConfig)
+    
+
 
         
     ##################

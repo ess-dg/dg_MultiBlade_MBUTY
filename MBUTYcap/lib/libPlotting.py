@@ -318,7 +318,7 @@ class plottingHits():
         
             self.ploth = preparePlotMatrix(1003, 2, len(cassetteIDs))
             
-            self.ploth.figHandle.suptitle('Hits - raw channels')
+            self.ploth.figHandle.suptitle('Hits - mapped channels')
     
             for k, cc in enumerate(cassetteIDs):
                 
