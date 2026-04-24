@@ -420,7 +420,7 @@ class mapDetector():
                     (ch >= 60) & (ch <= 63) & (asic == 0),  # selection3
                     (ch >= 0)  & (ch <= 15) & (asic == 1),  # selection4
                     (ch >= 40) & (ch <= 59) & (asic == 0),  # selection5
-                    (ch >= 36) & (ch <= 55) & (asic == 1)   # selection6
+                    (ch >= 36) & (ch <= 55) & (asic == 1),  # selection6
                     (ch >= 16) & (ch <= 35) & (asic == 1)   # selection7
                 ]
                 

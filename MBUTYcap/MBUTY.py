@@ -601,6 +601,8 @@ if __name__ == '__main__':
 
     configFileName  = "AMOR.json"
     
+    # configFileName  = "MGtestVessels.json"
+    
     # configFileName  = "MGEMMA_2det.json"
     
     # configFileName  = "test1h.json"
@@ -704,7 +706,7 @@ if __name__ == '__main__':
     # parameters.fileManagement.fileName = ['miracles_source_mask_red.pcapng']
     # parameters.fileManagement.fileName = ['CSPEC1.pcapng']
     
-    # parameters.fileManagement.fileName = ['testData.pcapng']
+    # parameters.fileManagement.fileName = ['tt.pcapng']
     
 
     parameters.fileManagement.fileSerials = [6,2,4,9]
