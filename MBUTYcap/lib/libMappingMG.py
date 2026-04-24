@@ -241,7 +241,7 @@ class mapDetector():
         
         #########################################
         #  activate to use interface PCB otherwise standard mapping 
-        swapIT = False 
+        swapIT = 0 
         #########################################
         
         if self.debug:
@@ -273,7 +273,9 @@ class mapDetector():
         #########################################
         # MAPPING CHANNELS HERE : 
 
-        if swapIT is False:
+        if swapIT == 0:
+            
+            # this is with old penthouse PCB and new ebox PCB - CORRECT how it should be 
             
             ########################################## 
             # WIRES
@@ -324,8 +326,9 @@ class mapDetector():
             ########################################## 
             ###########
             
-        elif swapIT is True:
+        elif swapIT == 1:
                 
+            # this is with old penthouse PCB and new interface PCB only for test vessel 
                 print('\033[1;33m----> WARNING: USING TEMPORARY INTERFACE PCB MAPPING!!!\033[1;37m')
                 
                 ########################################## 
@@ -396,7 +399,84 @@ class mapDetector():
                
                 ########################################## 
                 ###########
+        elif swapIT == 2:
                 
+            # this is with new penthouse PCB and new interface PCB only for test vessel 
+                print('\033[1;33m----> WARNING: USING TEMPORARY INTERFACE PCB MAPPING!!!\033[1;37m')
+                
+                ########################################## 
+                # WIRES
+                ###########
+                selectionWires  =  np.logical_and(selectionCol, HyWLoc)
+
+                 # 1. Get the base data for the selected wires
+                ch   = self.readouts.Channel[selectionWires]
+                asic = self.readouts.ASIC[selectionWires]
+                
+                # 2. Define your 4 selection conditions
+                conditions = [
+                    (ch >= 20) & (ch <= 39) & (asic == 0),  # selection1
+                    (ch >= 0)  & (ch <= 19) & (asic == 0),  # selection2
+                    (ch >= 60) & (ch <= 63) & (asic == 0),  # selection3
+                    (ch >= 0)  & (ch <= 15) & (asic == 1),  # selection4
+                    (ch >= 40) & (ch <= 59) & (asic == 0),  # selection5
+                    (ch >= 36) & (ch <= 55) & (asic == 1)   # selection6
+                    (ch >= 16) & (ch <= 35) & (asic == 1)   # selection7
+                ]
+                
+                
+                # 3. Define the operations for each condition
+                choices = [
+                    ch - 20,  # Map for selection1
+                    ch + 20,  # Map for selection2
+                    ch - 20,  # Map for selection3
+                    ch + 44,  # Map for selection4
+                    ch + 20,  # Map for selection5
+                    ch + 44,   # Map for selection6
+                    ch + 84   # Map for selection7
+                ]
+                
+                # 4. Apply the mapping and update the main array
+                # Note: We use np.select to generate the values, then assign them back
+                # to the specific indices defined by selectionWires.
+                self.hits.WiresStrips[selectionWires] = np.select(conditions, choices, default=-1)
+                
+                # Set the flag identifying these as 'wires' (0)
+                self.hits.WorS[selectionWires] = 0
+    
+                
+                ############################################################### 
+                # GRIDS
+                ###########
+                
+                selectionStrips = np.logical_and(selectionCol , HySLoc)
+                
+                # 1. Get the data for the selected strips
+                ch   = self.readouts.Channel[selectionStrips]
+                asic = self.readouts.ASIC[selectionStrips]
+                
+                # 2. Define the selection conditions
+                conditions = [
+                    (ch >= 10)  & (ch <= 53) & (asic == 0),  # selection1
+                    (ch >= 10)  & (ch <= 53) & (asic == 1)  # selection2
+                ]
+                
+                # 3. Define the mathematical mapping for each condition
+                choices = [
+                    53 - ch,   # Map for selection1
+                    97 - ch    # Map for selection2
+                ]
+                
+                # 4. Apply the mapping to the main WiresStrips array
+                # np.select handles the logic; we assign it back using the selectionStrips mask.
+                self.hits.WiresStrips[selectionStrips] = np.select(conditions, choices, default=-1)
+                
+                # Identify these hits as strips (1)
+                self.hits.WorS[selectionStrips] = 1
+                
+               
+                ########################################## 
+                ########### 
                 
                 
         ####################################################################################
