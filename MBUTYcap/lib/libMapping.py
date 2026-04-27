@@ -573,7 +573,7 @@ class read_json_config():
                  if RingID != 11:
                      print('\n\t\033[1;31mERROR: MON mode {} selected with RING != 11 (must be ring 11) -> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType),end='') 
                      time.sleep(2)
-                     sys.exit()
+                     # sys.exit()
 
              
            

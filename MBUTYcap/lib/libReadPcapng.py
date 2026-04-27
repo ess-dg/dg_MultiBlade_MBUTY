@@ -1923,10 +1923,15 @@ class pcapng_reader_PreAlloc():
                            
                         
                            # overwrite if MONITOR 
+                           # is_lemo_mode = (self.MONconn == 'LEMO' and vmm3.Ring >= 11)
+                           # is_ring_mode = (self.MONconn == 'RING' and vmm3.Ring == 11 and vmm3.Ring == self.MONring)
+
                            is_lemo_mode = (self.MONconn == 'LEMO' and vmm3.Ring >= 11)
-                           is_ring_mode = (self.MONconn == 'RING' and vmm3.Ring == 11 and vmm3.Ring == self.MONring)
+                           is_ring_mode = (self.MONconn == 'RING' and vmm3.Ring == self.MONring)
 
                            if is_lemo_mode or is_ring_mode:
+                               
+                              
                                
                                self.data[index, 19] = instrID
                                
@@ -1955,6 +1960,8 @@ class pcapng_reader_PreAlloc():
                                    self.data[index, 18] = -1
                                 
                                elif  self.MONhw == 'IBM':  
+                                   
+                                   print('--- >>>> is ring mode IBM')
                                    
                                    mondata = IBM_MONdata(packetData[indexStart:indexStop], self.NSperClockTick)
                                   
