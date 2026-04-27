@@ -231,6 +231,8 @@ class read_json_config():
         self.cassMap       = cassMap()
         self.channelMap    = channelMap()
         
+        self.printFlag = printFlag
+        
         self.debug = False
 
             
@@ -241,7 +243,7 @@ class read_json_config():
                 
                 self.checkRing11()
                         
-                if printFlag is True:
+                if self.printFlag is True:
                     self.print_DETname()
                     self.print_check_operationMode()
                         
@@ -538,8 +540,8 @@ class read_json_config():
                   self.MONmap.RingID         = cc.get("Ring")
                   self.MONmap.channel        = cc.get("Channel")
                                     
-                 
-                  self.checkBMsettings(self.MONmap.hardwareType, self.MONmap.connectionType,self.MONmap.RingID) 
+                  if self.printFlag is True:
+                     self.checkBMsettings(self.MONmap.hardwareType, self.MONmap.connectionType,self.MONmap.RingID) 
                 
               
 ###############################################################################
@@ -565,14 +567,20 @@ class read_json_config():
 
              if connectionType == "LEMO" :
                  if RingID < 11:
-                     print('\n\t\033[1;31mERROR: MON mode {} selected with RING < 11 (can be any ring 11 - inf, but not < 11)-> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType),end='') 
-                     time.sleep(2)
+                     print('\n\t\033[1;33mWARNING: MON mode {} selected with RING < 11 (can be any ring 11 - inf, but not < 11)-> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType),end='') 
+                     time.sleep(1)
                      sys.exit()
+                  # else:
+    
              
              if connectionType == "RING" : 
                  if RingID != 11:
-                     print('\n\t\033[1;31mERROR: MON mode {} selected with RING != 11 (must be ring 11) -> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType),end='') 
-                     time.sleep(2)
+                     print('\n\t\033[1;33mWARNING: MON mode {} selected with RING != 11 -> check config file!\n\033[1;37m'.format(connectionType),end='') 
+                     time.sleep(1)
+                 # else:
+                 #     print('\n\t\033[1;33mWARNING: MON mode {} selected with RING != 11 (must be ring 11) -> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType),end='') 
+                 #     time.sleep(1)
+                     
                      # sys.exit()
 
              
