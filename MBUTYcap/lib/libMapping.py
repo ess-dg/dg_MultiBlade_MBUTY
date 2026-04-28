@@ -564,18 +564,18 @@ class read_json_config():
                  time.sleep(2)
                  sys.exit()    
 
-
+            # BM LEMO type can only be in rings that are not physical rings but created in thew RMM config RINGS >= 11, usually >= 12
              if connectionType == "LEMO" :
                  if RingID < 11:
-                     print('\n\t\033[1;33mWARNING: MON mode {} selected with RING < 11 (can be any ring 11 - inf, but not < 11)-> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType),end='') 
+                     print('\n\t\033[1;33mWARNING: MON mode {} selected with RING < 11 (ring {}) (can be any ring 11 - inf, but not < 11)-> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType,RingID),end='') 
                      time.sleep(1)
                      sys.exit()
-                  # else:
+                 
     
-             
+             # if the BM is on one ring can be in any ring but usually 11, if not 11 give a warning. 
              if connectionType == "RING" : 
                  if RingID != 11:
-                     print('\n\t\033[1;33mWARNING: MON mode {} selected with RING != 11 -> check config file!\n\033[1;37m'.format(connectionType),end='') 
+                     print('\n\t\033[1;33mWARNING: MON mode {} selected with RING != 11 (ring {} found in config file)\n\033[1;37m'.format(connectionType,RingID),end='') 
                      time.sleep(1)
                  # else:
                  #     print('\n\t\033[1;33mWARNING: MON mode {} selected with RING != 11 (must be ring 11) -> check config file! ---> Exiting ... \n\033[1;37m'.format(connectionType),end='') 
