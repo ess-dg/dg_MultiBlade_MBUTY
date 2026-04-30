@@ -398,22 +398,7 @@ class MBUTYmain():
               
             if self.parameters.fileManagement.saveReducedFileONOFF is True: 
                 
-                # fileNameSave  = os.path.splitext(fileDialogue.fileName[0])[0]+'_reduced'
-                
-                base_name, extension = os.path.splitext(fileDialogue.fileName[0])
-
-                match = re.search(r"(_\d+)$", base_name)
-                
-                if match:
-                    prefix = base_name[:match.start()]
-                    suffix = match.group(0) 
-                    base_name2, extension2 = os.path.splitext(fileDialogue.fileName[-1])
-                    match2 = re.search(r"(_\d+)$", base_name2)
-                    suffix2 = match2.group(0)
-                    fileNameSave  = "_".join([ prefix , 'from'+suffix , 'to'+suffix2 ,'reduced'])
-                else:
-                    fileNameSave  = "_".join([ base_name , 'reduced'])
-
+                fileNameSave = saveH5.prepareReducedFileBaseName(fileDialogue.fileName)
                 
                 sav = saveH5.saveReducedDataToHDF(self.parameters,self.parameters.fileManagement.saveReducedPath,fileNameSave)
                 
@@ -700,7 +685,7 @@ if __name__ == '__main__':
     ### folder and file to open (file can be a list of files)
 
     parameters.fileManagement.fileName = ['ESSmask2023.pcapng']
-    # parameters.fileManagement.fileName = ['ESSmask2023_1000pkts.pcapng']
+    # parameters.fileManagement.fileName = ['ESSmask2023_1000pkts.pcapng','ESSmask2023_1000pkts_2.pcapng']
     # parameters.fileManagement.fileName = ['miracles_trig2.pcapng']
     # parameters.fileManagement.fileName = ['MG_2EMMAprototypes.pcapng']
     # parameters.fileManagement.fileName = ['miracles_source_mask_red.pcapng']
@@ -746,7 +731,7 @@ if __name__ == '__main__':
     ### save a hdf file with clusters (reduced file)
 
     ### ON/OFF
-    parameters.fileManagement.saveReducedFileONOFF = False   
+    parameters.fileManagement.saveReducedFileONOFF = True   
     parameters.fileManagement.saveReducedPath = '/Users/francescopiscitelli/Desktop/reducedFile/'
 
     parameters.fileManagement.reducedNameMainFolder  = 'entry1'
