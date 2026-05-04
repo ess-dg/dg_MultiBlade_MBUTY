@@ -187,6 +187,26 @@ class fileManagement():
             self.configFilePath = config.configFilePath
             self.configFileName = config.configFileName
             
+      def parseFileSerialsList(self):
+          
+            input_list = self.fileSerials
+            result = []
+            for item in input_list:
+                if isinstance(item, int):
+                    # It's already a number, just add it
+                    result.append(item)
+                elif isinstance(item, str) and '-' in item:
+                    # It's a range string like "0-4"
+                    start, end = map(int, item.split('-'))
+                    # Use range(start, end + 1) to make it inclusive
+                    result.extend(range(start, end + 1))
+                elif isinstance(item, str):
+                    # It's a string digit like "5"
+                    result.append(int(item))
+                    
+            # Sort and remove duplicates if necessary
+            self.fileSerials =  sorted(list(set(result)))     
+            
  
     
 class kafkaSettings():
@@ -424,6 +444,7 @@ class parameters():
             
         self.plotting.calculateDerivedParam(config)
         self.wavelength.update()
+        self.fileManagement.parseFileSerialsList()
         
     def loadConfigAndUpdate(self,config=None):
             
@@ -549,15 +570,19 @@ class parameters():
 
 if __name__ == '__main__' :
     
-    # currentPath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/'
+    currentPath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/'
     
-    # parameters = parameters(currentPath)
+    parameters = parameters(currentPath)
+    
+    parameters.fileManagement.fileSerials = ["0-2","11-13"]
 
-    # configFilePath  = currentPath+'config/'
-    # configFileName  = "MB300_FREIA_config.json"
-    # config = maps.read_json_config(configFilePath+configFileName)
+    configFilePath  = currentPath+'config/'
+    configFileName  = "AMOR.json"
+    config = maps.read_json_config(configFilePath+configFileName)
 
-    # parameters.loadConfigParameters(config)
+    parameters.loadConfigAndUpdate(config)
+    
+    print(parameters.fileManagement.fileSerials)
     
     # configFilePath  = './'+"MB300_AMOR_config.json"
     # config = maps.read_json_config(configFilePath)
@@ -624,10 +649,10 @@ if __name__ == '__main__' :
     # parameters.dataReduction.softThArray.ThW[:,1] = 5000
     
     
-    aa = checkPackageInstallation()
+    # aa = checkPackageInstallation()
     
-    aa.checkPackagePcap()
+    # aa.checkPackagePcap()
     
-    flag = aa.checkPackageKafka()
+    # flag = aa.checkPackageKafka()
     
-    print(flag)
+    # print(flag)

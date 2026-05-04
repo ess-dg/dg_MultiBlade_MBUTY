@@ -33,11 +33,12 @@ except ImportError:
 
 def prepareReducedFileBaseName(fileNameList):
     
-    # fileNameSave  = os.path.splitext(fileDialogue.fileName[0])[0]+'_reduced'
     
     if len(fileNameList) == 1:
         base_name, extension = os.path.splitext(fileNameList[0])
         fileNameSave  = "_".join([ base_name , 'reduced'])
+        
+        
     
     elif len(fileNameList) > 1:
         base_name, extension = os.path.splitext(fileNameList[0])
@@ -45,22 +46,33 @@ def prepareReducedFileBaseName(fileNameList):
         # it matches the standard format _00000.pcapng
         matched = re.search(r"(_\d+)$", base_name)
         
+        
         if matched:
-            prefix = base_name[:matched.start()]
-            suffix = matched.group(0) 
-            base_name2, extension2 = os.path.splitext(fileNameList[-1])
-            matched2 = re.search(r"(_\d+)$", base_name2)
-            suffix2 = matched2.group(0)
-            fileNameSave  = "_".join([ prefix , 'from'+suffix , 'to'+suffix2 ,'reduced'])
+            try:
+                prefix = base_name[:matched.start()]
+                suffix = matched.group(0) 
+                base_name2, extension2 = os.path.splitext(fileNameList[-1])
+                matched2 = re.search(r"(_\d+)$", base_name2)
+                suffix2 = matched2.group(0)
+                fileNameSave  = "_".join([ prefix , 'from'+suffix , 'to'+suffix2 ,'reduced'])
+            except:
+                nfiles = len(fileNameList)
+                fileNameSave  = "_".join([ base_name ,str(nfiles) ,'files_reduced'])
+                 
+                 
             
         else:
              print('\n --> \033[1;33mWARNING: file name list does not match format goofy_XXXXX.pcapng -> associated first file name for data reduction.\033[1;37m')
              base_name, extension = os.path.splitext(fileNameList[0])
              nfiles = len(fileNameList)
              fileNameSave  = "_".join([ base_name ,str(nfiles) ,'files_reduced'])
-            
+
     else:
-        print('\n --> \033[1;33mWARNING: empty file mane list!!!\033[1;37m')
+
+        fileNameSave = None 
+        
+        print('\n --> \033[1;33mWARNING: empty file name list!!!\033[1;37m')
+
    
     return fileNameSave
 
@@ -68,6 +80,8 @@ def prepareReducedFileBaseName(fileNameList):
 
 class saveReducedDataToHDF():
     def __init__(self, parameters, saveReducedPath='./', fileName='temp'):
+        
+        print(fileName )
         
         self.parameters       = parameters
         

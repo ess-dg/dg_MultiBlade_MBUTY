@@ -663,7 +663,7 @@ if __name__ == '__main__':
     # parameters.fileManagement.sourcePath = 'essdaq@172.30.244.233:~/pcaps/'
     parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/dataVMM/"
     
-    # parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/"
+    # parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/dder"
     
     
     # parameters.fileManagement.destPath   = r"/Users/francescopiscitelli/Desktop/DATAtrainMBUTY/"
@@ -676,11 +676,7 @@ if __name__ == '__main__':
 
     parameters.fileManagement.filePath = currentPath+'data/'
 
-    # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Desktop/transfer/'
-
-    # parameters.fileManagement.filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap_develDataFormatClustered/data/'
-    # parameters.fileManagement.fileName = [ 'sampleData_NormalMode.pcapng']
-    # parameters.fileManagement.fileName = [ 'sampleData_ClusteredMode.pcapng']
+    # parameters.fileManagement.filePath = ''
 
     ### folder and file to open (file can be a list of files)
 
@@ -690,11 +686,13 @@ if __name__ == '__main__':
     # parameters.fileManagement.fileName = ['MG_2EMMAprototypes.pcapng']
     # parameters.fileManagement.fileName = ['miracles_source_mask_red.pcapng']
     # parameters.fileManagement.fileName = ['CSPEC1.pcapng']
-    
-    # parameters.fileManagement.fileName = ['tt.pcapng']
+
+    # parameters.fileManagement.fileName = ['20260122_113536_duration_s_600_FREIAsector1_00004.pcapng']
     
 
     parameters.fileManagement.fileSerials = [6,2,4,9]
+    # OR
+    # parameters.fileManagement.fileSerials = ["0-2","11-13",45]
 
     ### valid otions: 'window','fileName', 'latest', 'secondLast', 'wholeFolder', 'sequence' 
     ### window opens to selcet file, filename speficified  earlier, last or sencond last file crearted in folder, 
@@ -731,7 +729,7 @@ if __name__ == '__main__':
     ### save a hdf file with clusters (reduced file)
 
     ### ON/OFF
-    parameters.fileManagement.saveReducedFileONOFF = True   
+    parameters.fileManagement.saveReducedFileONOFF = False   
     parameters.fileManagement.saveReducedPath = '/Users/francescopiscitelli/Desktop/reducedFile/'
 
     parameters.fileManagement.reducedNameMainFolder  = 'entry1'
