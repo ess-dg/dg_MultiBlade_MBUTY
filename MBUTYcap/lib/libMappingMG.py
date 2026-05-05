@@ -306,7 +306,11 @@ class mapDetector():
             
             selectionStrips = np.logical_and(selectionCol , HySLoc)
 
-            tempS = self.readouts.Channel[selectionStrips] + 64*self.readouts.ASIC[selectionStrips]
+            # old penthouse PCB 
+            # tempS = self.readouts.Channel[selectionStrips] + 64*self.readouts.ASIC[selectionStrips]
+            
+            # new penthouse PCB 
+            tempS = self.readouts.Channel[selectionStrips] -10 + 44*self.readouts.ASIC[selectionStrips]
 
             # after mapping wires are 0 and strips 1 
             self.hits.WorS[selectionStrips] = 1 
