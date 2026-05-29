@@ -96,7 +96,7 @@ class MBUTYmain():
     def __init__(self, parameters, runFromGui=False, main_thread_queue = None):
         self.main_thread_queue = main_thread_queue
         self.parameters = parameters
-        self.profiling = para.profiling()
+        self.profiling  = para.profiling()
         self.runFromGui = runFromGui
         #  config is embedded in parameters
         
