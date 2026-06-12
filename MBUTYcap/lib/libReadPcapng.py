@@ -669,7 +669,7 @@ class checkInstrumentID():
 
         if foundFlag:
             print(f"\n\t\033[1;33mFile containing data streams {unique_streams} for detector types {unique_types}\033[0m")
-            print(f"\t\033[1;33manalyzed for instrument {instrNameFromConf} and type {detType}\033[0m")
+            print(f"\t\033[1;33manalyzchaoppered for instrument {instrNameFromConf} and type {detType}\033[0m")
             # print(f"\nSuccess: Configuration match found for {detType}.")
 
             # pass
@@ -1127,6 +1127,7 @@ class checkIfFileExistInFolder():
 
 class pcapng_reader():
     def __init__(self, filePathAndFileName, NSperClockTick=11.356860963629653, MONhw = 'GENERIC', MONconn = 'RING' , MONring = 11, timeResolutionType = 'coarse', sortByTimeStampsONOFF = False, operationMode = 'normal', pcapLoadingMethod='allocate'):
+ 
         
         # self.flagSupported = True
         # try:
@@ -1661,15 +1662,15 @@ class pcapng_reader_PreAlloc():
               removedNum = self.readouts.removeCalibrationData()
               print('removed {} calibration readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum)) 
               self.totalReadoutCount = self.totalReadoutCount-removedNum
-                  
-                  
+              
+
         if self.operationMode == 'normal':
  
             flag = self.readouts.checkIfClusteredMode()
             if flag is True: 
                if removeONOFF == True:
                   removedNum = self.readouts.removeClusteredData()
-                  print('removed {} normal readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
+                  print('removed {} clustered readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
                   self.totalReadoutCount = self.totalReadoutCount-removedNum
                 
         elif self.operationMode == 'clustered': 
@@ -1678,7 +1679,7 @@ class pcapng_reader_PreAlloc():
               if flag is True: 
                  if removeONOFF == True:
                     removedNum = self.readouts.removeNormalHitData()
-                    print('removed {} clustered readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
+                    print('removed {} normal readouts --> readouts left {}'.format(removedNum,self.totalReadoutCount-removedNum))
                     self.totalReadoutCount = self.totalReadoutCount-removedNum
       
         
@@ -1704,6 +1705,9 @@ class pcapng_reader_PreAlloc():
         
         
     def extractFromBytes(self,packetData,packetLength,indexPackets,debugMode=False):
+        
+        # print('dsfxafaefxea')
+        # print(self.operationMode)
         
         # ICMP packet has ESS data in it but must be discarded 
         # the ICMP protocal adds 28 bytes 
@@ -2058,7 +2062,7 @@ if __name__ == '__main__':
 
    confFile  = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/config/'
    fileName  = "MIRACLES24.json"
-   fileName  = "AMOR2026.json"
+   fileName  = "AMOR.json"
     # fileName  = "MGEMMA.json"
    # fileName  = "MIRACLES2bis.json"
    
@@ -2072,10 +2076,14 @@ if __name__ == '__main__':
     
    filePath = '/Users/francescopiscitelli/Documents/PYTHON/MBUTYcap/data/'
    file = 'miracles_trig2.pcapng'
-   # file = 'ESSmask2023_1000pkts.pcapng'
+   file = 'ESSmask2023_1000pkts.pcapng'
    # file = 'ESSmask2023.pcapng'
    
-   file = 'testData.pcapng'
+   file = 'sampleData_NormalMode.pcapng'
+   
+   file = 'sampleData_ClusteredMode.pcapng'
+   
+   # file = 'testData.pcapng'
    
    # file = 'miracles_source_on_left_red.pcapng'
 
@@ -2088,8 +2096,11 @@ if __name__ == '__main__':
    typeOfLoading = 'allocate'
    # typeOfLoading = 'quick'
    
-
-   pcap = pcapng_reader(filePathAndFileName,NSperClockTick=11.356860963629653, MONhw=config.MONmap.hardwareType, MONconn=config.MONmap.connectionType, MONring=11, timeResolutionType='coarse', sortByTimeStampsONOFF=False, operationMode='normal',pcapLoadingMethod=typeOfLoading)
+   
+   temp = config.DETparameters.operationMode
+   
+   
+   pcap = pcapng_reader(filePathAndFileName,NSperClockTick=11.356860963629653, MONhw=config.MONmap.hardwareType, MONconn=config.MONmap.connectionType, MONring=11, timeResolutionType='coarse', sortByTimeStampsONOFF=False, operationMode=temp,pcapLoadingMethod=typeOfLoading)
 
    readouts = pcap.readouts
    
